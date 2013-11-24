@@ -21,7 +21,6 @@
 
 import math
 import numpy
-from ..math import pavx
 
 def cllr(negatives, positives):
   """Computes the 'cost of log likelihood ratio' measure as given in the bosaris toolkit"""
@@ -35,6 +34,9 @@ def cllr(negatives, positives):
 
 def min_cllr(negatives, positives):
   """Computes the 'minimum cost of log likelihood ratio' measure as given in the bosaris toolkit"""
+
+  from ..math import pavx
+  
   # first, sort both scores
   neg = sorted(negatives)
   pos = sorted(positives)
@@ -71,8 +73,8 @@ def min_cllr(negatives, positives):
   llrs = posterior_log_odds - log_prior_odds;
 
   # some weired addition
-#  for i in range(I):
-#    llrs[i] += float(i)*1e-6/float(I)
+  #  for i in range(I):
+  #    llrs[i] += float(i)*1e-6/float(I)
 
   # unmix positive and negative scores
   new_neg = numpy.zeros(N)

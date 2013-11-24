@@ -1,4 +1,4 @@
-from ._library import __version__, __api_version__
+from ._library import __version__
 
 from . import plot
 from . import load

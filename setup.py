@@ -7,21 +7,15 @@ from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['xbob.blitz']))
 from xbob.blitz.extension import Extension
 
-import os
-package_dir = os.path.dirname(os.path.realpath(__file__))
-package_dir = os.path.join(package_dir, 'xbob', 'io', 'include')
-include_dirs = [package_dir]
-
-packages = ['bob-io >= 1.3']
+packages = ['bob-measure >= 1.3']
 version = '2.0.0a0'
-define_macros = [("XBOB_IO_VERSION", '"%s"' % version)]
 
 setup(
 
-    name='xbob.io',
+    name='xbob.measure',
     version=version,
-    description='Bindings for bob.io',
-    url='http://github.com/anjos/xbob.io',
+    description='Bindings for bob.measure',
+    url='http://github.com/anjos/xbob.measure',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
@@ -34,6 +28,7 @@ setup(
     install_requires=[
       'setuptools',
       'xbob.blitz',
+      #'xbob.math',
     ],
 
     namespace_packages=[
@@ -41,32 +36,21 @@ setup(
       ],
 
     ext_modules = [
-      Extension("xbob.io._externals",
+      Extension("xbob.measure._library",
         [
-          "xbob/io/externals.cpp",
+          "xbob/measure/main.cpp",
           ],
         packages = packages,
-        define_macros = define_macros,
-        include_dirs = include_dirs,
-        ),
-      Extension("xbob.io._library",
-        [
-          "xbob/io/bobskin.cpp",
-          "xbob/io/file.cpp",
-          "xbob/io/videoreader.cpp",
-          "xbob/io/videowriter.cpp",
-          "xbob/io/hdf5.cpp",
-          "xbob/io/main.cpp",
-          ],
-        packages = packages,
-        define_macros = define_macros,
-        include_dirs = include_dirs,
+        version = version,
         ),
       ],
 
     entry_points={
       'console_scripts': [
-        'xbob_video_test.py = xbob.io.script.video_test:main',
+        'xbob_compute_perf.py = xbob.measure.script.compute_perf:main',
+        'xbob_eval_threshold.py = xbob.measure.script.eval_threshold:main',
+        'xbob_apply_threshold.py = xbob.measure.script.apply_threshold:main',
+        'xbob_plot_cmc.py = xbob.measure.script.plot_cmc:main',
         ],
       },
 
