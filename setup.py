@@ -28,7 +28,8 @@ setup(
     install_requires=[
       'setuptools',
       'xbob.blitz',
-      #'xbob.math',
+      'xbob.math',
+      'xbob.io',
     ],
 
     namespace_packages=[

@@ -1,3 +1,9 @@
 [submodule "src/xbob.blitz"]
 	path = src/xbob.blitz
 	url = git@github.com:anjos/xbob.blitz
+[submodule "src/xbob.math"]
+	path = src/xbob.math
+	url = git@github.com:anjos/xbob.math
+[submodule "src/xbob.io"]
+	path = src/xbob.io
+	url = git@github.com:anjos/xbob.io

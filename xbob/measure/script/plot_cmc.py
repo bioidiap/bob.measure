@@ -20,12 +20,12 @@
 """This script computes and plot a cumulative rank characteristics (CMC) curve
 from a score file in four or five column format.
 
-Note: The score file has to contain the exact probe file names as the 3rd (4column) or 4th (5column) column.
+Note: The score file has to contain the exact probe file names as the 3rd
+(4column) or 4th (5column) column.
 """
 
-
-
-import bob, os, sys
+import os
+import sys
 
 def parse_command_line(command_line_options):
   """Parse the program options"""
@@ -56,15 +56,18 @@ def parse_command_line(command_line_options):
 
 def main(command_line_options = None):
   """Computes and plots the CMC curve."""
+  
+  from .. import load, plot, recognition_rate
+
   args = parse_command_line(command_line_options)
 
   # read data
   if not os.path.isfile(args.score_file): raise IOError("The given score file does not exist")
   # pythonic way: create inline dictionary "{...}", index with desired value "[...]", execute function "(...)"
-  data = {'4column' : bob.measure.load.cmc_four_column, '5column' : bob.measure.load.cmc_five_column}[args.parser](args.score_file)
+  data = {'4column' : load.cmc_four_column, '5column' : load.cmc_five_column}[args.parser](args.score_file)
 
   # compute recognition rate
-  rr = bob.measure.recognition_rate(data)
+  rr = recognition_rate(data)
   print("Recognition rate for score file", args.score_file, "is %3.2f%%" % (rr * 100))
 
   if not args.no_plot:
@@ -78,7 +81,7 @@ def main(command_line_options = None):
 
     # CMC
     fig = mpl.figure()
-    max_rank = bob.measure.plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+    max_rank = plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
     mpl.title("CMC Curve")
     if args.log_x_scale:
       mpl.xlabel('Rank (log)')

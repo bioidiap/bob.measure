@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+# Andre Anjos <andre.anjos@idiap.ch>
+# Wed 11 Dec 15:11:44 2013 CET 
+#
+# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
+
 from ._library import __version__
 
 from . import plot
@@ -66,15 +73,19 @@ def relevance (input, machine):
   return retval
 
 def recognition_rate(cmc_scores):
-  """Calculates the recognition rate from the given input, which is identical to the rank 1 (C)MC value.
-  The input has a specific format, which is a list of two-element tuples.
-  Each of the tuples contains the negative and the positive scores for one test item.
-  To read the lists from score files in 4 or 5 column format, please use the bob.measure.load.cmc_four_column or bob.measure.load.cmc_five_column function.
+  """Calculates the recognition rate from the given input, which is identical
+  to the rank 1 (C)MC value.
 
-  The recognition rate is defined as the number of test items,
-  for which the positive score is greater than or equal to all negative scores,
-  divided by the number of all test items.
-  If several positive scores for one test item exist, the *highest* score is taken.
+  The input has a specific format, which is a list of two-element tuples.  Each
+  of the tuples contains the negative and the positive scores for one test
+  item.  To read the lists from score files in 4 or 5 column format, please use
+  the :py:func:`xbob.measure.load.cmc_four_column` or
+  :py:func:`bob.measure.load.cmc_five_column` function.
+
+  The recognition rate is defined as the number of test items, for which the
+  positive score is greater than or equal to all negative scores, divided by
+  the number of all test items.  If several positive scores for one test item
+  exist, the **highest** score is taken.
   """
   correct = 0.
   for neg, pos in cmc_scores:
@@ -90,15 +101,20 @@ def recognition_rate(cmc_scores):
 
 def cmc(cmc_scores):
   """Calculates the cumulative match characteristic (CMC) from the given input.
-  The input has a specific format, which is a list of two-element tuples.
-  Each of the tuples contains the negative and the positive scores for one test item.
-  To read the lists from score files in 4 or 5 column format, please use the bob.measure.load.cmc_four_column or bob.measure.load.cmc_five_column function.
 
-  For each test item the probability that the rank r of the positive score is calculated.
-  The rank is computed as the number of negative scores that are higher than the positive score.
-  If several positive scores for one test item exist, the *highest* positive score is taken.
-  The CMC finally computes, how many test items have rank r or higher.
+  The input has a specific format, which is a list of two-element tuples.  Each
+  of the tuples contains the negative and the positive scores for one test
+  item.  To read the lists from score files in 4 or 5 column format, please use
+  the :py:func:`xbob.measure.load.cmc_four_column` or
+  :py:func:`bob.measure.load.cmc_five_column` function.
+
+  For each test item the probability that the rank r of the positive score is
+  calculated.  The rank is computed as the number of negative scores that are
+  higher than the positive score.  If several positive scores for one test item
+  exist, the **highest** positive score is taken. The CMC finally computes how
+  many test items have rank r or higher.
   """
+
   # compute MC
   match_characteristic = numpy.zeros((max([len(neg) for (neg,pos) in cmc_scores])+1,), numpy.int)
   for neg, pos in cmc_scores:

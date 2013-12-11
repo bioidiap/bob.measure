@@ -1,21 +1,9 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# @author: Manuel Guenther <Manuel.Guenther@idiap.ch>
-# @date:   Thu May 16 11:41:49 CEST 2013
+# Manuel Guenther <Manuel.Guenther@idiap.ch>
+# Thu May 16 11:41:49 CEST 2013
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Measures for calibration"""
 
@@ -35,7 +23,7 @@ def cllr(negatives, positives):
 def min_cllr(negatives, positives):
   """Computes the 'minimum cost of log likelihood ratio' measure as given in the bosaris toolkit"""
 
-  from ..math import pavx
+  from xbob.math import pavx
   
   # first, sort both scores
   neg = sorted(negatives)
@@ -69,7 +57,6 @@ def min_cllr(negatives, positives):
   # ... activate old warnings
   numpy.seterr(**old_warn_setup)
 
-
   llrs = posterior_log_odds - log_prior_odds;
 
   # some weired addition
@@ -86,4 +73,3 @@ def min_cllr(negatives, positives):
 
   # compute cllr of these new 'optimal' LLR scores
   return cllr(new_neg, new_pos)
-

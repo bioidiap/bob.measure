@@ -4,24 +4,12 @@
 # Tue Jul 2 14:52:49 CEST 2013
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 """
 This script parses through the given directory, collects all results of
-verification experiments that are stored in file with the given file name.
-It supports the split into development and test set of the data, as well as
+verification experiments that are stored in file with the given file name.  It
+supports the split into development and test set of the data, as well as
 ZT-normalized scores.
 
 All result files are parsed and evaluated. For each directory, the following
@@ -37,16 +25,15 @@ The measure type of the development set can be changed to compute "HTER" or
 "FAR" thresholds instead, using the --criterion option.
 """
 
-
-import sys, os, bob
+import os
+import sys
 #from apport.hookutils import default
-
-
 
 def get_args():
   """Parse the program options"""
 
   import argparse
+  from .. import load
 
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
@@ -75,16 +62,16 @@ def get_args():
   parser.add_argument('--self-test', action='store_true', help=argparse.SUPPRESS)
 
   parser.add_argument('-p', '--parser', dest="parser", default="4column", metavar="NAME.FUNCTION",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details")
 
   # parse arguments
   args = parser.parse_args()
 
   # parse the score-parser
   if args.parser.lower() in ('4column', '4col'):
-    args.parser = bob.measure.load.split_four_column
+    args.parser = load.split_four_column
   elif args.parser.lower() in ('5column', '5col'):
-    args.parser = bob.measure.load.split_five_column
+    args.parser = load.split_five_column
   else: #try an import
     if args.parser.find('.') == -1:
       parser.error("parser module should be either '4column', '5column' or a valid python function identifier in the format 'module.function': '%s' is invalid" % args.parser)
@@ -117,23 +104,25 @@ class Result:
     self.ztnorm_eval = None
 
   def __calculate__(self, dev_file, eval_file = None):
+    from .. import eer_threshold, min_hter_threshold, far_threshold, farfrr
+
     dev_neg, dev_pos = self.m_args.parser(dev_file)
 
     # switch which threshold function to use;
     # THIS f***ing piece of code really is what python authors propose:
     threshold = {
-      'EER'  : bob.measure.eer_threshold,
-      'HTER' : bob.measure.min_hter_threshold,
-      'FAR'  : bob.measure.far_threshold
+      'EER'  : eer_threshold,
+      'HTER' : min_hter_threshold,
+      'FAR'  : far_threshold
     } [self.m_args.criterion](dev_neg, dev_pos)
 
     # compute far and frr for the given threshold
-    dev_far, dev_frr = bob.measure.farfrr(dev_neg, dev_pos, threshold)
+    dev_far, dev_frr = farfrr(dev_neg, dev_pos, threshold)
     dev_hter = (dev_far + dev_frr)/2.0
 
     if eval_file:
       eval_neg, eval_pos = self.m_args.parser(eval_file)
-      eval_far, eval_frr = bob.measure.farfrr(eval_neg, eval_pos, threshold)
+      eval_far, eval_frr = farfrr(eval_neg, eval_pos, threshold)
       eval_hter = (eval_far + eval_frr)/2.0
     else:
       eval_hter = None

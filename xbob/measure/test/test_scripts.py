@@ -4,25 +4,12 @@
 # Tue 21 Aug 2012 12:14:43 CEST
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Script tests for bob.measure
+"""Script tests for xbob.measure
 """
 
 import os
-import unittest
-import bob
+import nose.tools
 import pkg_resources
 
 def F(f):
@@ -38,53 +25,50 @@ TEST_SCORES_5COL = F('test-5col.txt')
 SCORES_4COL_CMC = F('scores-cmc-4col.txt')
 SCORES_5COL_CMC = F('scores-cmc-5col.txt')
 
-class MeasureScriptTest(unittest.TestCase):
+def test_compute_perf():
 
-  def test01_compute_perf(self):
+  # sanity checks
+  assert os.path.exists(DEV_SCORES)
+  assert os.path.exists(TEST_SCORES)
 
-    # sanity checks
-    self.assertTrue(os.path.exists(DEV_SCORES))
-    self.assertTrue(os.path.exists(TEST_SCORES))
+  from ..script.compute_perf import main
+  cmdline = '--devel=%s --test=%s --self-test' % (DEV_SCORES, TEST_SCORES)
+  nose.tools.eq_(main(cmdline.split()), 0)
 
-    from bob.measure.script.compute_perf import main
-    cmdline = '--devel=%s --test=%s --self-test' % (DEV_SCORES, TEST_SCORES)
-    self.assertEqual(main(cmdline.split()), 0)
+def test_eval_threshold():
 
-  def test02_eval_threshold(self):
+  # sanity checks
+  assert os.path.exists(DEV_SCORES)
 
-    # sanity checks
-    self.assertTrue(os.path.exists(DEV_SCORES))
+  from ..script.eval_threshold import main
+  cmdline = '--scores=%s --self-test' % (DEV_SCORES,)
+  nose.tools.eq_(main(cmdline.split()), 0)
 
-    from bob.measure.script.eval_threshold import main
-    cmdline = '--scores=%s --self-test' % (DEV_SCORES,)
-    self.assertEqual(main(cmdline.split()), 0)
+def test_apply_threshold():
 
-  def test03_apply_threshold(self):
+  # sanity checks
+  assert os.path.exists(TEST_SCORES)
 
-    # sanity checks
-    self.assertTrue(os.path.exists(TEST_SCORES))
+  from ..script.apply_threshold import main
+  cmdline = '--scores=%s --self-test' % (TEST_SCORES,)
+  nose.tools.eq_(main(cmdline.split()), 0)
 
-    from bob.measure.script.apply_threshold import main
-    cmdline = '--scores=%s --self-test' % (TEST_SCORES,)
-    self.assertEqual(main(cmdline.split()), 0)
+def test_compute_perf_5col():
 
-  def test04_compute_perf_5col(self):
+  # sanity checks
+  assert os.path.exists(DEV_SCORES_5COL)
+  assert os.path.exists(TEST_SCORES_5COL)
 
-    # sanity checks
-    self.assertTrue(os.path.exists(DEV_SCORES_5COL))
-    self.assertTrue(os.path.exists(TEST_SCORES_5COL))
+  from ..script.compute_perf import main
+  cmdline = '--devel=%s --test=%s --parser=xbob.measure.load.split_five_column --self-test' % (DEV_SCORES_5COL, TEST_SCORES_5COL)
+  nose.tools.eq_(main(cmdline.split()), 0)
 
-    from bob.measure.script.compute_perf import main
-    cmdline = '--devel=%s --test=%s --parser=bob.measure.load.split_five_column --self-test' % (DEV_SCORES_5COL, TEST_SCORES_5COL)
-    self.assertEqual(main(cmdline.split()), 0)
+def test_compute_cmc():
 
-  def test05_compute_cmc(self):
+  # sanity checks
+  assert os.path.exists(SCORES_4COL_CMC)
+  assert os.path.exists(SCORES_5COL_CMC)
 
-    # sanity checks
-    self.assertTrue(os.path.exists(SCORES_4COL_CMC))
-    self.assertTrue(os.path.exists(SCORES_5COL_CMC))
-
-    from bob.measure.script.plot_cmc import main
-    self.assertEqual(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--log-x-scale']), 0)
-    self.assertEqual(main(['--self-test', '--score-file', SCORES_5COL_CMC, '--parser', '5column']), 0)
-
+  from ..script.plot_cmc import main
+  nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--log-x-scale']), 0)
+  nose.tools.eq_(main(['--self-test', '--score-file', SCORES_5COL_CMC, '--parser', '5column']), 0)

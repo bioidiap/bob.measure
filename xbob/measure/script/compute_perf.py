@@ -4,18 +4,6 @@
 # Wed May 25 13:27:46 2011 +0200
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """This script runs error analysis on the development and test set scores, in a
 four column format:
@@ -41,20 +29,23 @@ Examples:
      $ %(prog)s --no-plot --devel=dev.scores --test=test.scores
 """
 
-import sys, os, bob
+import os
+import sys
 
 def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   """Prints a single output line that contains all info for a given criterium"""
 
-  if crit == 'EER':
-    thres = bob.measure.eer_threshold(dev_neg, dev_pos)
-  else:
-    thres = bob.measure.min_hter_threshold(dev_neg, dev_pos)
+  from .. import eer_threshold, min_hter_threshold, farfrr
 
-  dev_far, dev_frr = bob.measure.farfrr(dev_neg, dev_pos, thres)
+  if crit == 'EER':
+    thres = eer_threshold(dev_neg, dev_pos)
+  else:
+    thres = min_hter_threshold(dev_neg, dev_pos)
+
+  dev_far, dev_frr = farfrr(dev_neg, dev_pos, thres)
   dev_hter = (dev_far + dev_frr)/2.0
 
-  test_far, test_frr = bob.measure.farfrr(test_neg, test_pos, thres)
+  test_far, test_frr = farfrr(test_neg, test_pos, thres)
   test_hter = (test_far + test_frr)/2.0
 
   print("[Min. criterium: %s] Threshold on Development set: %e" % (crit, thres))
@@ -93,6 +84,8 @@ def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
 def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
   """Saves ROC, DET and EPC curves on the file pointed out by filename."""
 
+  from .. import plot
+
   import matplotlib
   if not hasattr(matplotlib, 'backends'): matplotlib.use('pdf')
   import matplotlib.pyplot as mpl
@@ -102,9 +95,9 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # ROC
   fig = mpl.figure()
-  bob.measure.plot.roc(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
+  plot.roc(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
       linestyle='--', dashes=(6,2), label='development')
-  bob.measure.plot.roc(test_neg, test_pos, npoints, color=(0,0,0),
+  plot.roc(test_neg, test_pos, npoints, color=(0,0,0),
       linestyle='-', label='test')
   mpl.axis([0,40,0,40])
   mpl.title("ROC Curve")
@@ -116,11 +109,11 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # DET
   fig = mpl.figure()
-  bob.measure.plot.det(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
+  plot.det(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
       linestyle='--', dashes=(6,2), label='development')
-  bob.measure.plot.det(test_neg, test_pos, npoints, color=(0,0,0),
+  plot.det(test_neg, test_pos, npoints, color=(0,0,0),
       linestyle='-', label='test')
-  bob.measure.plot.det_axis([0.01, 40, 0.01, 40])
+  plot.det_axis([0.01, 40, 0.01, 40])
   mpl.title("DET Curve")
   mpl.xlabel('FRR (%)')
   mpl.ylabel('FAR (%)')
@@ -130,7 +123,7 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # EPC
   fig = mpl.figure()
-  bob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints,
+  plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints,
       color=(0,0,0), linestyle='-')
   mpl.title('EPC Curve')
   mpl.xlabel('Cost')
@@ -163,7 +156,7 @@ def get_options(user_input):
   parser.add_argument('-x', '--no-plot', dest="doplot", default=True,
       action='store_false', help="If set, then I'll execute no plotting")
   parser.add_argument('-p', '--parser', dest="parser", default="4column",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
 
   # This option is not normally shown to the user...
   parser.add_argument("--self-test",
@@ -186,10 +179,12 @@ def get_options(user_input):
     parser.error("you should give a test score set with --test")
 
   #parse the score-parser
+  from .. import load
+
   if args.parser.lower() in ('4column', '4col'):
-    args.parser = bob.measure.load.split_four_column
+    args.parser = load.split_four_column
   elif args.parser.lower() in ('5column', '5col'):
-    args.parser = bob.measure.load.split_five_column
+    args.parser = load.split_five_column
   else: #try an import
     if args.parser.find('.') == -1:
       parser.error("parser module should be either '4column', '5column' or a valid python function identifier in the format 'module.function': '%s' is invalid" % arg.parser)

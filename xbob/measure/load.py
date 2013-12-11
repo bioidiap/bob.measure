@@ -2,6 +2,8 @@
 # vim: set fileencoding=utf-8 :
 # Andre Anjos <andre.anjos@idiap.ch>
 # Mon 23 May 2011 16:23:05 CEST
+#
+# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
 """A set of utilities to load score files with different formats.
 """
@@ -73,15 +75,20 @@ def split_four_column(filename):
 
 def cmc_four_column(filename):
   """Loads scores to compute CMC curves from a file in four column format.
-  The four column file needs to be in the same format as described in the four_column function,
-  and the "test label" (column 3) has to contain the test/probe file name.
+  
+  The four column file needs to be in the same format as described in the
+  four_column function, and the "test label" (column 3) has to contain the
+  test/probe file name.
 
-  This function returns a list of tuples.
-  For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
-  Usually, the list of positive scores should contain only one element, but more are allowed.
+  This function returns a list of tuples. For each probe file, the tuple
+  consists of a list of negative scores and a list of positive scores.
+  Usually, the list of positive scores should contain only one element, but
+  more are allowed.
 
-  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
+  The result of this function can directly be passed to, e.g., the
+  :py:func:`xbob.measure.cmc` function.
   """
+
   # read four column list
   all_list = four_column(filename)
   # extract positives and negatives
@@ -186,15 +193,20 @@ def split_five_column(filename):
 
 def cmc_five_column(filename):
   """Loads scores to compute CMC curves from a file in five column format.
-  The four column file needs to be in the same format as described in the five_column function,
-  and the "test label" (column 4) has to contain the test/probe file name.
 
-  This function returns a list of tuples.
-  For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
-  Usually, the list of positive scores should contain only one element, but more are allowed.
+  The four column file needs to be in the same format as described in the
+  five_column function, and the "test label" (column 4) has to contain the
+  test/probe file name.
 
-  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
+  This function returns a list of tuples.  For each probe file, the tuple
+  consists of a list of negative scores and a list of positive scores.
+  Usually, the list of positive scores should contain only one element, but
+  more are allowed.
+
+  The result of this function can directly be passed to, e.g., the
+  :py:func:`xbob.measure.cmc` function.
   """
+
   # read four column list
   all_list = five_column(filename)
 

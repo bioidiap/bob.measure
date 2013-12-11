@@ -4,18 +4,6 @@
 # Wed May 25 13:27:46 2011 +0200
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """This script computes the threshold following a certain minimization criteria
 on the given input data."""
@@ -36,12 +24,15 @@ Examples:
     $ %(prog)s --scores=dev.scores --parser=5column
 """
 
-import sys, os, bob
+import os
+import sys
 
 def apthres(neg, pos, thres):
   """Prints a single output line that contains all info for the threshold"""
 
-  far, frr = bob.measure.farfrr(neg, pos, thres)
+  from .. import farfrr
+
+  far, frr = farfrr(neg, pos, thres)
   hter = (far + frr)/2.0
 
   ni = neg.shape[0] #number of impostors
@@ -56,13 +47,15 @@ def apthres(neg, pos, thres):
 def calculate(neg, pos, crit, cost):
   """Returns the threshold given a certain criteria"""
 
+  from .. import eer_threshold, min_hter_threshold, min_weighted_error_rate_threshold
+
   if crit == 'eer':
-    return bob.measure.eer_threshold(neg, pos)
+    return eer_threshold(neg, pos)
   elif crit == 'mhter':
-    return bob.measure.min_hter_threshold(neg, pos)
+    return min_hter_threshold(neg, pos)
 
   # defaults to the minimum of the weighter error rate
-  return bob.measure.min_weighted_error_rate_threshold(neg, pos, cost)
+  return min_weighted_error_rate_threshold(neg, pos, cost)
 
 def get_options(user_input):
   """Parse the program options"""
@@ -84,7 +77,7 @@ def get_options(user_input):
   parser.add_argument('-w', '--cost', dest='cost', default=0.5,
       type=float, help="The value w of the cost when minimizing using the minimum weighter error rate (mwer) criterium. This value is ignored for eer or mhter criteria.", metavar="FLOAT")
   parser.add_argument('-p', '--parser', dest="parser", default="4column",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
   
   # This option is not normally shown to the user...
   parser.add_argument("--self-test",
@@ -100,10 +93,11 @@ def get_options(user_input):
     parser.error("cost should lie between 0.0 and 1.0")
 
   #parse the score-parser
+  from .. import load
   if args.parser.lower() in ('4column', '4col'):
-    args.parser = bob.measure.load.split_four_column
+    args.parser = load.split_four_column
   elif args.parser.lower() in ('5column', '5col'):
-    args.parser = bob.measure.load.split_five_column
+    args.parser = load.split_five_column
   else: #try an import
     if args.parser.find('.') == -1:
       parser.error("parser module should be either '4column', '5column' or a valid python function identifier in the format 'module.function': '%s' is invalid" % args.parser)
