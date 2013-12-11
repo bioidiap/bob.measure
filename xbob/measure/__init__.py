@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-# vim: set fileencoding=utf-8 :
-# Andre Anjos <andre.anjos@idiap.ch>
-# Wed 11 Dec 15:11:44 2013 CET 
-#
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-
-from ._library import __version__
+from ._library import *
 
 from . import plot
 from . import load

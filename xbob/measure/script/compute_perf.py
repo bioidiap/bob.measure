@@ -31,6 +31,7 @@ Examples:
 
 import os
 import sys
+import numpy
 
 def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   """Prints a single output line that contains all info for a given criterium"""
@@ -207,8 +208,8 @@ def main(user_input=None):
   print_crit(dev_neg, dev_pos, test_neg, test_pos, 'EER')
   print_crit(dev_neg, dev_pos, test_neg, test_pos, 'Min. HTER')
   if options.doplot:
-    plots(dev_neg, dev_pos, test_neg, test_pos,
-        options.npoints, options.plotfile)
+    plots(dev_neg, dev_pos, test_neg, test_pos, options.npoints,
+        options.plotfile)
     print("[Plots] Performance curves => '%s'" % options.plotfile)
 
   if options.selftest: #remove output file + tmp directory

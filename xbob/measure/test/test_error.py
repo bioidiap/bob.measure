@@ -19,11 +19,6 @@ def F(f):
   return pkg_resources.resource_filename(__name__, os.path.join('data', f))
 
 
-def count(array, value=True):
-  """Counts occurrences of a certain value in an array"""
-  return list(array == value).count(True)
-
-
 def save(fname, data):
   """Saves a single array into a file in the 'data' directory."""
   xbob.io.Array(data).save(os.path.join('data', fname))
@@ -70,20 +65,20 @@ def test_basic_ratios():
   nose.tools.eq_(recall, 1.0)
   
   # Testing the values of F-score depending on different choices of the threshold
-  f_score = f_score(negatives, positives, minimum-0.1)
-  nose.tools.assert_almost_equal(f_score, 0.66666667)
-  f_score = f_score(negatives, positives, minimum-0.1, 2)
-  nose.tools.assert_almost_equal(f_score, 0.83333333)
+  f_score_ = f_score(negatives, positives, minimum-0.1)
+  nose.tools.assert_almost_equal(f_score_, 0.66666667)
+  f_score_ = f_score(negatives, positives, minimum-0.1, 2)
+  nose.tools.assert_almost_equal(f_score_, 0.83333333)
   
-  f_score = f_score(negatives, positives, maximum+0.1)
-  nose.tools.eq_(f_score, 0.0)
-  f_score = f_score(negatives, positives, maximum+0.1, 2)
-  nose.tools.eq_(f_score, 0.0)
+  f_score_ = f_score(negatives, positives, maximum+0.1)
+  nose.tools.eq_(f_score_, 0.0)
+  f_score_ = f_score(negatives, positives, maximum+0.1, 2)
+  nose.tools.eq_(f_score_, 0.0)
   
-  f_score = f_score(negatives, positives, 3.0)
-  nose.tools.eq_(f_score, 1.0)
-  f_score = f_score(negatives, positives, 3.0, 2)
-  nose.tools.eq_(f_score, 1.0)
+  f_score_ = f_score(negatives, positives, 3.0)
+  nose.tools.eq_(f_score_, 1.0)
+  f_score_ = f_score(negatives, positives, 3.0, 2)
+  nose.tools.eq_(f_score_, 1.0)
   
 
 def test_indexing():
@@ -101,22 +96,26 @@ def test_indexing():
   # If the threshold is minimum, we should have all positive samples
   # correctly classified and none of the negative samples correctly
   # classified.
-  assert correctly_classified_positives(positives, minimum-0.1).all()
-  assert not correctly_classified_negatives(negatives, minimum-0.1).any()
+  assert numpy.array(correctly_classified_positives(positives, minimum-0.1)).all()
+  assert not numpy.array(correctly_classified_negatives(negatives, minimum-0.1)).any()
 
   # The inverse is true if the threshold is a bit above the maximum.
-  assert not correctly_classified_positives(positives, maximum+0.1).any()
-  assert correctly_classified_negatives(negatives, maximum+0.1).all()
+  assert not numpy.array(correctly_classified_positives(positives, maximum+0.1)).any()
+  assert numpy.array(correctly_classified_negatives(negatives, maximum+0.1)).all()
 
   # If the threshold separates the sets, than all should be correctly
   # classified.
-  assert correctly_classified_positives(positives, 3).all()
-  assert correctly_classified_negatives(negatives, 3).all()
+  assert numpy.array(correctly_classified_positives(positives, 3)).all()
+  assert numpy.array(correctly_classified_negatives(negatives, 3)).all()
 
 
 def test_thresholding():
 
   from .. import eer_threshold, far_threshold, frr_threshold, farfrr, correctly_classified_positives, correctly_classified_negatives, min_hter_threshold
+
+  def count(array, value=True):
+    """Counts occurrences of a certain value in an array"""
+    return list(numpy.array(array) == value).count(True)
 
   # This example will demonstrate and check the use of eer_threshold() to
   # calculate the threshold that minimizes the EER.
