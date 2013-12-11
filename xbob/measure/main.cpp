@@ -890,18 +890,51 @@ static PyObject* rocch2eer(PyObject*, PyObject* args, PyObject* kwds) {
 
 }
 
-/**
-void bind_measure_error() {
+PyDoc_STRVAR(s_roc_for_far_str, "roc_for_far");
+PyDoc_STRVAR(s_roc_for_far_doc,
+"roc_for_far(negatives, positives, far_list) -> array\n\
+\n\
+Calculates the ROC curve given a set of positive and negative\n\
+scores and the FAR values for which the CAR should be computed.\n\
+The resulting ROC curve holds a copy of the given FAR values (row\n\
+0), and the corresponding FRR values (row 1).\n\
+");
 
-  def(
-    "roc_for_far",
-    &bob_roc_for_far,
-    (arg("negatives"), arg("positives"), arg("far_list")),
-    "Calculates the ROC curve given a set of positive and negative scores and the FAR values for which the CAR should be computed. The resulting ROC curve holds a copy of the given FAR values (row 0), and the corresponding FRR values (row 1)."
-  );
+static PyObject* roc_for_far(PyObject*, PyObject* args, PyObject* kwds) {
+
+  /* Parses input arguments in a single shot */
+  static const char* const_kwlist[] = {
+    "negatives", 
+    "positives", 
+    "far_list",
+    0 /* Sentinel */
+  };
+  static char** kwlist = const_cast<char**>(const_kwlist);
+
+  PyBlitzArrayObject* neg = 0;
+  PyBlitzArrayObject* pos = 0;
+  PyBlitzArrayObject* list = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&O&",
+        kwlist,
+        &double1d_converter, &neg,
+        &double1d_converter, &pos,
+        &double1d_converter, &list
+        )) return 0;
+
+  auto result = bob::measure::roc_for_far(
+      *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
+      *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
+      *PyBlitzArrayCxx_AsBlitz<double,1>(list)
+      );
+
+  Py_DECREF(neg);
+  Py_DECREF(pos);
+  Py_DECREF(list);
+
+  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
 
 }
-**/
 
 static PyMethodDef library_methods[] = {
     {
@@ -1011,6 +1044,12 @@ static PyMethodDef library_methods[] = {
       (PyCFunction)rocch2eer,
       METH_VARARGS|METH_KEYWORDS,
       s_rocch2eer_doc
+    },
+    {
+      s_roc_for_far_str,
+      (PyCFunction)roc_for_far,
+      METH_VARARGS|METH_KEYWORDS,
+      s_roc_for_far_doc
     },
     {0}  /* Sentinel */
 };
