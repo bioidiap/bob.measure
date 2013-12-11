@@ -11,47 +11,6 @@
 #include <xbob.blitz/cppapi.h>
 #include <bob/measure/error.h>
 
-/**
-void bind_measure_error() {
-
- def(
-    "eer_rocch",
-    &bob_eer_rocch,
-    (arg("negatives"), arg("positives")),
-    "Calculates the equal-error-rate (EER) given the input data, on the ROC Convex Hull as done in the Bosaris toolkit (https://sites.google.com/site/bosaristoolkit/)."
-  );
-
-  def(
-    "rocch",
-    &bob_rocch,
-    (arg("negatives"), arg("positives")),
-    "Calculates the ROC Convex Hull curve given a set of positive and negative scores. Returns a two-dimensional blitz::Array of doubles that express the X (FRR) and Y (FAR) coordinates in this order."
-  );
-
-  def(
-    "rocch2eer",
-    &bob_rocch2eer,
-    (arg("pmiss_pfa")),
-    "Calculates the threshold that is as close as possible to the equal-error-rate (EER) given the input data."
-  );
-
-  def(
-    "roc_for_far",
-    &bob_roc_for_far,
-    (arg("negatives"), arg("positives"), arg("far_list")),
-    "Calculates the ROC curve given a set of positive and negative scores and the FAR values for which the CAR should be computed. The resulting ROC curve holds a copy of the given FAR values (row 0), and the corresponding FRR values (row 1)."
-  );
-
-  def(
-    "ppndf",
-    &bob::measure::ppndf,
-    (arg("value")),
-    "Returns the Deviate Scale equivalent of a false rejection/acceptance ratio.\n\nThe algorithm that calculates the deviate scale is based on function ppndf() from the NIST package DETware version 2.1, freely available on the internet. Please consult it for more details."
-  );
-
-}
-**/
-
 static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
   if (PyBlitzArray_Converter(o, a) != 0) return 1;
   // in this case, *a is set to a new reference
@@ -809,6 +768,141 @@ static PyObject* frr_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 
 }
 
+PyDoc_STRVAR(s_eer_rocch_str, "eer_rocch");
+PyDoc_STRVAR(s_eer_rocch_doc,
+"eer_rocch(negatives, positives) -> float\n\
+\n\
+Calculates the equal-error-rate (EER) given the input data, on\n\
+the ROC Convex Hull as done in the Bosaris toolkit\n\
+(https://sites.google.com/site/bosaristoolkit/).\n\
+");
+
+static PyObject* eer_rocch(PyObject*, PyObject* args, PyObject* kwds) {
+
+  /* Parses input arguments in a single shot */
+  static const char* const_kwlist[] = {
+    "negatives", 
+    "positives", 
+    0 /* Sentinel */
+  };
+  static char** kwlist = const_cast<char**>(const_kwlist);
+
+  PyBlitzArrayObject* neg = 0;
+  PyBlitzArrayObject* pos = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&",
+        kwlist,
+        &double1d_converter, &neg,
+        &double1d_converter, &pos
+        )) return 0;
+
+  auto result = bob::measure::eerRocch(
+      *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
+      *PyBlitzArrayCxx_AsBlitz<double,1>(pos)
+      );
+
+  Py_DECREF(neg);
+  Py_DECREF(pos);
+
+  return PyFloat_FromDouble(result);
+
+}
+
+PyDoc_STRVAR(s_rocch_str, "rocch");
+PyDoc_STRVAR(s_rocch_doc,
+"rocch(negatives, positives) -> array\n\
+\n\
+Calculates the ROC Convex Hull curve given a set of positive and\n\
+negative scores. Returns a two-dimensional array of doubles\n\
+that express the X (FRR) and Y (FAR) coordinates in this order.\n\
+");
+
+static PyObject* rocch(PyObject*, PyObject* args, PyObject* kwds) {
+
+  /* Parses input arguments in a single shot */
+  static const char* const_kwlist[] = {
+    "negatives", 
+    "positives", 
+    0 /* Sentinel */
+  };
+  static char** kwlist = const_cast<char**>(const_kwlist);
+
+  PyBlitzArrayObject* neg = 0;
+  PyBlitzArrayObject* pos = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&",
+        kwlist,
+        &double1d_converter, &neg,
+        &double1d_converter, &pos
+        )) return 0;
+
+  auto result = bob::measure::rocch(
+      *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
+      *PyBlitzArrayCxx_AsBlitz<double,1>(pos)
+      );
+
+  Py_DECREF(neg);
+  Py_DECREF(pos);
+
+  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+
+}
+
+static int double2d_converter(PyObject* o, PyBlitzArrayObject** a) {
+  if (PyBlitzArray_Converter(o, a) != 0) return 1;
+  // in this case, *a is set to a new reference
+  if ((*a)->type_num != NPY_FLOAT64 || (*a)->ndim != 2) {
+    PyErr_Format(PyExc_TypeError, "cannot convert blitz::Array<%s,%" PY_FORMAT_SIZE_T "d> to a blitz::Array<double,2>", PyBlitzArray_TypenumAsString((*a)->type_num), (*a)->ndim);
+    return 1;
+  }
+  return 0;
+}
+
+PyDoc_STRVAR(s_rocch2eer_str, "rocch2eer");
+PyDoc_STRVAR(s_rocch2eer_doc,
+"rocch2eer(pmiss_pfa) -> float\n\
+\n\
+Calculates the threshold that is as close as possible to the\n\
+equal-error-rate (EER) given the input data.\n\
+");
+
+static PyObject* rocch2eer(PyObject*, PyObject* args, PyObject* kwds) {
+
+  /* Parses input arguments in a single shot */
+  static const char* const_kwlist[] = {
+    "pmiss_pfa", 
+    0 /* Sentinel */
+  };
+  static char** kwlist = const_cast<char**>(const_kwlist);
+
+  PyBlitzArrayObject* p = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&",
+        kwlist,
+        &double2d_converter, &p
+        )) return 0;
+
+  auto result = bob::measure::rocch2eer(*PyBlitzArrayCxx_AsBlitz<double,2>(p));
+
+  Py_DECREF(p);
+
+  return PyFloat_FromDouble(result);
+
+}
+
+/**
+void bind_measure_error() {
+
+  def(
+    "roc_for_far",
+    &bob_roc_for_far,
+    (arg("negatives"), arg("positives"), arg("far_list")),
+    "Calculates the ROC curve given a set of positive and negative scores and the FAR values for which the CAR should be computed. The resulting ROC curve holds a copy of the given FAR values (row 0), and the corresponding FRR values (row 1)."
+  );
+
+}
+**/
+
 static PyMethodDef library_methods[] = {
     {
       s_epc_str,
@@ -899,6 +993,24 @@ static PyMethodDef library_methods[] = {
       (PyCFunction)frr_threshold,
       METH_VARARGS|METH_KEYWORDS,
       s_frr_threshold_doc
+    },
+    {
+      s_eer_rocch_str,
+      (PyCFunction)eer_rocch,
+      METH_VARARGS|METH_KEYWORDS,
+      s_eer_rocch_doc
+    },
+    {
+      s_rocch_str,
+      (PyCFunction)rocch,
+      METH_VARARGS|METH_KEYWORDS,
+      s_rocch_doc
+    },
+    {
+      s_rocch2eer_str,
+      (PyCFunction)rocch2eer,
+      METH_VARARGS|METH_KEYWORDS,
+      s_rocch2eer_doc
     },
     {0}  /* Sentinel */
 };
