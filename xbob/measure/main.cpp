@@ -5,6 +5,7 @@
  * @brief Bindings to bob::io
  */
 
+#include "cleanup.h"
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
@@ -23,7 +24,7 @@ static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
 
 PyDoc_STRVAR(s_epc_str, "epc");
 PyDoc_STRVAR(s_epc_doc,
-"epc(dev_negatives, dev_positives, test_negatives, test_positives, n_points) -> array\n\
+"epc(dev_negatives, dev_positives, test_negatives, test_positives, n_points) -> numpy.ndarray\n\
 \n\
 Calculates points of an Expected Performance Curve (EPC).\n\
 \n\
@@ -76,6 +77,12 @@ static PyObject* epc(PyObject*, PyObject* args, PyObject* kwds) {
         &n_points
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto dev_neg_ = make_safe(dev_neg);
+  auto dev_pos_ = make_safe(dev_pos);
+  auto test_neg_ = make_safe(test_neg);
+  auto test_pos_ = make_safe(test_pos);
+
   auto result = bob::measure::epc(
       *PyBlitzArrayCxx_AsBlitz<double,1>(dev_neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(dev_pos),
@@ -83,18 +90,13 @@ static PyObject* epc(PyObject*, PyObject* args, PyObject* kwds) {
       *PyBlitzArrayCxx_AsBlitz<double,1>(test_pos),
       n_points);
 
-  Py_DECREF(dev_neg);
-  Py_DECREF(dev_pos);
-  Py_DECREF(test_neg);
-  Py_DECREF(test_pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
 PyDoc_STRVAR(s_det_str, "det");
 PyDoc_STRVAR(s_det_doc,
-"det(negatives, positives, n_points) -> array\n\
+"det(negatives, positives, n_points) -> numpy.ndarray\n\
 \n\
 Calculates points of an Detection Error-Tradeoff Curve (DET).\n\
 \n\
@@ -140,15 +142,16 @@ static PyObject* det(PyObject*, PyObject* args, PyObject* kwds) {
         &n_points
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::det(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       n_points);
 
-  Py_DECREF(neg);
-  Py_DECREF(pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
@@ -183,7 +186,7 @@ static PyObject* ppndf(PyObject*, PyObject* args, PyObject* kwds) {
 
 PyDoc_STRVAR(s_roc_str, "roc");
 PyDoc_STRVAR(s_roc_doc,
-"roc(negatives, positives, n_points) -> array\n\
+"roc(negatives, positives, n_points) -> numpy.ndarray\n\
 \n\
 Calculates points of an Receiver Operating Characteristic (ROC).\n\
 \n\
@@ -217,15 +220,16 @@ static PyObject* roc(PyObject*, PyObject* args, PyObject* kwds) {
         &n_points
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::roc(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       n_points);
 
-  Py_DECREF(neg);
-  Py_DECREF(pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
@@ -292,13 +296,14 @@ static PyObject* farfrr(PyObject*, PyObject* args, PyObject* kwds) {
         &threshold
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::farfrr(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       threshold);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   PyObject* retval = PyTuple_New(2);
   PyTuple_SET_ITEM(retval, 0, PyFloat_FromDouble(result.first));
@@ -337,12 +342,13 @@ static PyObject* eer_threshold(PyObject*, PyObject* args, PyObject* kwds) {
         &double1d_converter, &pos
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   double result = bob::measure::eerThreshold(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos));
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -384,13 +390,14 @@ static PyObject* min_weighted_error_rate_threshold(PyObject*, PyObject* args, Py
         &cost
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   double result = bob::measure::minWeightedErrorRateThreshold(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       cost);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -423,12 +430,13 @@ static PyObject* min_hter_threshold(PyObject*, PyObject* args, PyObject* kwds) {
         &double1d_converter, &pos
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   double result = bob::measure::minHterThreshold(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos));
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -470,13 +478,14 @@ static PyObject* precision_recall(PyObject*, PyObject* args, PyObject* kwds) {
         &threshold
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::precision_recall(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       threshold);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   PyObject* retval = PyTuple_New(2);
   PyTuple_SET_ITEM(retval, 0, PyFloat_FromDouble(result.first));
@@ -520,13 +529,14 @@ static PyObject* f_score(PyObject*, PyObject* args, PyObject* kwds) {
         &threshold, &weight
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::f_score(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       threshold, weight);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -562,19 +572,20 @@ static PyObject* correctly_classified_negatives(PyObject*, PyObject* args, PyObj
         &threshold
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+
   auto result = bob::measure::correctlyClassifiedNegatives(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       threshold);
 
-  Py_DECREF(neg);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
 PyDoc_STRVAR(s_correctly_classified_positives_str, "correctly_classified_positives");
 PyDoc_STRVAR(s_correctly_classified_positives_doc,
-"correctly_classified_positives(positives, threshold) -> array\n\
+"correctly_classified_positives(positives, threshold) -> numpy.ndarray\n\
 \n\
 This method returns a 1D array composed of booleans that pin-point\n\
 which positives where correctly classified in a 'positive' score\n\
@@ -602,19 +613,20 @@ static PyObject* correctly_classified_positives(PyObject*, PyObject* args, PyObj
         &threshold
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::correctlyClassifiedPositives(
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       threshold);
 
-  Py_DECREF(pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
 PyDoc_STRVAR(s_precision_recall_curve_str, "precision_recall_curve");
 PyDoc_STRVAR(s_precision_recall_curve_doc,
-"precision_recall_curve(negatives, positives, n_points) -> array\n\
+"precision_recall_curve(negatives, positives, n_points) -> numpy.ndarray\n\
 \n\
 Calculates the precision-recall curve given a set of positive and\n\
 negative scores and a number of desired points. Returns a\n\
@@ -646,15 +658,16 @@ static PyObject* precision_recall_curve(PyObject*, PyObject* args, PyObject* kwd
         &n_points
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::precision_recall_curve(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       n_points);
 
-  Py_DECREF(neg);
-  Py_DECREF(pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
@@ -701,13 +714,14 @@ static PyObject* far_threshold(PyObject*, PyObject* args, PyObject* kwds) {
         &far_value
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::farThreshold(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       far_value);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -756,13 +770,14 @@ static PyObject* frr_threshold(PyObject*, PyObject* args, PyObject* kwds) {
         &frr_value
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::frrThreshold(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       frr_value);
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -796,13 +811,14 @@ static PyObject* eer_rocch(PyObject*, PyObject* args, PyObject* kwds) {
         &double1d_converter, &pos
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::eerRocch(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos)
       );
-
-  Py_DECREF(neg);
-  Py_DECREF(pos);
 
   return PyFloat_FromDouble(result);
 
@@ -810,7 +826,7 @@ static PyObject* eer_rocch(PyObject*, PyObject* args, PyObject* kwds) {
 
 PyDoc_STRVAR(s_rocch_str, "rocch");
 PyDoc_STRVAR(s_rocch_doc,
-"rocch(negatives, positives) -> array\n\
+"rocch(negatives, positives) -> numpy.ndarray\n\
 \n\
 Calculates the ROC Convex Hull curve given a set of positive and\n\
 negative scores. Returns a two-dimensional array of doubles\n\
@@ -836,15 +852,16 @@ static PyObject* rocch(PyObject*, PyObject* args, PyObject* kwds) {
         &double1d_converter, &pos
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+
   auto result = bob::measure::rocch(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos)
       );
 
-  Py_DECREF(neg);
-  Py_DECREF(pos);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 
@@ -882,9 +899,9 @@ static PyObject* rocch2eer(PyObject*, PyObject* args, PyObject* kwds) {
         &double2d_converter, &p
         )) return 0;
 
-  auto result = bob::measure::rocch2eer(*PyBlitzArrayCxx_AsBlitz<double,2>(p));
+  auto p_ = make_safe(p);
 
-  Py_DECREF(p);
+  auto result = bob::measure::rocch2eer(*PyBlitzArrayCxx_AsBlitz<double,2>(p));
 
   return PyFloat_FromDouble(result);
 
@@ -892,7 +909,7 @@ static PyObject* rocch2eer(PyObject*, PyObject* args, PyObject* kwds) {
 
 PyDoc_STRVAR(s_roc_for_far_str, "roc_for_far");
 PyDoc_STRVAR(s_roc_for_far_doc,
-"roc_for_far(negatives, positives, far_list) -> array\n\
+"roc_for_far(negatives, positives, far_list) -> numpy.ndarray\n\
 \n\
 Calculates the ROC curve given a set of positive and negative\n\
 scores and the FAR values for which the CAR should be computed.\n\
@@ -922,17 +939,18 @@ static PyObject* roc_for_far(PyObject*, PyObject* args, PyObject* kwds) {
         &double1d_converter, &list
         )) return 0;
 
+  //protects acquired resources through this scope
+  auto neg_ = make_safe(neg);
+  auto pos_ = make_safe(pos);
+  auto list_ = make_safe(list);
+
   auto result = bob::measure::roc_for_far(
       *PyBlitzArrayCxx_AsBlitz<double,1>(neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(pos),
       *PyBlitzArrayCxx_AsBlitz<double,1>(list)
       );
 
-  Py_DECREF(neg);
-  Py_DECREF(pos);
-  Py_DECREF(list);
-
-  return reinterpret_cast<PyObject*>(PyBlitzArrayCxx_NewFromArray(result));
+  return PyBlitzArray_NUMPY_WRAP(PyBlitzArrayCxx_NewFromArray(result));
 
 }
 

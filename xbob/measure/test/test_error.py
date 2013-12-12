@@ -96,17 +96,17 @@ def test_indexing():
   # If the threshold is minimum, we should have all positive samples
   # correctly classified and none of the negative samples correctly
   # classified.
-  assert numpy.array(correctly_classified_positives(positives, minimum-0.1)).all()
-  assert not numpy.array(correctly_classified_negatives(negatives, minimum-0.1)).any()
+  assert correctly_classified_positives(positives, minimum-0.1).all()
+  assert not correctly_classified_negatives(negatives, minimum-0.1).any()
 
   # The inverse is true if the threshold is a bit above the maximum.
-  assert not numpy.array(correctly_classified_positives(positives, maximum+0.1)).any()
-  assert numpy.array(correctly_classified_negatives(negatives, maximum+0.1)).all()
+  assert not correctly_classified_positives(positives, maximum+0.1).any()
+  assert correctly_classified_negatives(negatives, maximum+0.1).all()
 
   # If the threshold separates the sets, than all should be correctly
   # classified.
-  assert numpy.array(correctly_classified_positives(positives, 3)).all()
-  assert numpy.array(correctly_classified_negatives(negatives, 3)).all()
+  assert correctly_classified_positives(positives, 3).all()
+  assert correctly_classified_negatives(negatives, 3).all()
 
 
 def test_thresholding():
@@ -115,7 +115,7 @@ def test_thresholding():
 
   def count(array, value=True):
     """Counts occurrences of a certain value in an array"""
-    return list(numpy.array(array) == value).count(True)
+    return list(array == value).count(True)
 
   # This example will demonstrate and check the use of eer_threshold() to
   # calculate the threshold that minimizes the EER.

@@ -55,8 +55,7 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
     raise
 
   from . import roc as calc
-  import numpy
-  out = numpy.array(calc(negatives, positives, npoints))
+  out = calc(negatives, positives, npoints)
   if not CAR:
     return mpl.plot(100.0*out[0,:], 100.0*out[1,:], **kwargs)
   else:
@@ -174,10 +173,8 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
     raise
 
   from . import epc as calc
-  import numpy
 
-  out = numpy.array(calc(dev_negatives, dev_positives,
-    test_negatives, test_positives, npoints))
+  out = calc(dev_negatives, dev_positives, test_negatives, test_positives, npoints)
   return mpl.plot(out[0,:], 100.0*out[1,:], **kwargs)
 
 def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
@@ -293,9 +290,8 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
   # this will actually do the plotting
   from . import det as calc
   from . import ppndf
-  import numpy
 
-  out = numpy.array(calc(negatives, positives, npoints))
+  out = calc(negatives, positives, npoints)
   retval = mpl.plot(out[0,:], out[1,:], **kwargs)
 
   # now the trick: we must plot the tick marks by hand using the PPNDF method
