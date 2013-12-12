@@ -2,479 +2,348 @@
 .. Andre Anjos <andre.dos.anjos@gmail.com>
 .. Tue 15 Oct 17:41:52 2013
 
-.. testsetup:: iotest
+.. testsetup:: measuretest
 
    import numpy
-   import xbob.io
+   import xbob.measure
 
 ============
  User Guide
 ============
 
-This section gives an overview of the operations for storing and retrieving the
-basic data structures in |project|, such as `NumPy`_ arrays. |project| uses
-`HDF5`_  format for storing binary coded data. Using the |project| support for
-`HDF5`_, it is very simple to import and export data.
+Methods in the :py:mod:`xbob.measure` module can help you to quickly and easily
+evaluate error for multi-class or binary classification problems. If you are
+not yet familiarized with aspects of performance evaluation, we recommend the
+following papers for an overview of some of the methods implemented.
 
-`HDF5`_  uses a neat descriptive language for representing the data in the HDF5
-files, called Data Description Language (`DDL`_).
+* Bengio, S., Keller, M., Mariéthoz, J. (2004). `The Expected Performance
+  Curve`_.  International Conference on Machine Learning ICML Workshop on ROC
+  Analysis in Machine Learning, 136(1), 1963–1966.
+* Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
+  `The DET curve in assessment of detection task performance`_. Fifth European
+  Conference on Speech Communication and Technology (pp. 1895-1898).
 
-To perform the functionalities given in this section, you should have `NumPy`_
-and |project| loaded into the `Python`_ environment.
+Overview
+--------
+
+A classifier is subject to two types of errors, either the real access/signal
+is rejected (false rejection) or an impostor attack/a false access is accepted
+(false acceptance). A possible way to measure the detection performance is to
+use the Half Total Error Rate (HTER), which combines the False Rejection Rate
+(FRR) and the False Acceptance Rate (FAR) and is defined in the following
+formula:
+
+.. math::
+
+  HTER(\tau, \mathcal{D}) = \frac{FAR(\tau, \mathcal{D}) + FRR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
+
+where :math:`\mathcal{D}` denotes the dataset used. Since both the FAR and the
+FRR depends on the threshold :math:`\tau`, they are strongly related to each
+other: increasing the FAR will reduce the FRR and vice-versa. For this reason,
+results are often presented using either a Receiver Operating Characteristic
+(ROC) or a Detection-Error Tradeoff (DET) plot, these two plots basically
+present the FAR versus the FRR for different values of the threshold. Another
+widely used measure to summarise the performance of a system is the Equal Error
+Rate (EER), defined as the point along the ROC or DET curve where the FAR
+equals the FRR.
+
+However, it was noted in by Bengio et al. (2004) that ROC and DET curves may be
+misleading when comparing systems. Hence, the so-called Expected Performance
+Curve (EPC) was proposed and consists of an unbiased estimate of the reachable
+performance of a system at various operating points.  Indeed, in real-world
+scenarios, the threshold :math:`\tau` has to be set a priori: this is typically
+done using a development set (also called cross-validation set). Nevertheless,
+the optimal threshold can be different depending on the relative importance
+given to the FAR and the FRR. Hence, in the EPC framework, the cost
+:math:`\beta \in [0;1]` is defined as the tradeoff between the FAR and FRR. The
+optimal threshold :math:`\tau^*` is then computed using different values of
+:math:`\beta`, corresponding to different operating points:
+
+.. math::
+  \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FAR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FRR}(\tau, \mathcal{D}_{d})
+
+where :math:`\mathcal{D}_{d}` denotes the development set and should be
+completely separate to the evaluation set `\mathcal{D}`.
+
+Performance for different values of :math:`\beta` is then computed on the test
+set :math:`\mathcal{D}_{t}` using the previously derived threshold. Note that
+setting :math:`\beta` to 0.5 yields to the Half Total Error Rate (HTER) as
+defined in the first equation.
+
+.. note::
+
+  Most of the methods availabe in this module require as input a set of 2
+  :py:class:`numpy.ndarray` objects that contain the scores obtained by the
+  classification system to be evaluated, without specific order. Most of the
+  classes that are defined to deal with two-class problems. Therefore, in this
+  setting, and throughout this manual, we have defined that the **negatives**
+  represents the impostor attacks or false class accesses (that is when a
+  sample of class A is given to the classifier of another class, such as class
+  B) for of the classifier. The second set, refered as the **positives**
+  represents the true class accesses or signal response of the classifier. The
+  vectors are called this way because the procedures implemented in this module
+  expects that the scores of **negatives** to be statistically distributed to
+  the left of the signal scores (the **positives**). If that is not the case,
+  one should either invert the input to the methods or multiply all scores
+  available by -1, in order to have them inverted.
+
+  The input to create these two vectors is generated by experiments conducted
+  by the user and normally sits in files that may need some parsing before
+  these vectors can be extracted.
+
+  While it is not possible to provide a parser for every individual file that
+  may be generated in different experimental frameworks, we do provide a few
+  parsers for formats we use the most. Please refer to the documentation of
+  :py:mod:`bob.measure.load` for a list of formats and details.
+
+  In the remainder of this section we assume you have successfuly parsed and
+  loaded your scores in two 1D float64 vectors and are ready to evaluate the
+  performance of the classifier.
 
 .. testsetup:: *
 
-   import numpy
-   import xbob.io
-   import tempfile
-   import os
+  import numpy
+  positives = numpy.random.normal(1,1,100)
+  negatives = numpy.random.normal(-1,1,100)
+  import bob
+  import matplotlib
+  if not hasattr(matplotlib, 'backends'):
+    matplotlib.use('pdf') #non-interactive avoids exception on display
 
-   current_directory = os.path.realpath(os.curdir)
-   temp_dir = tempfile.mkdtemp(prefix='bob_doctest_')
-   os.chdir(temp_dir)
+Evaluation
+----------
 
-HDF5 standard utilities
------------------------
-
-Before explaining the basics of reading and writing to `HDF5`_ files, it is
-important to list some `HDF5`_ standard utilities for checking the content of
-an `HDF5`_ file. These are supplied by the `HDF5`_ project.
-
-``h5dump``
-  Dumps the content of the file using the DDL.
-
-``h5ls``
-  Lists the content of the file using DDL, but does not show the data.
-
-``h5diff``
-  Finds the differences between HDF5 files.
-
-I/O operations using the class `xbob.io.HDF5File`
--------------------------------------------------
-
-Writing operations
-------------------
-
-Let's take a look at how to write simple scalar data such as integers or
-floats.
+To count the number of correctly classified positives and negatives you can use
+the following techniques:
 
 .. doctest::
 
-   >>> an_integer = 5
-   >>> a_float = 3.1416
-   >>> f = xbob.io.HDF5File('testfile1.hdf5', 'w')
-   >>> f.set('my_integer', an_integer)
-   >>> f.set('my_float', a_float)
-   >>> del f
+  >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
+  >>> T = 0.0 #Threshold: later we explain how one can calculate these
+  >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
+  >>> FAR = 1 - (float(correct_negatives.sum())/negatives.size)
+  >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
+  >>> FRR = 1 - (float(correct_positives.sum())/positives.size)
 
-If after this you use the **h5dump** utility on the file ``testfile1.hdf5``,
-you will verify that the file now contains:
+We do provide a method to calculate the FAR and FRR in a single shot:
 
-.. code-block:: none
+.. doctest::
 
-  HDF5 "testfile1.hdf5" {
-  GROUP "/" {
-    DATASET "my_float" {
-       DATATYPE  H5T_IEEE_F64LE
-       DATASPACE  SIMPLE { ( 1 ) / ( 1 ) }
-       DATA {
-       (0): 3.1416
-       }
-    }
-    DATASET "my_integer" {
-       DATATYPE  H5T_STD_I32LE
-       DATASPACE  SIMPLE { ( 1 ) / ( 1 ) }
-       DATA {
-       (0): 5
-       }
-    }
-  }
-  }
+  >>> FAR, FRR = bob.measure.farfrr(negatives, positives, T)
+
+The threshold ``T`` is normally calculated by looking at the distribution of
+negatives and positives in a development (or validation) set, selecting a
+threshold that matches a certain criterion and applying this derived threshold
+to the test (or evaluation) set. This technique gives a better overview of the
+generalization of a method. We implement different techniques for the
+calculation of the threshold:
+
+* Threshold for the EER
+
+  .. doctest::
+
+    >>> T = bob.measure.eer_threshold(negatives, positives)
+
+* Threshold for the minimum HTER
+
+  .. doctest::
+
+    >>> T = bob.measure.min_hter_threshold(negatives, positives)
+
+* Threshold for the minimum weighted error rate (MWER) given a certain cost
+  :math:`\beta`.
+
+  .. code-block:: python
+
+     >>> cost = 0.3 #or "beta"
+     >>> T = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost)
+
+  .. note::
+
+    By setting cost to 0.5 is equivalent to use
+    :py:meth:`bob.measure.min_hter_threshold`.
+
+Plotting
+--------
+
+An image is worth 1000 words, they say. You can combine the capabilities of
+`Matplotlib`_ with |project| to plot a number of curves. However, you must have that
+package installed though. In this section we describe a few recipes.
+
+ROC
+===
+
+The Receiver Operating Characteristic (ROC) curve is one of the oldest plots in
+town. To plot an ROC curve, in possession of your **negatives** and
+**positives**, just do something along the lines of:
+
+.. doctest::
+
+  >>> from matplotlib import pyplot
+  >>> # we assume you have your negatives and positives already split
+  >>> npoints = 100
+  >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+  >>> pyplot.xlabel('FRR (%)') # doctest: +SKIP
+  >>> pyplot.ylabel('FAR (%)') # doctest: +SKIP
+  >>> pyplot.grid(True)
+  >>> pyplot.show() # doctest: +SKIP
+
+You should see an image like the following one:
+
+.. plot:: plot/perf_roc.py
+  :include-source: False
+
+As can be observed, plotting methods live in the namespace
+:py:mod:`bob.measure.plot`. They work like `Matplotlib`_'s `plot()`_ method
+itself, except that instead of receiving the x and y point coordinates as
+parameters, they receive the two :py:class:`numpy.ndarray` arrays with
+negatives and positives, as well as an indication of the number of points the
+curve must contain.
+
+As in `Matplotlib`_'s `plot()`_ command, you can pass optional parameters for
+the line as shown in the example to setup its color, shape and even the label.
+For an overview of the keywords accepted, please refer to the `Matplotlib`_'s
+Documentation. Other plot properties such as the plot title, axis labels,
+grids, legends should be controlled directly using the relevant `Matplotlib`_'s
+controls.
+
+DET
+===
+
+A DET curve can be drawn using similar commands such as the ones for the ROC curve:
+
+.. doctest::
+
+  >>> from matplotlib import pyplot
+  >>> # we assume you have your negatives and positives already split
+  >>> npoints = 100
+  >>> bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+  >>> bob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
+  >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
+  >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
+  >>> pyplot.grid(True)
+  >>> pyplot.show() # doctest: +SKIP
+
+This will produce an image like the following one:
+
+.. plot:: plot/perf_det.py
+  :include-source: False
 
 .. note::
 
-   In |project|, when you open a HDF5 file, you can choose one of the following
-   options:
+  If you wish to reset axis zooming, you must use the Gaussian scale rather
+  than the visual marks showed at the plot, which are just there for
+  displaying purposes. The real axis scale is based on the
+  ``bob.measure.ppndf()`` method. For example, if you wish to set the x and y
+  axis to display data between 1% and 40% here is the recipe:
 
-   **'r'** Open the file in reading mode; writing operations will fail (this is the default).
+  .. doctest::
 
-   **'a'** Open the file in reading and writing mode with appending.
+    >>> #AFTER you plot the DET curve, just set the axis in this way:
+    >>> pyplot.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)]) # doctest: +SKIP
 
-   **'w'** Open the file in reading and writing mode, but truncate it.
+  We provide a convenient way for you to do the above in this module. So,
+  optionally, you may use the ``bob.measure.plot.det_axis`` method like this:
 
-   **'x'** Read/write/append with exclusive access.
+  .. doctest::
 
-The dump shows that there are two datasets inside a group named ``/`` in the
-file.  HDF5 groups are like file system directories. They create namespaces for
-the data. In the root group (or directory), you will find the two variables,
-named as you set them to be.  The variable names are the complete path to the
-location where they live. You could write a new variable in the same file but
-in a different directory like this:
+    >>> bob.measure.plot.det_axis([1, 40, 1, 40]) # doctest: +SKIP
 
-.. doctest::
+EPC
+===
 
-  >>> f = xbob.io.HDF5File('testfile1.hdf5', 'a')
-  >>> f.create_group('/test')
-  >>> f.set('/test/my_float', numpy.float32(6.28))
-  >>> del f
-
-Line 1 opens the file for reading and writing, but without truncating it. This
-will allow you to access the file contents. Next, the directory ``/test`` is
-created and a new variable is written inside the subdirectory. As you can
-verify, **for simple scalars**, you can also force the storage type. Where
-normally one would have a 64-bit real value, you can impose that this variable
-is saved as a 32-bit real value. You can verify the dump correctness with
-``h5dump``:
-
-.. code-block:: none
-
-  GROUP "/" {
-  ...
-   GROUP "test" {
-      DATASET "my_float" {
-         DATATYPE  H5T_IEEE_F32LE
-         DATASPACE  SIMPLE { ( 1 ) / ( 1 ) }
-         DATA {
-         (0): 6.28
-         }
-      }
-   }
-  }
-
-Notice the subdirectory ``test`` has been created and inside it a floating
-point number has been stored. Such a float point number has a 32-bit precision
-as it was defined.
-
-.. note::
-
-  If you need to place lots of variables in a subfolder, it may be better to
-  setup the prefix folder before starting the writing operations on the
-  :py:class:`xbob.io.HDF5File` object. You can do this using the method
-  :py:meth:`HDF5File.cd`.  Look up its help for more information and usage
-  instructions.
-
-Writing arrays is a little simpler as the :py:class:`numpy.ndarray` objects
-encode all the type information we need to write and read them correctly. Here
-is an example:
+Drawing an EPC requires that both the development set negatives and positives are provided alognside
+the test (or evaluation) set ones. Because of this the API is slightly modified:
 
 .. doctest::
 
-  >>> A = numpy.array(range(4), 'int8').reshape(2,2)
-  >>> f = xbob.io.HDF5File('testfile1.hdf5', 'a')
-  >>> f.set('my_array', A)
-  >>> del f
-
-The result of running ``h5dump`` on the file ``testfile3.hdf5`` should be:
-
-.. code-block:: none
-
-  ...
-   DATASET "my_array" {
-      DATATYPE  H5T_STD_I8LE
-      DATASPACE  SIMPLE { ( 2, 2 ) / ( 2, 2 ) }
-      DATA {
-      (0,0): 0, 1,
-      (1,0): 2, 3
-      }
-   }
-  ...
-
-You don't need to limit yourself to single variables, you can also save lists
-of scalars and arrays using the function :py:meth:`xbob.io.HDF5.append` instead
-of :py:meth:`xbob.io.HDF5.set`.
-
-Reading operations
-------------------
-
-Reading data from a file that you just wrote to is just as easy. For this task
-you should use :py:meth:`xbob.io.HDF5File.read`. The read method will read all
-the contents of the variable pointed to by the given path. This is the normal
-way to read a variable you have written with :py:meth:`xbob.io.HDF5File.set`. If
-you decided to create a list of scalar or arrays, the way to read that up would
-be using :py:meth:`xbob.io.HDF5File.lread` instead. Here is an example:
-
-.. doctest::
-
-  >>> f = xbob.io.HDF5File('testfile1.hdf5') #read only
-  >>> f.read('my_integer') #reads integer
-  5
-  >>> print(f.read('my_array')) # reads the array
-  [[0 1]
-   [2 3]]
-  >>> del f
-
-Now let's look at an example where we have used
-:py:meth:`xbob.io.HDF5File.append` instead of :py:meth:`xbob.io.HDF5File.set`
-to write data to a file. That is normally the case when you write lists of
-variables to a dataset.
-
-.. doctest::
-
-  >>> f = xbob.io.HDF5File('testfile2.hdf5', 'w')
-  >>> f.append('arrayset', numpy.array(range(10), 'float64'))
-  >>> f.append('arrayset', 2*numpy.array(range(10), 'float64'))
-  >>> f.append('arrayset', 3*numpy.array(range(10), 'float64'))
-  >>> print(f.lread('arrayset', 0))
-  [ 0.  1.  2.  3.  4.  5.  6.  7.  8.  9.]
-  >>> print(f.lread('arrayset', 2))
-  [  0.   3.   6.   9.  12.  15.  18.  21.  24.  27.]
-  >>> del f
-
-This is what the ``h5dump`` of the file would look like:
-
-.. code-block:: none
-
-  HDF5 "testfile4.hdf5" {
-  GROUP "/" {
-     DATASET "arrayset" {
-        DATATYPE  H5T_IEEE_F64LE
-        DATASPACE  SIMPLE { ( 3, 10 ) / ( H5S_UNLIMITED, 10 ) }
-        DATA {
-        (0,0): 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        (1,0): 0, 2, 4, 6, 8, 10, 12, 14, 16, 18,
-        (2,0): 0, 3, 6, 9, 12, 15, 18, 21, 24, 27
-        }
-     }
-  }
-  }
-
-Notice that the expansion limits for the first dimension have been correctly
-set by |project| so you can insert an *unlimited* number of 1D float vectors.
-Of course, you can also read the whole contents of the arrayset in a single
-shot:
-
-.. doctest::
-
-  >>> f = xbob.io.HDF5File('testfile2.hdf5')
-  >>> print(f.read('arrayset'))
-  [[  0.   1.   2.   3.   4.   5.   6.   7.   8.   9.]
-   [  0.   2.   4.   6.   8.  10.  12.  14.  16.  18.]
-   [  0.   3.   6.   9.  12.  15.  18.  21.  24.  27.]]
-
-As you can see, the only difference between :py:meth:`xbob.io.HDF5File.read`
-and :py:meth:`xbob.io.HDF5File.lread` is on how |project| considers the
-available data (as a single array with N dimensions or as a set of arrays with
-N-1 dimensions). In the first example, you would have also been able to read
-the variable `my_array` as an arrayset using :py:meth:`xbob.io.HDF5File.lread`
-instead of :py:meth:`xbob.io.HDF5File.read`. In this case, each position
-readout would return a 1D uint8 array instead of a 2D array.
-
-Array interfaces
-----------------
-
-What we have shown so far is the generic API to read and write data using HDF5.
-You will use it when you want to import or export data from |project| into
-other software frameworks, debug your data or just implement your own classes
-that can serialize and de-serialize from HDF5 file containers. In |project|,
-most of the time you will be working with :py:class:`numpy.ndarrays`\s. In
-special situations though, you may be asked to handle
-:py:class:`xbob.io.File`\s. :py:class:`xbob.io.File` objects create a
-transparent connection between C++ (`Blitz++`_) / Python (`NumPy`_) arrays and
-file access.  You specify the filename from which you want to input data and
-the :py:class:`xbob.io.File` object decides what is the best codec to be used
-(from the extension) and how to read the data back into your array.
-
-To create an :py:class:`xbob.io.File` from a file path, just do the following:
-
-.. doctest::
-
-  >>> a = xbob.io.File('testfile2.hdf5', 'r')
-  >>> a.filename
-  'testfile2.hdf5'
-
-:py:class:`xbob.io.File`\s simulate containers for :py:class:`numpy.ndarray`\s,
-transparently accessing the file data when requested. Note, however, that when
-you instantiate an :py:class:`xbob.io.File` it does **not** load the file
-contents into memory. It waits until you emit another explicit instruction to
-do so. We do this with the :py:meth:`xbob.io.File.read` method:
-
-.. doctest::
-
-  >>> array = a.read()
-  >>> array
-  array([[  0.,   1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.],
-         [  0.,   2.,   4.,   6.,   8.,  10.,  12.,  14.,  16.,  18.],
-         [  0.,   3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.]])
-
-Every time you say :py:meth:`xbob.io.File.read`, the file contents will be read
-from the file and into a new array.
-
-Saving arrays to the :py:class:`xbob.io.File` is as easy, just call the
-:py:meth:`xbob.io.File.write` method:
-
-.. doctest::
-
-  >>> f = xbob.io.File('copy1.hdf5', 'w')
-  >>> f.write(a)
-
-Numpy ndarray shortcuts
------------------------
-
-To just load an :py:class:`numpy.ndarray` in memory, you can use a short cut
-that lives at :py:func:`xbob.io.load`. With it, you don't have to go through
-the :py:class:`xbob.io.File` container:
-
-.. doctest::
-
-  >>> t = xbob.io.load('testfile2.hdf5')
-  >>> t
-  array([[  0.,   1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.],
-         [  0.,   2.,   4.,   6.,   8.,  10.,  12.,  14.,  16.,  18.],
-         [  0.,   3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.]])
-
-You can also directly save :py:class:`numpy.ndarray`\s without going
-through the :py:class:`xbob.io.Array` container:
-
-.. doctest::
-
-  >>> xbob.io.save(t, 'copy2.hdf5')
-
-.. note::
-
-  Under the hood, we still use the :py:class:`xbob.io.File` API to execute
-  the read and write operations. Have a look at the manual section for
-  :py:mod:`xbob.io` for more details and other shortcuts available.
-
-Reading and writing images
---------------------------
-
-|project| provides support to load and save data from many different file types
-including Matlab ``.mat`` files, various image file types and video data. File
-types and specific serialization and de-serialization is switched automatically
-using filename extensions. Knowing this, saving an array in a different format
-is just a matter of choosing the right extension. This is illustrated in the
-following example, where an image generated randomly using the method `NumPy`
-:py:meth:`numpy.random.random_integers`, is saved in JPEG format. The image
-must be of type uint8 or uint16.
-
-.. doctest::
-
-  >>> my_image = numpy.random.random_integers(0,255,(3,256,256))
-  >>> xbob.io.save(my_image.astype('uint8'), 'testimage.jpg') # saving the image in jpeg format
-  >>> my_image_copy = xbob.io.load('testimage.jpg')
-
-.. tip::
-
-  To find out about which formats and extensions are supported in a given
-  installation of |project|, just call ``bob_config.py`` on your prompt. It
-  will print a list of compiled-in software and supported extensions.
-
-The loaded image files can be 3D arrays (for RGB format) or 2D arrays (for
-greyscale) of type ``uint8`` or ``uint16``.
-
-Dealing with videos
--------------------
-
-|project| has support for dealing with videos in an equivalent way to dealing
-with images:
-
-.. doctest::
-
-  >>> my_video = numpy.random.random_integers(0,255,(30,3,256,256))
-  >>> xbob.io.save(my_video.astype('uint8'), 'testvideo.avi') # saving the video avi format with a default codec
-  >>> my_video_copy = xbob.io.load('testvideo.avi')
-
-Video reading and writing is performed using an `FFmpeg`_ (or `libav`_ if
-`FFmpeg`_ is not available) bridge. |project|'s :py:meth:`xbob.io.save` method
-will allow you to choose the output format with the same extension mechanism as
-mentioned earlier. `FFmpeg`_ will then choose a default codec for the format
-and perform encoding. The output file can be as easily loaded using
-:py:meth:`xbob.io.load`.
-
-For finer control over the loading, saving, format and codecs used for a
-specific encoding or decoding operation, you must directly use either
-:py:class:`xbob.io.VideoReader` or :py:class:`xbob.io.VideoWriter` classes. For
-example, it is possible to use :py:class:`xbob.io.VideoReader` to read videos
-frame by frame and avoid overloading your machine's memory. In the following
-example you can see how to create a video, save it using the class
-:py:class:`xbob.io.VideoWriter` and load it again using the class
-:py:class:`xbob.io.VideoReader`. The created video will have 30 frames
-generated randomly.
-
-.. note::
-
-  Due to `FFmpeg`_ constrains, the width and height of the video need to be
-  multiples of two.
-
-.. doctest::
-
-  >>> width = 50; height = 50;
-  >>> framerate = 24
-  >>> outv = xbob.io.VideoWriter('testvideo.avi', height, width, framerate, codec='mpeg1video') # output video
-  >>> for i in range(0, 30):
-  ...   newframe = (numpy.random.random_integers(0,255,(3,height,width)))
-  ...   outv.append(newframe.astype('uint8'))
-  >>> outv.close()
-  >>> input = xbob.io.VideoReader('testvideo.avi')
-  >>> input.number_of_frames
-  30
-  >>> inv = input.load()
-  >>> inv.shape
-  (30, 3, 50, 50)
-  >>> type(inv)
-  <... 'numpy.ndarray'>
-
-Videos in |project| are represented as sequences of colored images, i.e. 4D
-arrays of type ``uint8``. All the extensions and formats for videos supported
-in version of |project| installed on your machine can be listed using the
-|project|'s utility ``bob_config.py``.
-
-.. testcleanup:: *
-
-  import shutil
-  os.chdir(current_directory)
-  shutil.rmtree(temp_dir)
-
-.. warning::
-
-  Please read :doc:`video` for details on choosing codecs and formats that are
-  adequate to your application, as well as drawbacks and pitfalls with video
-  encoding and decoding.
-
-Loading and saving Matlab data
-------------------------------
-
-An alternative for saving data in ``.mat`` files using :py:meth:`xbob.io.save`,
-would be to save them as a `HDF5`_ file which then can be easily read in
-Matlab. Similarly, instead of having to read ``.mat`` files using
-:py:meth:`xbob.io.load`, you can save your Matlab data in `HDF5`_ format, which
-then can be easily read from |project|. Detailed instructions about how to save
-and load data from Matlab to and from `HDF5`_ files can be found `here`__.
-
-.. _audiosignal:
-
-Loading and saving audio files
-------------------------------
-
-|project| does not yet support audio files (no wav codec). However, it is
-possible to use the `SciPy`_ module :py:mod:`scipy.io.wavfile` to do the job.
-For instance, to read a wave file, just use the
-:py:func:`scipy.io.wavfile.read` function.
-
-.. code-block:: python
-
-   >>> import scipy.io.wavfile
-   >>> filename = '/home/user/sample.wav'
-   >>> samplerate, data = scipy.io.wavfile.read(filename)
-   >>> print(type(data))
-   <... 'numpy.ndarray'>
-   >>> print(data.shape)
-   (132474, 2)
-
-In the above example, the stereo audio signal is represented as a 2D `NumPy`
-:py:class:`numpy.ndarray`. The first dimension corresponds to the time index
-(132474 frames) and the second dimesnion correpsonds to one of the audio
-channel (2 channels, stereo). The values in the array correpsond to the wave
-magnitudes.
-
-To save a `NumPy` :py:class:`numpy.ndarray` into a wave file, the
-:py:func:`scipy.io.wavfile.write` could be used, which also requires the
-framerate to be specified.
+  >>> bob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-') # doctest: +SKIP
+  >>> pyplot.show() # doctest: +SKIP
+
+This will produce an image like the following one:
+
+.. plot:: plot/perf_epc.py
+  :include-source: False
+
+Fine-tunning
+============
+
+The methods inside :py:mod:`bob.measure.plot` are only provided as a
+`Matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
+only calculate the points without doing any plotting. You may prefer to tweak
+the plotting or even use a different plotting system such as gnuplot. Have a
+look at the implementations at :py:mod:`bob.measure.plot` to understand how
+to use the |project| methods to compute the curves and interlace that in the
+way that best suits you.
+
+Full applications
+-----------------
+
+We do provide a few scripts that can be used to quickly evaluate a set of
+scores. We present these scripts in this section. The scripts take as input
+either a 4-column or 5-column data format as specified in the documentation of
+:py:mod:`bob.measure.load.four_column` or
+:py:mod:`bob.measure.load.five_column`.
+
+To calculate the threshold using a certain criterion (EER, min.HTER or weighted
+Error Rate) on a set, after setting up |project|, just do:
+
+.. code-block:: sh
+
+  $ bob_eval_threshold.py --scores=development-scores-4col.txt
+  Threshold: -0.004787956164
+  FAR : 6.731% (35/520)
+  FRR : 6.667% (26/390)
+  HTER: 6.699%
+
+The output will present the threshold together with the FAR, FRR and HTER on
+the given set, calculated using such a threshold. The relative counts of FAs
+and FRs are also displayed between parenthesis.
+
+To evaluate the performance of a new score file with a given threshold, use the
+application ``bob_apply_threshold.py``:
+
+.. code-block:: sh
+
+  $ bob_apply_threshold.py --scores=test-scores-4col.txt --threshold=-0.0047879
+  FAR : 2.115% (11/520)
+  FRR : 7.179% (28/390)
+  HTER: 4.647%
+
+In this case, only the error figures are presented. You can conduct the
+evaluation and plotting of development and test set data using our combined
+``bob_compute_perf.py`` script. You pass both sets and it does the rest:
+
+.. code-block:: sh
+
+  $ bob_compute_perf.py --devel=development-scores-4col.txt --test=test-scores-4col.txt
+  [Min. criterium: EER] Threshold on Development set: -4.787956e-03
+         | Development     | Test
+  -------+-----------------+------------------
+    FAR  | 6.731% (35/520) | 2.500% (13/520)
+    FRR  | 6.667% (26/390) | 6.154% (24/390)
+    HTER | 6.699%          | 4.327%
+  [Min. criterium: Min. HTER] Threshold on Development set: 3.411070e-03
+         | Development     | Test
+  -------+-----------------+------------------
+    FAR  | 4.231% (22/520) | 1.923% (10/520)
+    FRR  | 7.949% (31/390) | 7.692% (30/390)
+    HTER | 6.090%          | 4.808%
+  [Plots] Performance curves => 'curves.pdf'
+
+Inside that script we evaluate 2 different thresholds based on the EER and the
+minimum HTER on the development set and apply the output to the test set. As
+can be seen from the toy-example above, the system generalizes reasonably well.
+A single PDF file is generated containing an EPC as well as ROC and DET plots of such a
+system.
+
+Use the ``--help`` option on the above-cited scripts to find-out about more
+options.
 
 .. include:: links.rst
 
-.. Place here your external references
+.. Place youre references here:
 
-.. _ddl: http://www.hdfgroup.org/HDF5/doc/ddl.html
-.. _matlab-hdf5: http://www.mathworks.ch/help/techdoc/ref/hdf5write.html
-__ matlab-hdf5_
+.. _`The Expected Performance Curve`: http://publications.idiap.ch/downloads/reports/2005/bengio_2005_icml.pdf
+.. _`The DET curve in assessment of detection task performance`: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&rep=rep1&type=pdf
+.. _`plot()`: http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot

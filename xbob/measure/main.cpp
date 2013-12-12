@@ -53,9 +53,9 @@ static PyObject* epc(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "dev_negatives", 
-    "dev_positives", 
-    "test_positives", 
+    "dev_negatives",
+    "dev_positives",
+    "test_positives",
     "test_negatives",
     "n_points",
     0 /* Sentinel */
@@ -124,8 +124,8 @@ static PyObject* det(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "n_points",
     0 /* Sentinel */
   };
@@ -202,8 +202,8 @@ static PyObject* roc(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "n_points",
     0 /* Sentinel */
   };
@@ -278,8 +278,8 @@ static PyObject* farfrr(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "threshold",
     0 /* Sentinel */
   };
@@ -327,8 +327,8 @@ static PyObject* eer_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -372,8 +372,8 @@ static PyObject* min_weighted_error_rate_threshold(PyObject*, PyObject* args, Py
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "cost",
     0 /* Sentinel */
   };
@@ -415,8 +415,8 @@ static PyObject* min_hter_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -460,8 +460,8 @@ static PyObject* precision_recall(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "threshold",
     0 /* Sentinel */
   };
@@ -509,8 +509,8 @@ static PyObject* f_score(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "threshold",
     "weight",
     0 /* Sentinel */
@@ -557,7 +557,7 @@ static PyObject* correctly_classified_negatives(PyObject*, PyObject* args, PyObj
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
+    "negatives",
     "threshold",
     0 /* Sentinel */
   };
@@ -598,7 +598,7 @@ static PyObject* correctly_classified_positives(PyObject*, PyObject* args, PyObj
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "positives", 
+    "positives",
     "threshold",
     0 /* Sentinel */
   };
@@ -640,8 +640,8 @@ static PyObject* precision_recall_curve(PyObject*, PyObject* args, PyObject* kwd
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "n_points",
     0 /* Sentinel */
   };
@@ -696,8 +696,8 @@ static PyObject* far_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "threshold",
     0 /* Sentinel */
   };
@@ -752,8 +752,8 @@ static PyObject* frr_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "frr_value",
     0 /* Sentinel */
   };
@@ -796,8 +796,8 @@ static PyObject* eer_rocch(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -837,8 +837,8 @@ static PyObject* rocch(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -887,7 +887,7 @@ static PyObject* rocch2eer(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "pmiss_pfa", 
+    "pmiss_pfa",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -921,8 +921,8 @@ static PyObject* roc_for_far(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "negatives", 
-    "positives", 
+    "negatives",
+    "positives",
     "far_list",
     0 /* Sentinel */
   };
@@ -1074,7 +1074,7 @@ static PyMethodDef library_methods[] = {
 
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME,
       library_methods, "bob::measure bindings");
   PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
 
