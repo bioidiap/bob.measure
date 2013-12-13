@@ -31,7 +31,7 @@ def test_compute_perf():
   assert os.path.exists(DEV_SCORES)
   assert os.path.exists(TEST_SCORES)
 
-  from ..script.compute_perf import main
+  from .script.compute_perf import main
   cmdline = '--devel=%s --test=%s --self-test' % (DEV_SCORES, TEST_SCORES)
   nose.tools.eq_(main(cmdline.split()), 0)
 
@@ -40,7 +40,7 @@ def test_eval_threshold():
   # sanity checks
   assert os.path.exists(DEV_SCORES)
 
-  from ..script.eval_threshold import main
+  from .script.eval_threshold import main
   cmdline = '--scores=%s --self-test' % (DEV_SCORES,)
   nose.tools.eq_(main(cmdline.split()), 0)
 
@@ -49,7 +49,7 @@ def test_apply_threshold():
   # sanity checks
   assert os.path.exists(TEST_SCORES)
 
-  from ..script.apply_threshold import main
+  from .script.apply_threshold import main
   cmdline = '--scores=%s --self-test' % (TEST_SCORES,)
   nose.tools.eq_(main(cmdline.split()), 0)
 
@@ -59,7 +59,7 @@ def test_compute_perf_5col():
   assert os.path.exists(DEV_SCORES_5COL)
   assert os.path.exists(TEST_SCORES_5COL)
 
-  from ..script.compute_perf import main
+  from .script.compute_perf import main
   cmdline = '--devel=%s --test=%s --parser=xbob.measure.load.split_five_column --self-test' % (DEV_SCORES_5COL, TEST_SCORES_5COL)
   nose.tools.eq_(main(cmdline.split()), 0)
 
@@ -69,6 +69,6 @@ def test_compute_cmc():
   assert os.path.exists(SCORES_4COL_CMC)
   assert os.path.exists(SCORES_5COL_CMC)
 
-  from ..script.plot_cmc import main
+  from .script.plot_cmc import main
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--log-x-scale']), 0)
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_5COL_CMC, '--parser', '5column']), 0)

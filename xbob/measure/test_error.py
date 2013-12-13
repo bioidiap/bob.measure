@@ -26,7 +26,7 @@ def save(fname, data):
 
 def test_basic_ratios():
 
-  from .. import farfrr, precision_recall, f_score
+  from . import farfrr, precision_recall, f_score
 
   # We test the basic functionaly on FAR and FRR calculation. The first
   # example is separable, with a separation threshold of about 3.0
@@ -83,7 +83,7 @@ def test_basic_ratios():
 
 def test_indexing():
 
-  from .. import correctly_classified_positives, correctly_classified_negatives
+  from . import correctly_classified_positives, correctly_classified_negatives
 
   # This test verifies that the output of correctly_classified_positives() and
   # correctly_classified_negatives() makes sense.
@@ -111,7 +111,7 @@ def test_indexing():
 
 def test_thresholding():
 
-  from .. import eer_threshold, far_threshold, frr_threshold, farfrr, correctly_classified_positives, correctly_classified_negatives, min_hter_threshold
+  from . import eer_threshold, far_threshold, frr_threshold, farfrr, correctly_classified_positives, correctly_classified_negatives, min_hter_threshold
 
   def count(array, value=True):
     """Counts occurrences of a certain value in an array"""
@@ -172,7 +172,7 @@ def test_thresholding():
 
 def test_plots():
 
-  from .. import eer_threshold, roc, precision_recall_curve, det, epc
+  from . import eer_threshold, roc, precision_recall_curve, det, epc
 
   # This test set is not separable.
   positives = xbob.io.load(F('nonsep-positives.hdf5'))
@@ -218,7 +218,7 @@ def test_plots():
 
 def test_rocch():
 
-  from .. import rocch, rocch2eer, eer_rocch
+  from . import rocch, rocch2eer, eer_rocch
 
   # This example will demonstrate and check the use of eer_rocch_threshold() to
   # calculate the threshold that minimizes the EER on the ROC Convex Hull
@@ -254,7 +254,7 @@ def test_rocch():
 
 def test_cmc():
 
-  from .. import recognition_rate, cmc, load
+  from . import recognition_rate, cmc, load
 
   # tests the CMC calculation
   # test data; should give match characteristics [1/2,1/4,1/3] and CMC [1/3,2/3,1]
@@ -284,9 +284,9 @@ def test_cmc():
 
 def test_calibration():
 
-  from .. import calibration
+  from . import calibration
 
-  # Tests the cllr and min_cllr measures...
+  # Tests the cllr and min_cllr measures
   # This test set is separable.
   positives = xbob.io.load(F('linsep-positives.hdf5'))
   negatives = xbob.io.load(F('linsep-negatives.hdf5'))
