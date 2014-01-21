@@ -954,7 +954,7 @@ static PyObject* roc_for_far(PyObject*, PyObject* args, PyObject* kwds) {
 
 }
 
-static PyMethodDef library_methods[] = {
+static PyMethodDef module_methods[] = {
     {
       s_epc_str,
       (PyCFunction)epc,
@@ -1072,10 +1072,30 @@ static PyMethodDef library_methods[] = {
     {0}  /* Sentinel */
 };
 
+PyDoc_STRVAR(module_docstr, "Bob metrics and performance figures");
+
+#if PY_VERSION_HEX >= 0x03000000
+static PyModuleDef module_definition = {
+  PyModuleDef_HEAD_INIT,
+  XBOB_EXT_MODULE_NAME,
+  module_docstr,
+  -1,
+  module_methods, 
+  0, 0, 0, 0
+};
+#endif
+
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME,
-      library_methods, "bob::measure bindings");
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* m = PyModule_Create(&module_definition);
+  if (!m) return 0;
+# else
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
+      module_methods, module_docstr);
+  if (!m) return;
+# endif
+
   PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
 
   /* imports the NumPy C-API */
@@ -1083,5 +1103,9 @@ PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
   /* imports xbob.blitz C-API */
   import_xbob_blitz();
+
+# if PY_VERSION_HEX >= 0x03000000
+  return m;
+# endif
 
 }
