@@ -4,13 +4,13 @@
 ..
 .. Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
-====================
- Bob's I/O Routines
-====================
+=======================
+ Bob's Metric Routines
+=======================
 
 This module contains base functionality from Bob bound to Python, available in
-the C++ counter-part ``bob::io``. It includes input and output operations to
-and from files.
+the C++ counter-part ``bob::measure``. It includes routines for assessing
+performance on machine learning and pattern recognition applications.
 
 Reference
 ---------
