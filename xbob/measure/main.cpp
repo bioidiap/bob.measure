@@ -2,7 +2,7 @@
  * @author Andre Anjos <andre.anjos@idiap.ch>
  * @date Fri 25 Oct 16:54:55 2013
  *
- * @brief Bindings to bob::io
+ * @brief Bindings to bob::measure
  */
 
 #ifdef NO_IMPORT_ARRAY
