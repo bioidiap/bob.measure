@@ -127,6 +127,3 @@ def cmc(cmc_scores):
     cumulative_match_characteristic[i] = count / probe_count
 
   return cumulative_match_characteristic
-
-__all__ = [k for k in dir() if not k.startswith('_')]
-if 'k' in locals(): del k
