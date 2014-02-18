@@ -185,8 +185,20 @@ town. To plot an ROC curve, in possession of your **negatives** and
 
 You should see an image like the following one:
 
-.. plot:: plot/perf_roc.py
-  :include-source: False
+.. plot::
+
+   import numpy
+   import xbob.measure
+   from matplotlib import pyplot
+
+   positives = numpy.random.normal(1,1,100)
+   negatives = numpy.random.normal(-1,1,100)
+   npoints = 100
+   xbob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test')
+   pyplot.grid(True)
+   pyplot.xlabel('FAR (%)')
+   pyplot.ylabel('FRR (%)')
+   pyplot.title('ROC')
 
 As can be observed, plotting methods live in the namespace
 :py:mod:`xbob.measure.plot`. They work like `Matplotlib`_'s `plot()`_ method
@@ -221,8 +233,22 @@ A DET curve can be drawn using similar commands such as the ones for the ROC cur
 
 This will produce an image like the following one:
 
-.. plot:: plot/perf_det.py
-  :include-source: False
+.. plot::
+
+   import numpy
+   import xbob.measure
+   from matplotlib import pyplot
+
+   positives = numpy.random.normal(1,1,100)
+   negatives = numpy.random.normal(-1,1,100)
+
+   npoints = 100
+   xbob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test')
+   xbob.measure.plot.det_axis([0.1, 80, 0.1, 80])
+   pyplot.grid(True)
+   pyplot.xlabel('FAR (%)')
+   pyplot.ylabel('FRR (%)')
+   pyplot.title('DET')
 
 .. note::
 
@@ -257,8 +283,20 @@ the test (or evaluation) set ones. Because of this the API is slightly modified:
 
 This will produce an image like the following one:
 
-.. plot:: plot/perf_epc.py
-  :include-source: False
+.. plot::
+
+   import numpy
+   import xbob.measure
+   from matplotlib import pyplot
+
+   dev_pos = numpy.random.normal(1,1,100)
+   dev_neg = numpy.random.normal(-1,1,100)
+   test_pos = numpy.random.normal(0.9,1,100)
+   test_neg = numpy.random.normal(-1.1,1,100)
+   npoints = 100
+   xbob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-')
+   pyplot.grid(True)
+   pyplot.title('EPC')
 
 Fine-tunning
 ============
@@ -285,7 +323,7 @@ Error Rate) on a set, after setting up |project|, just do:
 
 .. code-block:: sh
 
-  $ bob_eval_threshold.py --scores=development-scores-4col.txt
+  $ xbob_eval_threshold.py --scores=development-scores-4col.txt
   Threshold: -0.004787956164
   FAR : 6.731% (35/520)
   FRR : 6.667% (26/390)
@@ -296,22 +334,22 @@ the given set, calculated using such a threshold. The relative counts of FAs
 and FRs are also displayed between parenthesis.
 
 To evaluate the performance of a new score file with a given threshold, use the
-application ``bob_apply_threshold.py``:
+application ``xbob_apply_threshold.py``:
 
 .. code-block:: sh
 
-  $ bob_apply_threshold.py --scores=test-scores-4col.txt --threshold=-0.0047879
+  $ xbob_apply_threshold.py --scores=test-scores-4col.txt --threshold=-0.0047879
   FAR : 2.115% (11/520)
   FRR : 7.179% (28/390)
   HTER: 4.647%
 
 In this case, only the error figures are presented. You can conduct the
 evaluation and plotting of development and test set data using our combined
-``bob_compute_perf.py`` script. You pass both sets and it does the rest:
+``xbob_compute_perf.py`` script. You pass both sets and it does the rest:
 
 .. code-block:: sh
 
-  $ bob_compute_perf.py --devel=development-scores-4col.txt --test=test-scores-4col.txt
+  $ xbob_compute_perf.py --devel=development-scores-4col.txt --test=test-scores-4col.txt
   [Min. criterium: EER] Threshold on Development set: -4.787956e-03
          | Development     | Test
   -------+-----------------+------------------
