@@ -6,8 +6,8 @@
  Python API
 ============
 
-This section includes information for using the pure Python API of ``xbob.io``.
+This section includes information for using the pure Python API of ``bob::measure``.
 
 
-.. automodule:: xbob.io
+.. automodule:: xbob.measure
 

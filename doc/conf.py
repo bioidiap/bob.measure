@@ -99,7 +99,7 @@ release = distribution.version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['links.rst']
+exclude_patterns = ['**/links.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -243,8 +243,10 @@ latex_logo = ''
 
 # Included after all input documents
 rst_epilog = """
-.. |version| replace:: %s
 .. |project| replace:: Bob
+.. |url| replace:: https://www.idiap.ch/software/bob/
+.. |version| replace:: %s
+.. |current-year| date:: %%Y
 """ % (version,)
 
 # -- Options for manual page output --------------------------------------------

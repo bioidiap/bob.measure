@@ -231,26 +231,26 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
     If you wish to reset axis zooming, you must use the gaussian scale rather
     than the visual marks showed at the plot, which are just there for
     displaying purposes. The real axis scale is based on the
-    bob.measure.ppndf() method. For example, if you wish to set the x and y
+    xbob.measure.ppndf() method. For example, if you wish to set the x and y
     axis to display data between 1% and 40% here is the recipe:
 
     .. code-block:: python
 
-      import bob
+      import xbob.measure
       import matplotlib.pyplot as mpl
-      bob.measure.plot.det(...) #call this as many times as you need
+      xbob.measure.plot.det(...) #call this as many times as you need
       #AFTER you plot the DET curve, just set the axis in this way:
-      mpl.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)])
+      mpl.axis([xbob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)])
 
     We provide a convenient way for you to do the above in this module. So,
-    optionally, you may use the bob.measure.plot.det_axis() method like this:
+    optionally, you may use the xbob.measure.plot.det_axis() method like this:
 
     .. code-block:: python
 
-      import bob
-      bob.measure.plot.det(...)
+      import xbob.measure
+      xbob.measure.plot.det(...)
       # please note we convert percentage values in det_axis()
-      bob.measure.plot.det_axis([1, 40, 1, 40])
+      xbob.measure.plot.det_axis([1, 40, 1, 40])
 
   Return value is the matplotlib line that was added as defined by the
   matplotlib.pyplot.plot() command.
@@ -308,8 +308,8 @@ def det_axis(v, **kwargs):
   """Sets the axis in a DET plot.
 
   This method wraps the matplotlib.pyplot.axis() by calling
-  bob.measure.ppndf() on the values passed by the user so they are meaningful
-  in a DET plot as performed by bob.measure.plot.det().
+  xbob.measure.ppndf() on the values passed by the user so they are meaningful
+  in a DET plot as performed by xbob.measure.plot.det().
 
   Keyword parameters:
 

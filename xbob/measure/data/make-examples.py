@@ -4,16 +4,16 @@
 # Wed Apr 20 17:32:54 2011 +0200
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3 of the License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -22,7 +22,7 @@
 For separability information, please consult: http://en.wikipedia.org/wiki/File:Anderson%27s_Iris_data_set.png
 """
 
-import bob
+import xbob.io
 
 iris_columns = {
     'sepal.length': 0,
@@ -49,7 +49,7 @@ def loaddata(filename, column):
 
 def example1():
   """In the first example we will get a linearly separable set of scores:
-    
+
   Variable: Petal length
   Iris setosa: noise
   Iris virginica: signal
@@ -57,8 +57,8 @@ def example1():
   Separation threshold is about 3.
   """
   data = loaddata('iris.data', 'petal.length')
-  bob.io.save(data['setosa'], 'linsep-negatives.hdf5')
-  bob.io.save(data['virginica'],'linsep-positives.hdf5')
+  xbob.io.save(data['setosa'], 'linsep-negatives.hdf5')
+  xbob.io.save(data['virginica'],'linsep-positives.hdf5')
 
 def example2():
   """In the second example we will get a non-linearly separable set of scores:
@@ -70,8 +70,8 @@ def example2():
   Separation threshold is about 5 (min. HTER).
   """
   data = loaddata('iris.data', 'sepal.length')
-  bob.io.save(data['setosa'], 'nonsep-negatives.hdf5')
-  bob.io.save(data['versicolor'], 'nonsep-positives.hdf5')
+  xbob.io.save(data['setosa'], 'nonsep-negatives.hdf5')
+  xbob.io.save(data['versicolor'], 'nonsep-positives.hdf5')
 
 def main():
   """Generates data for all examples."""

@@ -2,10 +2,15 @@
 .. Andre Anjos <andre.dos.anjos@gmail.com>
 .. Tue 15 Oct 17:41:52 2013
 
-.. testsetup:: measuretest
+.. testsetup:: *
 
-   import numpy
-   import xbob.measure
+  import numpy
+  positives = numpy.random.normal(1,1,100)
+  negatives = numpy.random.normal(-1,1,100)
+  import matplotlib
+  if not hasattr(matplotlib, 'backends'):
+    matplotlib.use('pdf') #non-interactive avoids exception on display
+  import xbob.measure
 
 ============
  User Guide
@@ -100,16 +105,6 @@ defined in the first equation.
   loaded your scores in two 1D float64 vectors and are ready to evaluate the
   performance of the classifier.
 
-.. testsetup:: *
-
-  import numpy
-  positives = numpy.random.normal(1,1,100)
-  negatives = numpy.random.normal(-1,1,100)
-  import bob
-  import matplotlib
-  if not hasattr(matplotlib, 'backends'):
-    matplotlib.use('pdf') #non-interactive avoids exception on display
-
 Evaluation
 ----------
 
@@ -120,16 +115,16 @@ the following techniques:
 
   >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
   >>> T = 0.0 #Threshold: later we explain how one can calculate these
-  >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
+  >>> correct_negatives = xbob.measure.correctly_classified_negatives(negatives, T)
   >>> FAR = 1 - (float(correct_negatives.sum())/negatives.size)
-  >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
+  >>> correct_positives = xbob.measure.correctly_classified_positives(positives, T)
   >>> FRR = 1 - (float(correct_positives.sum())/positives.size)
 
 We do provide a method to calculate the FAR and FRR in a single shot:
 
 .. doctest::
 
-  >>> FAR, FRR = bob.measure.farfrr(negatives, positives, T)
+  >>> FAR, FRR = xbob.measure.farfrr(negatives, positives, T)
 
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
@@ -142,13 +137,13 @@ calculation of the threshold:
 
   .. doctest::
 
-    >>> T = bob.measure.eer_threshold(negatives, positives)
+    >>> T = xbob.measure.eer_threshold(negatives, positives)
 
 * Threshold for the minimum HTER
 
   .. doctest::
 
-    >>> T = bob.measure.min_hter_threshold(negatives, positives)
+    >>> T = xbob.measure.min_hter_threshold(negatives, positives)
 
 * Threshold for the minimum weighted error rate (MWER) given a certain cost
   :math:`\beta`.
@@ -156,12 +151,12 @@ calculation of the threshold:
   .. code-block:: python
 
      >>> cost = 0.3 #or "beta"
-     >>> T = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost)
+     >>> T = xbob.measure.min_weighted_error_rate_threshold(negatives, positives, cost)
 
   .. note::
 
     By setting cost to 0.5 is equivalent to use
-    :py:meth:`bob.measure.min_hter_threshold`.
+    :py:meth:`xbob.measure.min_hter_threshold`.
 
 Plotting
 --------
@@ -182,7 +177,7 @@ town. To plot an ROC curve, in possession of your **negatives** and
   >>> from matplotlib import pyplot
   >>> # we assume you have your negatives and positives already split
   >>> npoints = 100
-  >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+  >>> xbob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
   >>> pyplot.xlabel('FRR (%)') # doctest: +SKIP
   >>> pyplot.ylabel('FAR (%)') # doctest: +SKIP
   >>> pyplot.grid(True)
@@ -194,7 +189,7 @@ You should see an image like the following one:
   :include-source: False
 
 As can be observed, plotting methods live in the namespace
-:py:mod:`bob.measure.plot`. They work like `Matplotlib`_'s `plot()`_ method
+:py:mod:`xbob.measure.plot`. They work like `Matplotlib`_'s `plot()`_ method
 itself, except that instead of receiving the x and y point coordinates as
 parameters, they receive the two :py:class:`numpy.ndarray` arrays with
 negatives and positives, as well as an indication of the number of points the
@@ -217,8 +212,8 @@ A DET curve can be drawn using similar commands such as the ones for the ROC cur
   >>> from matplotlib import pyplot
   >>> # we assume you have your negatives and positives already split
   >>> npoints = 100
-  >>> bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
-  >>> bob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
+  >>> xbob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+  >>> xbob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
   >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
   >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
   >>> pyplot.grid(True)
@@ -234,20 +229,20 @@ This will produce an image like the following one:
   If you wish to reset axis zooming, you must use the Gaussian scale rather
   than the visual marks showed at the plot, which are just there for
   displaying purposes. The real axis scale is based on the
-  ``bob.measure.ppndf()`` method. For example, if you wish to set the x and y
+  ``xbob.measure.ppndf()`` method. For example, if you wish to set the x and y
   axis to display data between 1% and 40% here is the recipe:
 
   .. doctest::
 
     >>> #AFTER you plot the DET curve, just set the axis in this way:
-    >>> pyplot.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)]) # doctest: +SKIP
+    >>> pyplot.axis([xbob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)]) # doctest: +SKIP
 
   We provide a convenient way for you to do the above in this module. So,
-  optionally, you may use the ``bob.measure.plot.det_axis`` method like this:
+  optionally, you may use the ``xbob.measure.plot.det_axis`` method like this:
 
   .. doctest::
 
-    >>> bob.measure.plot.det_axis([1, 40, 1, 40]) # doctest: +SKIP
+    >>> xbob.measure.plot.det_axis([1, 40, 1, 40]) # doctest: +SKIP
 
 EPC
 ===
@@ -257,7 +252,7 @@ the test (or evaluation) set ones. Because of this the API is slightly modified:
 
 .. doctest::
 
-  >>> bob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-') # doctest: +SKIP
+  >>> xbob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-') # doctest: +SKIP
   >>> pyplot.show() # doctest: +SKIP
 
 This will produce an image like the following one:
@@ -268,11 +263,11 @@ This will produce an image like the following one:
 Fine-tunning
 ============
 
-The methods inside :py:mod:`bob.measure.plot` are only provided as a
-`Matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
+The methods inside :py:mod:`xbob.measure.plot` are only provided as a
+`Matplotlib`_ wrapper to equivalent methods in :py:mod:`xbob.measure` that can
 only calculate the points without doing any plotting. You may prefer to tweak
 the plotting or even use a different plotting system such as gnuplot. Have a
-look at the implementations at :py:mod:`bob.measure.plot` to understand how
+look at the implementations at :py:mod:`xbob.measure.plot` to understand how
 to use the |project| methods to compute the curves and interlace that in the
 way that best suits you.
 
@@ -282,8 +277,8 @@ Full applications
 We do provide a few scripts that can be used to quickly evaluate a set of
 scores. We present these scripts in this section. The scripts take as input
 either a 4-column or 5-column data format as specified in the documentation of
-:py:mod:`bob.measure.load.four_column` or
-:py:mod:`bob.measure.load.five_column`.
+:py:mod:`xbob.measure.load.four_column` or
+:py:mod:`xbob.measure.load.five_column`.
 
 To calculate the threshold using a certain criterion (EER, min.HTER or weighted
 Error Rate) on a set, after setting up |project|, just do:
