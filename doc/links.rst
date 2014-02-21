@@ -1,20 +1,8 @@
 .. vim: set fileencoding=utf-8 :
 .. Andre Anjos <andre.anjos@idiap.ch>
-.. Tue 20 Mar 2012 08:57:32 CET 
-.. 
-.. Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
-.. 
-.. This program is free software: you can redistribute it and/or modify
-.. it under the terms of the GNU General Public License as published by
-.. the Free Software Foundation, version 3 of the License.
-.. 
-.. This program is distributed in the hope that it will be useful,
-.. but WITHOUT ANY WARRANTY; without even the implied warranty of
-.. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.. GNU General Public License for more details.
-.. 
-.. You should have received a copy of the GNU General Public License
-.. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.. Tue 20 Mar 2012 08:57:32 CET
+..
+.. Copyright (C) 2011-2014 Idiap Research Institute, Martigny, Switzerland
 
 .. This file contains all links we use for documentation in a centralized place
 
@@ -61,7 +49,7 @@
 .. _pillow: https://pypi.python.org/pypi/Pillow/
 .. _python: http://www.python.org
 .. _pypi: http://pypi.python.org
-.. _qt4: http://qt.nokia.com/ 
+.. _qt4: http://qt.nokia.com/
 .. _satellite packages: https://github.com/idiap/bob/wiki/Satellite-Packages
 .. _scipy: http://www.scipy.org
 .. _setuptools: http://trac.edgewall.org/wiki/setuptools
