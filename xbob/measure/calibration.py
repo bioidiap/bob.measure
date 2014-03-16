@@ -24,7 +24,7 @@ def min_cllr(negatives, positives):
   """Computes the 'minimum cost of log likelihood ratio' measure as given in the bosaris toolkit"""
 
   from xbob.math import pavx
-  
+
   # first, sort both scores
   neg = sorted(negatives)
   pos = sorted(positives)
