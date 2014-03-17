@@ -547,9 +547,9 @@ PyDoc_STRVAR(s_correctly_classified_negatives_doc,
 "correctly_classified_negatives(negatives, threshold) -> int\n\
 \n\
 This method returns an array composed of booleans that pin-point\n\
-which negatives where correctly classified in a 'negative' score\n\
+which negatives where correctly classified in a \"negative\" score\n\
 sample, given a threshold. It runs the formula: foreach (element k in\n\
-  negative) if negative[k] < threshold: returnValue[k] = true else:\n\
+negative) if negative[k] < threshold: returnValue[k] = true else:\n\
 returnValue[k] = false\n\
 ");
 
@@ -1080,7 +1080,7 @@ static PyModuleDef module_definition = {
   XBOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
-  module_methods, 
+  module_methods,
   0, 0, 0, 0
 };
 #endif
