@@ -12,8 +12,8 @@ This module contains base functionality from Bob bound to Python, available in
 the C++ counter-part ``bob::measure``. It includes routines for assessing
 performance on machine learning and pattern recognition applications.
 
-Reference
----------
+User Guide
+----------
 
 .. toctree::
    :maxdepth: 2
