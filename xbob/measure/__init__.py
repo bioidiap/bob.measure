@@ -1,4 +1,6 @@
 from ._library import *
+from . import version
+from .version import module as __version__
 
 from . import plot
 from . import load

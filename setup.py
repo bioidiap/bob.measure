@@ -7,7 +7,7 @@ from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['xbob.blitz']))
 from xbob.blitz.extension import Extension
 
-packages = ['bob-measure >= 1.3']
+packages = ['bob-measure >= 1.2.2']
 version = '2.0.0a0'
 
 setup(
@@ -30,6 +30,7 @@ setup(
       'xbob.blitz',
       'xbob.math',
       'xbob.io',
+      'matplotlib',
     ],
 
     namespace_packages=[
@@ -37,6 +38,13 @@ setup(
       ],
 
     ext_modules = [
+      Extension("xbob.measure.version",
+        [
+          "xbob/measure/version.cpp",
+          ],
+        packages = packages,
+        version = version,
+        ),
       Extension("xbob.measure._library",
         [
           "xbob/measure/main.cpp",
