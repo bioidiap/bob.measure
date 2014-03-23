@@ -22,6 +22,15 @@
 #include <xbob.blitz/capi.h>
 #include <xbob.blitz/cleanup.h>
 
+static int dict_set(PyObject* d, const char* key, const char* value) {
+  PyObject* v = Py_BuildValue("s", value);
+  if (!v) return 0;
+  int retval = PyDict_SetItemString(d, key, v);
+  Py_DECREF(v);
+  if (retval == 0) return 1; //all good
+  return 0; //a problem occurred
+}
+
 static int dict_steal(PyObject* d, const char* key, PyObject* value) {
   if (!value) return 0;
   int retval = PyDict_SetItemString(d, key, value);
@@ -78,31 +87,36 @@ static PyObject* bob_version() {
   return Py_BuildValue("sis", BOB_VERSION, BOB_API_VERSION, BOB_PLATFORM);
 }
 
+/**
+ * Numpy version
+ */
+static PyObject* numpy_version() {
+  return Py_BuildValue("{ssss}", "abi", BOOST_PP_STRINGIZE(NPY_VERSION),
+      "api", BOOST_PP_STRINGIZE(NPY_API_VERSION));
+}
+
+/**
+ * xbob.blitz c/c++ api version
+ */
+static PyObject* xbob_blitz_version() {
+  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(XBOB_BLITZ_API_VERSION));
+}
+
 static PyObject* build_version_dictionary() {
 
   PyObject* retval = PyDict_New();
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
-  if (!dict_steal(retval, "Boost", boost_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
+  if (!dict_set(retval, "Blitz++", BZ_VERSION)) return 0;
+  if (!dict_steal(retval, "Boost", boost_version())) return 0;
+  if (!dict_steal(retval, "Compiler", compiler_version())) return 0;
+  if (!dict_steal(retval, "Python", python_version())) return 0;
+  if (!dict_steal(retval, "NumPy", numpy_version())) return 0;
+  if (!dict_steal(retval, "xbob.blitz", xbob_blitz_version())) return 0;
+  if (!dict_steal(retval, "Bob", bob_version())) return 0;
 
-  if (!dict_steal(retval, "Compiler", compiler_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "Python", python_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "Bob", bob_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
+  Py_INCREF(retval);
   return retval;
 }
 
