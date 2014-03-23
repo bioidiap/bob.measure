@@ -23,6 +23,7 @@ install:
   - "python bootstrap.py"
   - "./bin/buildout"
 script:
+  - "./bin/python -c 'from xbob.measure import get_config; print(get_config())'"
   - "./bin/nosetests -sv"
   - "./bin/sphinx-build -b doctest doc sphinx"
   - "./bin/sphinx-build -b html doc sphinx"
