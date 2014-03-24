@@ -4,6 +4,14 @@
 
 .. image:: https://travis-ci.org/bioidiap/xbob.measure.svg?branch=master
    :target: https://travis-ci.org/bioidiap/xbob.measure
+.. image:: https://coveralls.io/repos/bioidiap/xbob.measure/badge.png
+   :target: https://coveralls.io/r/bioidiap/xbob.measure
+.. image:: http://img.shields.io/github/tag/bioidiap/xbob.measure.png
+   :target: https://github.com/bioidiap/xbob.measure
+.. image:: http://img.shields.io/pypi/v/xbob.measure.png
+   :target: https://pypi.python.org/pypi/xbob.measure
+.. image:: http://img.shields.io/pypi/dm/xbob.measure.png
+   :target: https://pypi.python.org/pypi/xbob.measure
 
 =================================
  Python bindings for bob.measure
