@@ -28,3 +28,5 @@ script:
   - "./bin/coverage run --source=xbob.measure ./bin/nosetests -sv"
   - "./bin/sphinx-build -b doctest doc sphinx"
   - "./bin/sphinx-build -b html doc sphinx"
+after_success:
+  - "coveralls"
