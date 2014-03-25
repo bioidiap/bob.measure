@@ -15,7 +15,7 @@ setup(
     name='xbob.measure',
     version=version,
     description='Bindings for bob.measure',
-    url='http://github.com/anjos/xbob.measure',
+    url='http://github.com/bioidiap/xbob.measure',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
