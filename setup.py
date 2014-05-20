@@ -29,7 +29,7 @@ setup(
       'setuptools',
       'xbob.blitz',
       'xbob.math',
-      'xbob.io',
+      'xbob.io.base',
       'matplotlib',
     ],
 
