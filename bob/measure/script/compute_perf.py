@@ -157,7 +157,7 @@ def get_options(user_input):
   parser.add_argument('-x', '--no-plot', dest="doplot", default=True,
       action='store_false', help="If set, then I'll execute no plotting")
   parser.add_argument('-p', '--parser', dest="parser", default="4column",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
 
   # This option is not normally shown to the user...
   parser.add_argument("--self-test",

@@ -9,5 +9,5 @@
 This section includes information for using the pure Python API of ``bob::measure``.
 
 
-.. automodule:: xbob.measure
+.. automodule:: bob.measure
 

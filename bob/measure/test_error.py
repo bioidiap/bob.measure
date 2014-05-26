@@ -11,7 +11,7 @@
 import os
 import numpy
 import nose.tools
-import xbob.io.base
+import bob.io.base
 
 from .version import externals
 from distutils.version import StrictVersion
@@ -26,7 +26,7 @@ def F(f):
 
 def save(fname, data):
   """Saves a single array into a file in the 'data' directory."""
-  xbob.io.base.Array(data).save(os.path.join('data', fname))
+  bob.io.base.Array(data).save(os.path.join('data', fname))
 
 
 def test_basic_ratios():
@@ -36,8 +36,8 @@ def test_basic_ratios():
   # We test the basic functionaly on FAR and FRR calculation. The first
   # example is separable, with a separation threshold of about 3.0
 
-  positives = xbob.io.base.load(F('linsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('linsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('linsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
 
   minimum = min(positives.min(), negatives.min())
   maximum = max(positives.max(), negatives.max())
@@ -92,8 +92,8 @@ def test_indexing():
 
   # This test verifies that the output of correctly_classified_positives() and
   # correctly_classified_negatives() makes sense.
-  positives = xbob.io.base.load(F('linsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('linsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('linsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
 
   minimum = min(positives.min(), negatives.min())
   maximum = max(positives.max(), negatives.max())
@@ -126,8 +126,8 @@ def test_thresholding():
   # calculate the threshold that minimizes the EER.
 
   # This test set is not separable.
-  positives = xbob.io.base.load(F('nonsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('nonsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('nonsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
   threshold = eer_threshold(negatives, positives)
 
   # Of course we have to make sure that will set the EER correctly:
@@ -153,8 +153,8 @@ def test_thresholding():
   # trickier, as you have no points in the middle of the range to compare
   # things to. This is where the currently used recursive algorithm seems to
   # do better. Let's verify
-  positives = xbob.io.base.load(F('linsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('linsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('linsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
   threshold = eer_threshold(negatives, positives)
   # the result here is 3.242 (which is what is expect ;-)
 
@@ -180,15 +180,15 @@ def test_plots():
   from . import eer_threshold, roc, precision_recall_curve, det, epc
 
   # This test set is not separable.
-  positives = xbob.io.base.load(F('nonsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('nonsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('nonsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
   threshold = eer_threshold(negatives, positives)
 
   # This example will test the ROC plot calculation functionality.
   xy = roc(negatives, positives, 100)
   # uncomment the next line to save a reference value
   # save('nonsep-roc.hdf5', xy)
-  xyref = xbob.io.base.load(F('nonsep-roc.hdf5'))
+  xyref = bob.io.base.load(F('nonsep-roc.hdf5'))
   if HAVE_BOB_1_2_2: xyref = xyref[::-1,:]
   assert numpy.array_equal(xy, xyref)
 
@@ -196,14 +196,14 @@ def test_plots():
   xy = precision_recall_curve(negatives, positives, 100)
   # uncomment the next line to save a reference value
   # save('nonsep-roc.hdf5', xy)
-  xyref = xbob.io.base.load(F('nonsep-precisionrecall.hdf5'))
+  xyref = bob.io.base.load(F('nonsep-precisionrecall.hdf5'))
   assert numpy.array_equal(xy, xyref)
 
   # This example will test the DET plot calculation functionality.
   det_xyzw = det(negatives, positives, 100)
   # uncomment the next line to save a reference value
   # save('nonsep-det.hdf5', det_xyzw)
-  det_xyzw_ref = xbob.io.base.load(F('nonsep-det.hdf5'))
+  det_xyzw_ref = bob.io.base.load(F('nonsep-det.hdf5'))
   if HAVE_BOB_1_2_2: det_xyzw_ref = det_xyzw_ref[::-1,:]
   assert numpy.allclose(det_xyzw, det_xyzw_ref, atol=1e-15)
 
@@ -219,7 +219,7 @@ def test_plots():
       test_negatives, test_positives, 100)
   # uncomment the next line to save a reference value
   # save('nonsep-epc.hdf5', xy)
-  xyref = xbob.io.base.load(F('nonsep-epc.hdf5'))
+  xyref = bob.io.base.load(F('nonsep-epc.hdf5'))
   assert numpy.allclose(xy, xyref, atol=1e-15)
 
 
@@ -231,8 +231,8 @@ def test_rocch():
   # calculate the threshold that minimizes the EER on the ROC Convex Hull
 
   # This test set is separable.
-  positives = xbob.io.base.load(F('linsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('linsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('linsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
   # References obtained using Bosaris 1.06
   pmiss_pfa_ref = numpy.array([[1., 0., 0.], [0., 0., 1.]])
   if HAVE_BOB_1_2_2: pmiss_pfa_ref = pmiss_pfa_ref[::-1,:]
@@ -246,8 +246,8 @@ def test_rocch():
   assert abs(eer-eer_ref) < 1e-4
 
   # This test set is not separable.
-  positives = xbob.io.base.load(F('nonsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('nonsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('nonsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
   # References obtained using Bosaris 1.06
   pmiss_pfa_ref = numpy.array([[1., 0.68, 0.28, 0.1, 0.06, 0., 0.], [0, 0, 0.08, 0.12, 0.22, 0.48, 1.]])
   if HAVE_BOB_1_2_2: pmiss_pfa_ref = pmiss_pfa_ref[::-1,:]
@@ -297,8 +297,8 @@ def test_calibration():
 
   # Tests the cllr and min_cllr measures
   # This test set is separable.
-  positives = xbob.io.base.load(F('linsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('linsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('linsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
 
   cllr = calibration.cllr(negatives, positives)
   min_cllr = calibration.min_cllr(negatives, positives)
@@ -309,8 +309,8 @@ def test_calibration():
   nose.tools.assert_almost_equal(min_cllr, 0.)
 
   # This test set is not separable.
-  positives = xbob.io.base.load(F('nonsep-positives.hdf5'))
-  negatives = xbob.io.base.load(F('nonsep-negatives.hdf5'))
+  positives = bob.io.base.load(F('nonsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
 
   cllr = calibration.cllr(negatives, positives)
   min_cllr = calibration.min_cllr(negatives, positives)

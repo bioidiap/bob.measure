@@ -77,7 +77,7 @@ def get_options(user_input):
   parser.add_argument('-w', '--cost', dest='cost', default=0.5,
       type=float, help="The value w of the cost when minimizing using the minimum weighter error rate (mwer) criterium. This value is ignored for eer or mhter criteria.", metavar="FLOAT")
   parser.add_argument('-p', '--parser', dest="parser", default="4column",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
   
   # This option is not normally shown to the user...
   parser.add_argument("--self-test",

@@ -2,16 +2,16 @@
 .. Andre Anjos <andre.anjos@idiap.ch>
 .. Thu 29 Aug 2013 16:07:57 CEST
 
-.. image:: https://travis-ci.org/bioidiap/xbob.measure.svg?branch=master
-   :target: https://travis-ci.org/bioidiap/xbob.measure
-.. image:: https://coveralls.io/repos/bioidiap/xbob.measure/badge.png
-   :target: https://coveralls.io/r/bioidiap/xbob.measure
-.. image:: http://img.shields.io/github/tag/bioidiap/xbob.measure.png
-   :target: https://github.com/bioidiap/xbob.measure
-.. image:: http://img.shields.io/pypi/v/xbob.measure.png
-   :target: https://pypi.python.org/pypi/xbob.measure
-.. image:: http://img.shields.io/pypi/dm/xbob.measure.png
-   :target: https://pypi.python.org/pypi/xbob.measure
+.. image:: https://travis-ci.org/bioidiap/bob.measure.svg?branch=master
+   :target: https://travis-ci.org/bioidiap/bob.measure
+.. image:: https://coveralls.io/repos/bioidiap/bob.measure/badge.png
+   :target: https://coveralls.io/r/bioidiap/bob.measure
+.. image:: http://img.shields.io/github/tag/bioidiap/bob.measure.png
+   :target: https://github.com/bioidiap/bob.measure
+.. image:: http://img.shields.io/pypi/v/bob.measure.png
+   :target: https://pypi.python.org/pypi/bob.measure
+.. image:: http://img.shields.io/pypi/dm/bob.measure.png
+   :target: https://pypi.python.org/pypi/bob.measure
 
 =================================
  Python bindings for bob.measure
@@ -42,7 +42,7 @@ Testing
 
 You can run a set of tests using the nose test runner::
 
-  $ nosetests -sv xbob.measure
+  $ nosetests -sv bob.measure
 
 .. warning::
 
@@ -59,7 +59,7 @@ You can run our documentation tests using sphinx itself::
 
 You can test overall test coverage with::
 
-  $ nosetests --with-coverage --cover-package=xbob.measure
+  $ nosetests --with-coverage --cover-package=bob.measure
 
 The ``coverage`` egg must be installed for this to work properly.
 

@@ -74,7 +74,7 @@ def recognition_rate(cmc_scores):
   The input has a specific format, which is a list of two-element tuples.  Each
   of the tuples contains the negative and the positive scores for one test
   item.  To read the lists from score files in 4 or 5 column format, please use
-  the :py:func:`xbob.measure.load.cmc_four_column` or
+  the :py:func:`bob.measure.load.cmc_four_column` or
   :py:func:`bob.measure.load.cmc_five_column` function.
 
   The recognition rate is defined as the number of test items, for which the
@@ -100,7 +100,7 @@ def cmc(cmc_scores):
   The input has a specific format, which is a list of two-element tuples.  Each
   of the tuples contains the negative and the positive scores for one test
   item.  To read the lists from score files in 4 or 5 column format, please use
-  the :py:func:`xbob.measure.load.cmc_four_column` or
+  the :py:func:`bob.measure.load.cmc_four_column` or
   :py:func:`bob.measure.load.cmc_five_column` function.
 
   For each test item the probability that the rank r of the positive score is

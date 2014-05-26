@@ -8,8 +8,8 @@
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
-#include <xbob.blitz/cppapi.h>
-#include <xbob.blitz/cleanup.h>
+#include <bob.blitz/cppapi.h>
+#include <bob.blitz/cleanup.h>
 #include <bob/measure/error.h>
 
 static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
@@ -41,7 +41,7 @@ half-total error rate at that position.\n\
 The EPC curve plots the HTER on the test set for various values of\n\
 'cost'. For each value of 'cost', a threshold is found that provides\n\
 the minimum weighted error (see\n\
-:py:func:`xbob.measure.min_weighted_error_rate_threshold()`)\n\
+:py:func:`bob.measure.min_weighted_error_rate_threshold()`)\n\
 on the development set. Each threshold is consecutively applied to\n\
 the test set and the resulting HTER values are plotted in the EPC.\n\
 \n\
@@ -1077,7 +1077,7 @@ PyDoc_STRVAR(module_docstr, "Bob metrics and performance figures");
 #if PY_VERSION_HEX >= 0x03000000
 static PyModuleDef module_definition = {
   PyModuleDef_HEAD_INIT,
-  XBOB_EXT_MODULE_NAME,
+  BOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
   module_methods,
@@ -1090,23 +1090,23 @@ static PyObject* create_module (void) {
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
 # else
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
+  PyObject* m = Py_InitModule3(BOB_EXT_MODULE_NAME, module_methods, module_docstr);
 # endif
   if (!m) return 0;
   auto m_ = make_safe(m); ///< protects against early returns
 
-  if (PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION) < 0)
+  if (PyModule_AddStringConstant(m, "__version__", BOB_EXT_MODULE_VERSION) < 0)
     return 0;
 
-  /* imports xbob.blitz C-API + dependencies */
-  if (import_xbob_blitz() < 0) return 0;
+  /* imports bob.blitz C-API + dependencies */
+  if (import_bob_blitz() < 0) return 0;
 
   Py_INCREF(m);
   return m;
 
 }
 
-PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
+PyMODINIT_FUNC BOB_EXT_ENTRY_NAME (void) {
 # if PY_VERSION_HEX >= 0x03000000
   return
 # endif

@@ -4,18 +4,18 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['xbob.blitz']))
-from xbob.blitz.extension import Extension
+dist.Distribution(dict(setup_requires=['bob.blitz']))
+from bob.blitz.extension import Extension
 
 packages = ['bob-measure >= 1.2.2']
 version = '2.0.0a0'
 
 setup(
 
-    name='xbob.measure',
+    name='bob.measure',
     version=version,
     description='Bindings for bob.measure',
-    url='http://github.com/bioidiap/xbob.measure',
+    url='http://github.com/bioidiap/bob.measure',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
@@ -27,27 +27,27 @@ setup(
 
     install_requires=[
       'setuptools',
-      'xbob.blitz',
-      'xbob.math',
-      'xbob.io.base',
+      'bob.blitz',
+      'bob.math',
+      'bob.io.base',
       'matplotlib',
     ],
 
     namespace_packages=[
-      "xbob",
+      "bob",
       ],
 
     ext_modules = [
-      Extension("xbob.measure.version",
+      Extension("bob.measure.version",
         [
-          "xbob/measure/version.cpp",
+          "bob/measure/version.cpp",
           ],
         packages = packages,
         version = version,
         ),
-      Extension("xbob.measure._library",
+      Extension("bob.measure._library",
         [
-          "xbob/measure/main.cpp",
+          "bob/measure/main.cpp",
           ],
         packages = packages,
         version = version,
@@ -56,10 +56,10 @@ setup(
 
     entry_points={
       'console_scripts': [
-        'xbob_compute_perf.py = xbob.measure.script.compute_perf:main',
-        'xbob_eval_threshold.py = xbob.measure.script.eval_threshold:main',
-        'xbob_apply_threshold.py = xbob.measure.script.apply_threshold:main',
-        'xbob_plot_cmc.py = xbob.measure.script.plot_cmc:main',
+        'bob_compute_perf.py = bob.measure.script.compute_perf:main',
+        'bob_eval_threshold.py = bob.measure.script.eval_threshold:main',
+        'bob_apply_threshold.py = bob.measure.script.apply_threshold:main',
+        'bob_plot_cmc.py = bob.measure.script.plot_cmc:main',
         ],
       },
 

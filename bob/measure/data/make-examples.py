@@ -10,7 +10,7 @@
 For separability information, please consult: http://en.wikipedia.org/wiki/File:Anderson%27s_Iris_data_set.png
 """
 
-import xbob.io
+import bob.io
 
 iris_columns = {
     'sepal.length': 0,
@@ -45,8 +45,8 @@ def example1():
   Separation threshold is about 3.
   """
   data = loaddata('iris.data', 'petal.length')
-  xbob.io.save(data['setosa'], 'linsep-negatives.hdf5')
-  xbob.io.save(data['virginica'],'linsep-positives.hdf5')
+  bob.io.save(data['setosa'], 'linsep-negatives.hdf5')
+  bob.io.save(data['virginica'],'linsep-positives.hdf5')
 
 def example2():
   """In the second example we will get a non-linearly separable set of scores:
@@ -58,8 +58,8 @@ def example2():
   Separation threshold is about 5 (min. HTER).
   """
   data = loaddata('iris.data', 'sepal.length')
-  xbob.io.save(data['setosa'], 'nonsep-negatives.hdf5')
-  xbob.io.save(data['versicolor'], 'nonsep-positives.hdf5')
+  bob.io.save(data['setosa'], 'nonsep-negatives.hdf5')
+  bob.io.save(data['versicolor'], 'nonsep-positives.hdf5')
 
 def main():
   """Generates data for all examples."""

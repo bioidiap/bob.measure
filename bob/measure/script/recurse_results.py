@@ -62,7 +62,7 @@ def get_args():
   parser.add_argument('--self-test', action='store_true', help=argparse.SUPPRESS)
 
   parser.add_argument('-p', '--parser', dest="parser", default="4column", metavar="NAME.FUNCTION",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of xbob.measure.load.split_four_column() for details")
+      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details")
 
   # parse arguments
   args = parser.parse_args()

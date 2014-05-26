@@ -86,7 +86,7 @@ def cmc_four_column(filename):
   more are allowed.
 
   The result of this function can directly be passed to, e.g., the
-  :py:func:`xbob.measure.cmc` function.
+  :py:func:`bob.measure.cmc` function.
   """
 
   # read four column list
@@ -204,7 +204,7 @@ def cmc_five_column(filename):
   more are allowed.
 
   The result of this function can directly be passed to, e.g., the
-  :py:func:`xbob.measure.cmc` function.
+  :py:func:`bob.measure.cmc` function.
   """
 
   # read four column list

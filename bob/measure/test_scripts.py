@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
-"""Script tests for xbob.measure
+"""Script tests for bob.measure
 """
 
 import os
@@ -60,7 +60,7 @@ def test_compute_perf_5col():
   assert os.path.exists(TEST_SCORES_5COL)
 
   from .script.compute_perf import main
-  cmdline = '--devel=%s --test=%s --parser=xbob.measure.load.split_five_column --self-test' % (DEV_SCORES_5COL, TEST_SCORES_5COL)
+  cmdline = '--devel=%s --test=%s --parser=bob.measure.load.split_five_column --self-test' % (DEV_SCORES_5COL, TEST_SCORES_5COL)
   nose.tools.eq_(main(cmdline.split()), 0)
 
 def test_compute_cmc():
