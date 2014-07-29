@@ -53,6 +53,7 @@ setup(
           ],
         packages = packages,
         version = version,
+        include_dirs = include_dirs,
         ),
       Extension("bob.measure._library",
         [
