@@ -4,8 +4,11 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['bob.blitz']))
+dist.Distribution(dict(setup_requires=['bob.blitz', 'bob.core']))
 from bob.blitz.extension import Extension
+import bob.core
+
+include_dirs = [bob.core.get_include()]
 
 packages = [
     'blitz >= 0.10',
@@ -58,6 +61,7 @@ setup(
           ],
         packages = packages,
         version = version,
+        include_dirs = include_dirs,
         ),
       ],
 

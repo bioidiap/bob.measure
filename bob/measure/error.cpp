@@ -14,7 +14,7 @@
 #include <limits>
 #include <boost/format.hpp>
 
-#include <bob/core/assert.h>
+#include <bob.core/assert.h>
 #include <bob/core/cast.h>
 #include <bob/math/pavx.h>
 #include <bob/math/linsolve.h>
