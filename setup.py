@@ -7,7 +7,12 @@ from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['bob.blitz']))
 from bob.blitz.extension import Extension
 
-packages = ['bob-measure >= 1.2.2']
+packages = [
+    'blitz >= 0.10',
+    'boost', # any version will do, only need headers
+    'bob-core >= 1.2.2',
+    'bob-math >= 1.2.2',
+    ]
 version = '2.0.0a0'
 
 setup(
@@ -48,6 +53,7 @@ setup(
         ),
       Extension("bob.measure._library",
         [
+          "bob/measure/error.cpp",
           "bob/measure/main.cpp",
           ],
         packages = packages,

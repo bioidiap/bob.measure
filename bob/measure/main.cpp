@@ -10,7 +10,7 @@
 #endif
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
-#include <bob/measure/error.h>
+#include "error.h"
 
 static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
   if (PyBlitzArray_Converter(o, a) != 0) return 1;
