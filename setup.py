@@ -13,7 +13,6 @@ include_dirs = [bob.core.get_include()]
 packages = [
     'blitz >= 0.10',
     'boost', # any version will do, only need headers
-    'bob-core >= 1.2.2',
     'bob-math >= 1.2.2',
     ]
 version = '2.0.0a0'
