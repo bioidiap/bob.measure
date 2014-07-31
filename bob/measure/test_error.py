@@ -13,11 +13,6 @@ import numpy
 import nose.tools
 import bob.io.base
 
-from .version import externals
-from distutils.version import StrictVersion
-if StrictVersion(externals['Bob'][0]) < '1.3.0a0': HAVE_BOB_1_2_2 = True
-else: HAVE_BOB_1_2_2 = False
-
 def F(f):
   """Returns the test file on the "data" subdirectory"""
   import pkg_resources
@@ -189,7 +184,6 @@ def test_plots():
   # uncomment the next line to save a reference value
   # save('nonsep-roc.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-roc.hdf5'))
-  if HAVE_BOB_1_2_2: xyref = xyref[::-1,:]
   assert numpy.array_equal(xy, xyref)
 
   # This example will test the Precision-Recall plot calculation functionality.
@@ -204,7 +198,6 @@ def test_plots():
   # uncomment the next line to save a reference value
   # save('nonsep-det.hdf5', det_xyzw)
   det_xyzw_ref = bob.io.base.load(F('nonsep-det.hdf5'))
-  if HAVE_BOB_1_2_2: det_xyzw_ref = det_xyzw_ref[::-1,:]
   assert numpy.allclose(det_xyzw, det_xyzw_ref, atol=1e-15)
 
   # This example will test the EPC plot calculation functionality. For the
@@ -235,7 +228,6 @@ def test_rocch():
   negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
   # References obtained using Bosaris 1.06
   pmiss_pfa_ref = numpy.array([[1., 0., 0.], [0., 0., 1.]])
-  if HAVE_BOB_1_2_2: pmiss_pfa_ref = pmiss_pfa_ref[::-1,:]
   eer_ref = 0.
   # Computes
   pmiss_pfa = rocch(negatives, positives)
@@ -250,7 +242,6 @@ def test_rocch():
   negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
   # References obtained using Bosaris 1.06
   pmiss_pfa_ref = numpy.array([[1., 0.68, 0.28, 0.1, 0.06, 0., 0.], [0, 0, 0.08, 0.12, 0.22, 0.48, 1.]])
-  if HAVE_BOB_1_2_2: pmiss_pfa_ref = pmiss_pfa_ref[::-1,:]
   eer_ref = 0.116363636363636
   # Computes
   pmiss_pfa = rocch(negatives, positives)
