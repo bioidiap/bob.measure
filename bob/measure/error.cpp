@@ -17,8 +17,8 @@
 #include <bob.core/assert.h>
 #include <bob.core/cast.h>
 
-#include <bob/math/pavx.h>
-#include <bob/math/linsolve.h>
+#include <bob.math/pavx.h>
+#include <bob.math/linsolve.h>
 
 std::pair<double, double> bob::measure::farfrr(const blitz::Array<double,1>& negatives,
     const blitz::Array<double,1>& positives, double threshold) {

@@ -4,16 +4,12 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['bob.blitz', 'bob.core']))
+dist.Distribution(dict(setup_requires=['bob.blitz', 'bob.core', 'bob.math']))
 from bob.blitz.extension import Extension
-import bob.core
-
-include_dirs = [bob.core.get_include()]
 
 packages = [
     'blitz >= 0.10',
     'boost', # any version will do, only need headers
-    'bob-math >= 1.2.2',
     ]
 version = '2.0.0a0'
 
@@ -52,7 +48,7 @@ setup(
           ],
         packages = packages,
         version = version,
-        include_dirs = include_dirs,
+        bob_packages = ['bob.core'],
         ),
       Extension("bob.measure._library",
         [
@@ -61,7 +57,7 @@ setup(
           ],
         packages = packages,
         version = version,
-        include_dirs = include_dirs,
+        bob_packages = ['bob.core', 'bob.math'],
         ),
       ],
 
