@@ -20,6 +20,7 @@
 #include <bob.blitz/capi.h>
 #include <bob.blitz/cleanup.h>
 #include <bob.core/config.h>
+#include <bob.math/config.h>
 
 static int dict_set(PyObject* d, const char* key, const char* value) {
   PyObject* v = Py_BuildValue("s", value);
@@ -98,7 +99,14 @@ static PyObject* bob_blitz_version() {
  * bob.core c/c++ api version
  */
 static PyObject* bob_core_version() {
-  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(BOB_BLITZ_API_VERSION));
+  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(BOB_CORE_API_VERSION));
+}
+
+/**
+ * bob.math c/c++ api version
+ */
+static PyObject* bob_math_version() {
+  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(BOB_MATH_API_VERSION));
 }
 
 static PyObject* build_version_dictionary() {
@@ -114,6 +122,7 @@ static PyObject* build_version_dictionary() {
   if (!dict_steal(retval, "NumPy", numpy_version())) return 0;
   if (!dict_steal(retval, "bob.blitz", bob_blitz_version())) return 0;
   if (!dict_steal(retval, "bob.core", bob_core_version())) return 0;
+  if (!dict_steal(retval, "bob.math", bob_math_version())) return 0;
 
   Py_INCREF(retval);
   return retval;

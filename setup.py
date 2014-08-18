@@ -3,14 +3,17 @@
 # Andre Anjos <andre.anjos@idiap.ch>
 # Mon 16 Apr 08:18:08 2012 CEST
 
+bob_packages = ['bob.core', 'bob.math']
+
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['bob.blitz', 'bob.core', 'bob.math']))
+dist.Distribution(dict(setup_requires=['bob.blitz'] + bob_packages))
 from bob.blitz.extension import Extension
 
 packages = [
     'blitz >= 0.10',
     'boost', # any version will do, only need headers
     ]
+
 version = '2.0.0a0'
 
 setup(
@@ -48,7 +51,7 @@ setup(
           ],
         packages = packages,
         version = version,
-        bob_packages = ['bob.core'],
+        bob_packages = bob_packages,
         ),
       Extension("bob.measure._library",
         [
@@ -57,7 +60,7 @@ setup(
           ],
         packages = packages,
         version = version,
-        bob_packages = ['bob.core', 'bob.math'],
+        bob_packages = bob_packages,
         ),
       ],
 
