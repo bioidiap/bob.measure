@@ -9,10 +9,7 @@ from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['bob.blitz'] + bob_packages))
 from bob.blitz.extension import Extension
 
-packages = [
-    'blitz >= 0.10',
-    'boost', # any version will do, only need headers
-    ]
+packages = ['blitz >= 0.10', 'boost']
 
 version = '2.0.0a0'
 
@@ -35,6 +32,7 @@ setup(
     install_requires=[
       'setuptools',
       'bob.blitz',
+      'bob.core',
       'bob.math',
       'bob.io.base',
       'matplotlib',
@@ -42,27 +40,28 @@ setup(
 
     namespace_packages=[
       "bob",
-      ],
+    ],
 
     ext_modules = [
       Extension("bob.measure.version",
         [
           "bob/measure/version.cpp",
-          ],
+        ],
         packages = packages,
         version = version,
         bob_packages = bob_packages,
-        ),
+      ),
+
       Extension("bob.measure._library",
         [
           "bob/measure/error.cpp",
           "bob/measure/main.cpp",
-          ],
+        ],
         packages = packages,
         version = version,
         bob_packages = bob_packages,
-        ),
-      ],
+      ),
+    ],
 
     entry_points={
       'console_scripts': [
@@ -70,8 +69,8 @@ setup(
         'bob_eval_threshold.py = bob.measure.script.eval_threshold:main',
         'bob_apply_threshold.py = bob.measure.script.apply_threshold:main',
         'bob_plot_cmc.py = bob.measure.script.plot_cmc:main',
-        ],
-      },
+      ],
+    },
 
     classifiers = [
       'Development Status :: 3 - Alpha',
@@ -81,6 +80,6 @@ setup(
       'Programming Language :: Python',
       'Programming Language :: Python :: 3',
       'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
+    ],
 
-    )
+  )
