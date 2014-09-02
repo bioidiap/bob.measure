@@ -2,20 +2,49 @@
 # vim: set fileencoding=utf-8 :
 # Andre Anjos <andre.anjos@idiap.ch>
 # Mon 23 May 2011 16:23:05 CEST
-#
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
 """A set of utilities to load score files with different formats.
 """
 
 import numpy
+import tarfile
+import os
+
+def open_file(filename):
+  """Opens the given score file for reading.
+  Score files might be raw text files, or a tar-file including a single score file inside.
+
+  Parameters:
+    filename  The name of the score file to open. This file might be a raw text file or a (compressed) tar file containing a raw text file.
+
+  Returns:
+    A read-only file-like object as it would be returned by open().
+  """
+  if not os.path.isfile(filename):
+    raise IOError("Score file '%s' does not exist." % filename)
+  if not tarfile.is_tarfile(filename):
+    return open(filename, 'rt')
+
+  # open the tar file for reading
+  tar = tarfile.open(filename, 'r')
+  # get the first file in the tar file
+  tar_info = tar.next()
+  while tar_info is not None and not tar_info.isfile():
+    tar_info = tar.next()
+  # check that one file was found in the archive
+  if tar_info is None:
+    raise IOError("The given file is a .tar file, but it does not contain any file.")
+
+  # open the file for reading
+  return tar.extractfile(tar_info)
+
 
 def four_column(filename):
   """Loads a score set from a single file to memory.
 
   Verifies that all fields are correctly placed and contain valid fields.
 
-  Returns a python list of tuples containg the following fields:
+  Returns a python list of tuples containing the following fields:
 
     [0]
       claimed identity (string)
@@ -28,7 +57,8 @@ def four_column(filename):
   """
 
   retval = []
-  for i, l in enumerate(open(filename, 'rt')):
+  for i, l in enumerate(open_file(filename)):
+    if isinstance(l, bytes): l = l.decode('utf-8')
     s = l.strip()
     if len(s) == 0 or s[0] == '#': continue #empty or comment
     field = [k.strip() for k in s.split()]
@@ -75,20 +105,15 @@ def split_four_column(filename):
 
 def cmc_four_column(filename):
   """Loads scores to compute CMC curves from a file in four column format.
-  
-  The four column file needs to be in the same format as described in the
-  four_column function, and the "test label" (column 3) has to contain the
-  test/probe file name.
+  The four column file needs to be in the same format as described in the four_column function,
+  and the "test label" (column 3) has to contain the test/probe file name.
 
-  This function returns a list of tuples. For each probe file, the tuple
-  consists of a list of negative scores and a list of positive scores.
-  Usually, the list of positive scores should contain only one element, but
-  more are allowed.
+  This function returns a list of tuples.
+  For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
+  Usually, the list of positive scores should contain only one element, but more are allowed.
 
-  The result of this function can directly be passed to, e.g., the
-  :py:func:`bob.measure.cmc` function.
+  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
   """
-
   # read four column list
   all_list = four_column(filename)
   # extract positives and negatives
@@ -131,7 +156,7 @@ def five_column(filename):
 
   Verifies that all fields are correctly placed and contain valid fields.
 
-  Returns a python list of tuples containg the following fields:
+  Returns a python list of tuples containing the following fields:
 
     [0]
       claimed identity (string)
@@ -146,7 +171,7 @@ def five_column(filename):
   """
 
   retval = []
-  for i, l in enumerate(open(filename, 'rt')):
+  for i, l in enumerate(open_file(filename)):
     s = l.strip()
     if len(s) == 0 or s[0] == '#': continue #empty or comment
     field = [k.strip() for k in s.split()]
@@ -193,20 +218,15 @@ def split_five_column(filename):
 
 def cmc_five_column(filename):
   """Loads scores to compute CMC curves from a file in five column format.
+  The four column file needs to be in the same format as described in the five_column function,
+  and the "test label" (column 4) has to contain the test/probe file name.
 
-  The four column file needs to be in the same format as described in the
-  five_column function, and the "test label" (column 4) has to contain the
-  test/probe file name.
+  This function returns a list of tuples.
+  For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
+  Usually, the list of positive scores should contain only one element, but more are allowed.
 
-  This function returns a list of tuples.  For each probe file, the tuple
-  consists of a list of negative scores and a list of positive scores.
-  Usually, the list of positive scores should contain only one element, but
-  more are allowed.
-
-  The result of this function can directly be passed to, e.g., the
-  :py:func:`bob.measure.cmc` function.
+  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
   """
-
   # read four column list
   all_list = five_column(filename)
 
