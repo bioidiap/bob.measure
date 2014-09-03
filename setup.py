@@ -7,7 +7,7 @@ bob_packages = ['bob.core', 'bob.math']
 
 from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['bob.blitz'] + bob_packages))
-from bob.blitz.extension import Extension
+from bob.blitz.extension import Extension, build_ext
 
 packages = ['blitz >= 0.10', 'boost']
 
@@ -62,6 +62,10 @@ setup(
         bob_packages = bob_packages,
       ),
     ],
+
+    cmdclass = {
+      'build_ext': build_ext
+    },
 
     entry_points={
       'console_scripts': [
