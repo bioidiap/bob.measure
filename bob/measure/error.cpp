@@ -402,8 +402,8 @@ blitz::Array<double,2> bob::measure::roc_for_far(const blitz::Array<double,1>& n
     if ((double)neg_index / (double)n_neg > 1. - far_list(far_index)){
       // copy the far value
       retval(0,far_index) = far_list(far_index);
-      // calculate the CAR (i.e., 1.-frr) for the current FAR
-      retval(1,far_index) = 1. - (double)pos_index / (double)n_pos;
+      // calculate the FRR for the current FAR
+      retval(1,far_index) = (double)pos_index / (double)n_pos;
       // go to the next FAR value
       --far_index;
     }
@@ -411,7 +411,7 @@ blitz::Array<double,2> bob::measure::roc_for_far(const blitz::Array<double,1>& n
   // do this, as long as there are elements in both lists left and not all FRR elements where calculated yet
   } while (pos_it != positives_.end() && neg_it != negatives_.end() && far_index >= 0);
 
-  // check if all CAR values have been set
+  // check if all FRR values have been set
   if (far_index >= 0){
     // walk to the end of both lists; at least one of both lists should already have reached its limit.
     pos_index += positives_.end() - pos_it;
@@ -422,11 +422,11 @@ blitz::Array<double,2> bob::measure::roc_for_far(const blitz::Array<double,1>& n
       retval(0,far_index) = far_list(far_index);
       // check if the criterion is fulfilled (should be, as long as the lowest far is not below 0)
       if ((double)neg_index / (double)n_neg > 1. - far_list(far_index)){
-        // calculate the CAR (i.e., 1.-FRR) for the current FAR
-        retval(1,far_index) = 1. - (double)pos_index / (double)n_pos;
+        // calculate the FRR for the current FAR
+        retval(1,far_index) = (double)pos_index / (double)n_pos;
       } else {
-        // set CAR to zero (this should never happen, but might be due to numerical issues)
-        retval(1,far_index) = 0.;
+        // set FRR to 1 (this should never happen, but might be due to numerical issues)
+        retval(1,far_index) = 1.;
       }
     } while (far_index--);
   }

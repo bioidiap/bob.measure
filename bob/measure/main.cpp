@@ -192,7 +192,7 @@ Calculates points of an Receiver Operating Characteristic (ROC).\n\
 \n\
 Calculates the ROC curve given a set of positive and negative scores\n\
 and a desired number of points. Returns a two-dimensional array\n\
-of doubles that express the X (FRR) and Y (FAR) coordinates in this\n\
+of doubles that express the X (FAR) and Y (FRR) coordinates in this\n\
 order. The points in which the ROC curve are calculated are\n\
 distributed uniformily in the range [min(negatives, positives),\n\
 max(negatives, positives)].\n\
@@ -264,8 +264,8 @@ depending on the side the threshold falls.\n\
 \n\
 The output is in form of a tuple of two double-precision real\n\
 numbers. The numbers range from 0 to 1. The first element of the pair\n\
-is the false-accept ratio. The second element of the pair is the\n\
-false-rejection ratio.\n\
+is the false-accept ratio (FAR). The second element of the pair is the\n\
+false-rejection ratio (FRR).\n\
 \n\
 It is possible that scores are inverted in the negative/positive\n\
 sense. In some setups the designer may have setup the system so\n\
@@ -830,7 +830,7 @@ PyDoc_STRVAR(s_rocch_doc,
 \n\
 Calculates the ROC Convex Hull curve given a set of positive and\n\
 negative scores. Returns a two-dimensional array of doubles\n\
-that express the X (FRR) and Y (FAR) coordinates in this order.\n\
+that express the X (FAR) and Y (FRR) coordinates in this order.\n\
 ");
 
 static PyObject* rocch(PyObject*, PyObject* args, PyObject* kwds) {
@@ -912,7 +912,7 @@ PyDoc_STRVAR(s_roc_for_far_doc,
 "roc_for_far(negatives, positives, far_list) -> numpy.ndarray\n\
 \n\
 Calculates the ROC curve given a set of positive and negative\n\
-scores and the FAR values for which the CAR should be computed.\n\
+scores and the FAR values for which the FRR should be computed.\n\
 The resulting ROC curve holds a copy of the given FAR values (row\n\
 0), and the corresponding FRR values (row 1).\n\
 ");
