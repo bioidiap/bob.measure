@@ -178,8 +178,8 @@ town. To plot an ROC curve, in possession of your **negatives** and
   >>> # we assume you have your negatives and positives already split
   >>> npoints = 100
   >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
-  >>> pyplot.xlabel('FRR (%)') # doctest: +SKIP
-  >>> pyplot.ylabel('FAR (%)') # doctest: +SKIP
+  >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
+  >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
   >>> pyplot.grid(True)
   >>> pyplot.show() # doctest: +SKIP
 

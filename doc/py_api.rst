@@ -9,5 +9,23 @@
 This section includes information for using the pure Python API of ``bob::measure``.
 
 
+Measurement
+-----------
+
 .. automodule:: bob.measure
+
+Loading data
+------------
+
+.. automodule:: bob.measure.load
+
+Calibration
+-----------
+
+.. automodule:: bob.measure.calibration
+
+Plotting
+--------
+
+.. automodule:: bob.measure.plot
 
