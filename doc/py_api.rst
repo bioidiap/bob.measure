@@ -6,7 +6,7 @@
  Python API
 ============
 
-This section includes information for using the pure Python API of ``bob::measure``.
+This section includes information for using the Python API of :py:mod:`bob.measure`.
 
 
 Measurement

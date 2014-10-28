@@ -255,7 +255,7 @@ This will produce an image like the following one:
   If you wish to reset axis zooming, you must use the Gaussian scale rather
   than the visual marks showed at the plot, which are just there for
   displaying purposes. The real axis scale is based on the
-  ``bob.measure.ppndf()`` method. For example, if you wish to set the x and y
+  :py:func:`bob.measure.ppndf` method. For example, if you wish to set the x and y
   axis to display data between 1% and 40% here is the recipe:
 
   .. doctest::
@@ -315,8 +315,8 @@ Full applications
 We do provide a few scripts that can be used to quickly evaluate a set of
 scores. We present these scripts in this section. The scripts take as input
 either a 4-column or 5-column data format as specified in the documentation of
-:py:mod:`bob.measure.load.four_column` or
-:py:mod:`bob.measure.load.five_column`.
+:py:func:`bob.measure.load.four_column` or
+:py:func:`bob.measure.load.five_column`.
 
 To calculate the threshold using a certain criterion (EER, min.HTER or weighted
 Error Rate) on a set, after setting up |project|, just do:

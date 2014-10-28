@@ -20,7 +20,7 @@ setup(
 
     name='bob.measure',
     version=version,
-    description='Bindings for bob.measure',
+    description='Bob\'s evalution metrics',
     url='http://github.com/bioidiap/bob.measure',
     license='BSD',
     author='Andre Anjos',
@@ -74,7 +74,8 @@ setup(
     },
 
     classifiers = [
-      'Development Status :: 3 - Alpha',
+      'Framework :: Bob',
+      'Development Status :: 4 - Beta',
       'Intended Audience :: Developers',
       'License :: OSI Approved :: BSD License',
       'Natural Language :: English',

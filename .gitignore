@@ -2,6 +2,7 @@
 *.swp
 *.pyc
 *.so
+*.dylib
 bin
 eggs
 parts
@@ -16,4 +17,3 @@ dist
 build
 *.egg
 src/
-opsnr.stt
