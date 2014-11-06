@@ -12,9 +12,10 @@ from bob.blitz.extension import Extension, build_ext
 from bob.extension.utils import load_requirements
 build_requires = load_requirements()
 
-packages = ['blitz >= 0.10', 'boost']
+# Define package version
+version = open("version.txt").read().rstrip()
 
-version = '2.0.0a0'
+packages = ['blitz >= 0.10', 'boost']
 
 setup(
 
