@@ -15,11 +15,18 @@ def open_file(filename):
   Score files might be raw text files, or a tar-file including a single score file inside.
 
   Parameters:
-    filename  The name of the score file to open. This file might be a raw text file or a (compressed) tar file containing a raw text file.
+
+  filename : str or file-like
+    The name of the score file to open, or a file-like object open for reading.
+    If a file name is given, the according file might be a raw text file or a (compressed) tar file containing a raw text file.
 
   Returns:
     A read-only file-like object as it would be returned by open().
   """
+  if not isinstance(filename, str) and hasattr(filename, 'read'):
+    # It seems that this is an open file
+    return filename
+
   if not os.path.isfile(filename):
     raise IOError("Score file '%s' does not exist." % filename)
   if not tarfile.is_tarfile(filename):
