@@ -51,7 +51,7 @@ def four_column(filename):
 
   Verifies that all fields are correctly placed and contain valid fields.
 
-  Returns a python list of tuples containing the following fields:
+  Returns a python generator of tuples containing the following fields:
 
     [0]
       claimed identity (string)
@@ -63,7 +63,6 @@ def four_column(filename):
       score (float)
   """
 
-  retval = []
   for i, l in enumerate(open_file(filename)):
     if isinstance(l, bytes): l = l.decode('utf-8')
     s = l.strip()
@@ -73,12 +72,10 @@ def four_column(filename):
       raise SyntaxError('Line %d of file "%s" is invalid: %s' % (i, filename, l))
     try:
       score = float(field[3])
-      t = (field[0], field[1], field[2], score)
-      retval.append(t)
     except:
       raise SyntaxError('Cannot convert score to float at line %d of file "%s": %s' % (i, filename, l))
+    yield (field[0], field[1], field[2], score)
 
-  return retval
 
 def split_four_column(filename):
   """Loads a score set from a single file to memory and splits the scores
@@ -92,21 +89,15 @@ def split_four_column(filename):
   arrays of float64.
   """
 
-  # read four column list
-  scores_list = four_column(filename)
-
   # split in positives and negatives
   neg = []
   pos = []
-  for (client_id, probe_id, _, score_str) in scores_list:
-    try:
-      score = float(score_str)
-      if client_id == probe_id:
-        pos.append(score)
-      else:
-        neg.append(score)
-    except:
-      raise SyntaxError('Cannot convert score "%s" to float' % score_str)
+  # read four column list line by line
+  for (client_id, probe_id, _, score) in four_column(filename):
+    if client_id == probe_id:
+      pos.append(score)
+    else:
+      neg.append(score)
 
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
@@ -121,12 +112,11 @@ def cmc_four_column(filename):
 
   The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
   """
-  # read four column list
-  all_list = four_column(filename)
   # extract positives and negatives
   pos_dict = {}
   neg_dict = {}
-  for (client_id, probe_id, probe_name, score_str) in all_list:
+  # read four column list
+  for (client_id, probe_id, probe_name, score_str) in four_column(filename):
     try:
       score = float(score_str)
       # check in which dict we have to put the score
@@ -163,7 +153,7 @@ def five_column(filename):
 
   Verifies that all fields are correctly placed and contain valid fields.
 
-  Returns a python list of tuples containing the following fields:
+  Returns a python generator of tuples containing the following fields:
 
     [0]
       claimed identity (string)
@@ -177,7 +167,6 @@ def five_column(filename):
       score (float)
   """
 
-  retval = []
   for i, l in enumerate(open_file(filename)):
     s = l.strip()
     if len(s) == 0 or s[0] == '#': continue #empty or comment
@@ -186,12 +175,9 @@ def five_column(filename):
       raise SyntaxError('Line %d of file "%s" is invalid: %s' % (i, filename, l))
     try:
       score = float(field[4])
-      t = (field[0], field[1], field[2], field[3], score)
-      retval.append(t)
     except:
       raise SyntaxError('Cannot convert score to float at line %d of file "%s": %s' % (i, filename, l))
-
-  return retval
+    yield (field[0], field[1], field[2], field[3], score)
 
 def split_five_column(filename):
   """Loads a score set from a single file to memory and splits the scores
@@ -205,21 +191,15 @@ def split_five_column(filename):
   arrays of float64.
   """
 
-  # read five column list
-  scores_list = five_column(filename)
-
   # split in positives and negatives
   neg = []
   pos = []
-  for (client_id, _, probe_id, _, score_str) in scores_list:
-    try:
-      score = float(score_str)
-      if client_id == probe_id:
-        pos.append(score)
-      else:
-        neg.append(score)
-    except:
-      raise SyntaxError('Cannot convert score "%s" to float' % score_str)
+  # read five column list
+  for (client_id, _, probe_id, _, score) in five_column(filename):
+    if client_id == probe_id:
+      pos.append(score)
+    else:
+      neg.append(score)
 
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
@@ -234,26 +214,21 @@ def cmc_five_column(filename):
 
   The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
   """
-  # read four column list
-  all_list = five_column(filename)
-
+  # extract positives and negatives
   pos_dict = {}
   neg_dict = {}
-  for (client_id, _, probe_id, probe_name, score_str) in all_list:
-    try:
-      score = float(score_str)
-      # check in which dict we have to put the score
-      if client_id == probe_id:
-        correct_dict = pos_dict
-      else:
-        correct_dict = neg_dict
-      # append score
-      if probe_name in correct_dict:
-        correct_dict[probe_name].append(score)
-      else:
-        correct_dict[probe_name] = [score]
-    except:
-      raise SyntaxError('Cannot convert score "%s" to float' % score_str)
+  # read four column list
+  for (client_id, _, probe_id, probe_name, score) in five_column(filename):
+    # check in which dict we have to put the score
+    if client_id == probe_id:
+      correct_dict = pos_dict
+    else:
+      correct_dict = neg_dict
+    # append score
+    if probe_name in correct_dict:
+      correct_dict[probe_name].append(score)
+    else:
+      correct_dict[probe_name] = [score]
 
   # convert to lists of tuples of ndarrays
   retval = []
