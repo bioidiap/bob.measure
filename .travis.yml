@@ -18,7 +18,8 @@ before_install:
 - sudo apt-get install --force-yes libboost-all-dev libblitz1-dev libhdf5-serial-dev texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
 - pip install --upgrade pip
 - pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel sphinx nose jinja2 coverage cpp-coveralls pygments
-- pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel -r requirements.txt --pre coveralls --default-timeout 60
+- pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel matplotlib
+- pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel -r requirements.txt --pre coveralls
 install:
 - python bootstrap-buildout.py
 - CPPFLAGS=--coverage LDFLAGS=--coverage ./bin/buildout buildout:debug=false buildout:develop=. buildout:extensions=bob.buildout buildout:auto-checkout=
