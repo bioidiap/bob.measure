@@ -10,6 +10,9 @@
 #endif
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
+#include <bob.core/api.h>
+#include <bob.io.base/api.h>
+
 #include "error.h"
 
 static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
@@ -1097,6 +1100,8 @@ static PyObject* create_module (void) {
 
   /* imports bob.blitz C-API + dependencies */
   if (import_bob_blitz() < 0) return 0;
+  if (import_bob_core_logging() < 0) return 0;
+  if (import_bob_io_base() < 0) return 0;
 
   return Py_BuildValue("O", m);
 }

@@ -1,5 +1,6 @@
 # import Libraries of other lib packages
 import bob.math
+import bob.io.base
 
 from ._library import *
 from . import version
