@@ -16,6 +16,7 @@ build_requires = load_requirements()
 version = open("version.txt").read().rstrip()
 
 packages = ['blitz >= 0.10', 'boost']
+boost_modules = ['system']
 
 setup(
 
@@ -48,6 +49,7 @@ setup(
         packages = packages,
         version = version,
         bob_packages = bob_packages,
+        boost_modules = boost_modules,
       ),
 
       Extension("bob.measure._library",
@@ -58,6 +60,7 @@ setup(
         packages = packages,
         version = version,
         bob_packages = bob_packages,
+        boost_modules = boost_modules,
       ),
     ],
 
