@@ -16,13 +16,14 @@
 #include "error.h"
 
 static int double1d_converter(PyObject* o, PyBlitzArrayObject** a) {
-  if (PyBlitzArray_Converter(o, a) != 0) return 1;
+  if (PyBlitzArray_Converter(o, a) == 0) return 0;
+  
   // in this case, *a is set to a new reference
   if ((*a)->type_num != NPY_FLOAT64 || (*a)->ndim != 1) {
     PyErr_Format(PyExc_TypeError, "cannot convert blitz::Array<%s,%" PY_FORMAT_SIZE_T "d> to a blitz::Array<double,1>", PyBlitzArray_TypenumAsString((*a)->type_num), (*a)->ndim);
-    return 1;
+    return 0;
   }
-  return 0;
+  return 1;
 }
 
 PyDoc_STRVAR(s_epc_str, "epc");
