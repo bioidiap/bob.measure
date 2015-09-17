@@ -9,6 +9,7 @@ from .version import module as __version__
 from . import plot
 from . import load
 from . import calibration
+from . import openbr
 import numpy
 
 def mse (estimation, target):
