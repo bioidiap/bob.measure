@@ -38,10 +38,14 @@ def test_load_scores():
 
 def _check_binary_identical(name1, name2):
   # see: http://www.peterbe.com/plog/using-md5-to-check-equality-between-files
-  import md5
+  import sys
+  if sys.version_info[0] == 2:
+    from md5 import new as md5
+  else:
+    from hashlib import md5
   # tests if two files are binary identical
-  with open(name1) as f1, open(name2) as f2:
-    assert md5.new(f1.read()).digest() == md5.new(f2.read()).digest()
+  with open(name1,'rb') as f1, open(name2,'rb') as f2:
+    assert md5(f1.read()).digest() == md5(f2.read()).digest()
 
 
 def test_convert_openbr():

@@ -1,6 +1,7 @@
 """This file includes functionality to convert between Bob's four column or five column score files and the Matrix files used in OpenBR."""
 
 import numpy
+import sys
 import logging
 logger = logging.getLogger("bob.measure")
 
@@ -61,10 +62,13 @@ def write_matrix(
     ## Helper function to write a matrix file as required by OpenBR
     with open(filename, 'wb') as f:
       # write the first four lines
-      f.write("S2\n%s\n%s\nM%s %d %d " % (gallery_file_name, probe_file_name, 'B' if matrix.dtype == numpy.uint8 else 'F', matrix.shape[0], matrix.shape[1]))
+      header = "S2\n%s\n%s\nM%s %d %d " % (gallery_file_name, probe_file_name, 'B' if matrix.dtype == numpy.uint8 else 'F', matrix.shape[0], matrix.shape[1])
+      footer = "\n"
+      if sys.version_info[0] > 2: header, footer = header.encode('utf-8'), footer.encode('utf-8')
+      f.write(header)
       # write magic number
       numpy.array(0x12345678, numpy.int32).tofile(f)
-      f.write("\n")
+      f.write(footer)
       # write the matrix
       matrix.tofile(f)
 
@@ -89,8 +93,9 @@ def write_matrix(
         probe_set.add(probe)
 
   # create a shortcut to get indices for client and probe subset (to increase speed)
-  model_dict = {m:i for i,m in enumerate(model_names)}
-  probe_dict = {p:i for i,p in enumerate(probe_names)}
+  model_dict, probe_dict = {}, {}
+  for i,m in enumerate(model_names): model_dict[m]=i
+  for i,p in enumerate(probe_names): probe_dict[p]=i
 
   # now, create the matrices in the desired size
   matrix = numpy.ndarray((len(probe_names), len(model_names)), numpy.float32)
