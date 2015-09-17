@@ -44,8 +44,9 @@ def _check_binary_identical(name1, name2):
   else:
     from hashlib import md5
   # tests if two files are binary identical
-  with open(name1,'rb') as f1, open(name2,'rb') as f2:
-    assert md5(f1.read()).digest() == md5(f2.read()).digest()
+  with open(name1,'rb') as f1:
+    with open(name2,'rb') as f2:
+      assert md5(f1.read()).digest() == md5(f2.read()).digest()
 
 
 def test_convert_openbr():
