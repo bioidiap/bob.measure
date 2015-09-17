@@ -5,6 +5,8 @@
 #
 # Copyright (C) 2011-2014 Idiap Research Institute, Martigny, Switzerland
 
+from __future__ import print_function
+
 """This script computes and plot a cumulative rank characteristics (CMC) curve
 from a score file in four or five column format.
 
