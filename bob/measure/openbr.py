@@ -152,13 +152,14 @@ def write_matrix(
       scores[probe].append((score, 0xff if client == id else 0x7f))
 
     # go ahead and sort the scores per probe
-    scores = {k:sorted(v, key=lambda x: x[0], reverse=True) for k,v in scores.iteritems()}
+    sorted_scores = {}
+    for k,v in scores.items(): sorted_scores[k] = sorted(v, key=lambda x: x[0], reverse=True)
 
     # now, write matrix
     for p, probe in enumerate(probe_names):
       if probe in scores:
-        for m in range(min(search, len(scores[probe]))):
-          matrix[p,m], mask[p,m] = scores[probe][m]
+        for m in range(min(search, len(sorted_scores[probe]))):
+          matrix[p,m], mask[p,m] = sorted_scores[probe][m]
 
 
   # OK, now finally write the file in the desired format
