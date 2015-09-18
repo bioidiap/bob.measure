@@ -49,8 +49,8 @@ def _check_binary_identical(name1, name2):
       assert md5(f1.read()).digest() == md5(f2.read()).digest()
 
 
-def test_convert_openbr():
-  # This function tests that the conversion to the OpenBR file works as expected
+def test_openbr_verify():
+  # This function tests that the conversion to the OpenBR verify file works as expected
   temp_dir = tempfile.mkdtemp(prefix='bob_test')
 
   # define output files
@@ -72,6 +72,43 @@ def test_convert_openbr():
 
         # check that they are binary identical to the reference files (which are tested to work and give the same results with OpenBR)
         matrix_ref, mask_ref = [bob.io.base.test_utils.datafile('scores%s' % ext, 'bob.measure') for ext in openbr_extensions]
+        _check_binary_identical(matrix_file, matrix_ref)
+        _check_binary_identical(mask_file, mask_ref)
+
+        # define new kwargs for second round, i.e., define model and probe names
+        # these names are identical to what is found in the score file, which in turn comes from the AT&T database
+        model_type = {"4col" : "%d", "5col" : "s%d"}[variant]
+        dev_ids = (3,4,7,8,9,13,15,18,19,22,23,25,28,30,31,32,35,37,38,40)
+        kwargs['model_names'] = [model_type % c for c in dev_ids]
+        kwargs['probe_names'] = ["s%d/%d" %(c,i) for c in dev_ids for i in (1,3,6,8,10)]
+
+  finally:
+    shutil.rmtree(temp_dir)
+
+
+def test_openbr_search():
+  # This function tests that the conversion to the OpenBR search file works as expected
+  temp_dir = tempfile.mkdtemp(prefix='bob_test')
+
+  # define output files
+  openbr_extensions = ('.mtx', '.mask')
+  matrix_file, mask_file = [os.path.join(temp_dir, "search%s") % ext for ext in openbr_extensions]
+
+  try:
+    for variant in ('4col', '5col'):
+      # get score file
+      score_file = bob.io.base.test_utils.datafile('scores-cmc-%s.txt' % variant, 'bob.measure')
+
+      # first round, do not define keyword arguments -- let the file get the gallery and probe ids automatically
+      kwargs = {}
+      for i in range(2):
+        # get the files by automatically obtaining the identities
+        bob.measure.openbr.write_matrix(score_file, matrix_file, mask_file, score_file_format = "%sumn" % variant, search=50, **kwargs)
+
+        assert os.path.isfile(matrix_file) and os.path.isfile(mask_file)
+
+        # check that they are binary identical to the reference files (which are tested to work and give the same results with OpenBR)
+        matrix_ref, mask_ref = [bob.io.base.test_utils.datafile('search%s' % ext, 'bob.measure') for ext in openbr_extensions]
         _check_binary_identical(matrix_file, matrix_ref)
         _check_binary_identical(mask_file, mask_ref)
 

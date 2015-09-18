@@ -364,7 +364,24 @@ def det_axis(v, **kwargs):
   return mpl.axis(tv, **kwargs)
 
 def cmc(cmc_scores, logx = True, **kwargs):
-  """Plots the (cumulative) match characteristics curve and returns the maximum rank."""
+  """Plots the (cumulative) match characteristics curve and returns the maximum rank.
+
+  This function plots a CMC curve using the given CMC scores, which can be read from the our score files using the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` methods.
+  The structure of the ``cmc_scores`` parameter is relatively complex.
+  It contains a list of pairs of lists.
+  For each probe object, a pair of list negative and positive scores is required.
+
+  Keyword parameters:
+
+  cmc_scores : [([negative],[positive])]
+    The list of scores to be plotted.
+
+  logx : bool
+    Plot the rank axis in logarithmic scale? (Default: ``True``)
+
+  kwargs
+    Remaining keyword arguments passed directly to the :py:func:`matplotlib.pyplot.plot` function.
+  """
   try:
     import matplotlib.pyplot as mpl
   except ImportError:

@@ -110,7 +110,7 @@ def cmc_four_column(filename):
   For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
   Usually, the list of positive scores should contain only one element, but more are allowed.
 
-  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
+  The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
   """
   # extract positives and negatives
   pos_dict = {}
@@ -213,7 +213,7 @@ def cmc_five_column(filename):
   For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
   Usually, the list of positive scores should contain only one element, but more are allowed.
 
-  The result of this function can directly be passed to, e.g., the bob.measure.cmc function.
+  The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
   """
   # extract positives and negatives
   pos_dict = {}

@@ -29,3 +29,7 @@ Plotting
 
 .. automodule:: bob.measure.plot
 
+OpenBR conversions
+------------------
+
+.. automodule:: bob.measure.openbr
