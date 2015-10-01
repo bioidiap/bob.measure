@@ -93,7 +93,7 @@ def recognition_rate(cmc_scores):
     # (usually, there is only one positive score, but just in case...)
     max_pos = numpy.max(pos)
     # check if the positive score is smaller than all negative scores
-    if (neg <= max_pos).all():
+    if (neg < max_pos).all():
       correct += 1
 
   # return relative number of
@@ -122,7 +122,7 @@ def cmc(cmc_scores):
     # (usually, there is only one positive score, but just in case...)
     max_pos = numpy.max(pos)
     # count the number of negative scores that are higher than the best positive score
-    index = numpy.sum(neg > max_pos)
+    index = numpy.sum(neg >= max_pos)
     match_characteristic[index] += 1
 
   # cumulate
