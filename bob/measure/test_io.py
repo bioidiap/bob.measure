@@ -8,6 +8,7 @@
 """Tests the IO functionality of bob.measure."""
 
 import bob.measure
+import numpy
 import tempfile, os, shutil
 
 import bob.io.base.test_utils
@@ -114,6 +115,59 @@ def test_openbr_search():
         dev_ids = (3,4,7,8,9,13,15,18,19,22,23,25,28,30,31,32,35,37,38,40)
         kwargs['model_names'] = [model_type % c for c in dev_ids]
         kwargs['probe_names'] = ["s%d/%d" %(c,i) for c in dev_ids for i in (1,3,6,8,10)]
+
+  finally:
+    shutil.rmtree(temp_dir)
+
+
+
+def test_from_openbr():
+  # This function tests that the conversion from the OpenBR matrices work as expected
+  temp_dir = tempfile.mkdtemp(prefix='bob_test')
+
+  # define input files
+  openbr_extensions = ('.mtx', '.mask')
+  matrix_file, mask_file = [bob.io.base.test_utils.datafile('scores%s' % ext, 'bob.measure') for ext in openbr_extensions]
+
+  score_file = os.path.join(temp_dir, "scores")
+  load_functions = {'4col' : bob.measure.load.four_column, '5col' : bob.measure.load.five_column}
+
+  try:
+    for variant in ('4col', '5col'):
+      # first, do not define keyword arguments -- let the file get the model and probe ids being created automatically
+      bob.measure.openbr.write_score_file(matrix_file, mask_file, score_file, score_file_format="%sumn"%variant)
+      assert os.path.exists(score_file)
+      # read the score file with bobs functionality
+      columns = list(load_functions[variant](score_file))
+
+      # check the contents
+      assert len(columns) == 2000
+
+      # now, generate model and probe names and ids
+      model_type = {"4col" : "%d", "5col" : "s%d"}[variant]
+      dev_ids = (3,4,7,8,9,13,15,18,19,22,23,25,28,30,31,32,35,37,38,40)
+      model_names = ["s%d" % c for c in dev_ids]
+      probe_names = ["s%d/%d" %(c,i) for c in dev_ids for i in (1,3,6,8,10)]
+      models_ids = ["%d" % c for c in dev_ids]
+      probes_ids = ["%d" % c for c in dev_ids for i in (1,3,6,8,10)]
+
+      bob.measure.openbr.write_score_file(matrix_file, mask_file, score_file, models_ids=models_ids, probes_ids=probes_ids, model_names=model_names, probe_names=probe_names, score_file_format="%sumn"%variant)
+
+      # check that we re-generated the bob score file
+      reference_file = bob.io.base.test_utils.datafile('scores-cmc-%s.txt' % variant, 'bob.measure')
+
+      # assert that we can (almost) reproduce the score file
+      # ... read both files
+      columns = list(load_functions[variant](score_file))
+      reference = list(load_functions[variant](reference_file))
+      assert len(columns) == len(reference)
+      for i in range(len(columns)):
+        for j in range(len(columns[i])-1):
+          # check that the model and probe names are fine
+          assert columns[i][j] == reference[i][j], str(columns[i]) + " != " + str(reference[i])
+        # check that the score is close (OpenBR write scores in float32 precision only)
+        assert abs(columns[i][-1] - numpy.float32(reference[i][-1])) <= 1e-8, str(columns[i][-1]) + " != " + str(reference[i][-1])
+        assert numpy.isclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
 
   finally:
     shutil.rmtree(temp_dir)

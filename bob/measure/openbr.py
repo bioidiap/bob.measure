@@ -165,3 +165,152 @@ def write_matrix(
   # OK, now finally write the file in the desired format
   _write_matrix(mask_file, mask)
   _write_matrix(matrix_file, matrix)
+
+
+def write_score_file(
+    matrix_file,
+    mask_file,
+    score_file,
+    models_ids = None,
+    probes_ids = None,
+    model_names = None,
+    probe_names = None,
+    score_file_format = '4column',
+    replace_nan = None
+):
+  """Writes the Bob score file in the desired ``score_file_format`` (four or five column), given the OpenBR matrix and mask files.
+
+  In principle, the score file can be written based on the matrix and mask files, and the format suffice the requirements to compute CMC curves.
+  However, the contents of the score files can be adapted.
+  If given, the ``models_ids`` and ``probes_ids`` define the **client ids** of model and probe, and they have to be in the same order as used to compute the OpenBR matrix.
+  The ``model_names`` and ``probe_names`` define the **paths** of model and probe, and they should be in the same order as the ids.
+
+  In rare cases, the OpenBR matrix contains NaN values, which Bob's score files cannot handle.
+  You can use the ``replace_nan`` parameter to decide, what to do with these values.
+  By default (``None``), these values are ignored, i.e., not written into the score file.
+  This is, what OpenBR is doing as well.
+  However, you can also set ``replace_nan`` to any value, which will be written instead of the NaN values.
+
+  Keyword parameters:
+
+  matrix_file : str
+    The OpenBR matrix file that should be read.
+    Usually, the file name extension is ``.mtx``
+
+  mask_file : str
+    The OpenBR mask file that should be read.
+    Usually, the file name extension is ``.mask``
+
+  score_file : str
+    The 4 or 5 column style score file that should be written.
+
+  models_ids : [str] or ``None``
+    The client ids of the models that will be written in the first column of the score file.
+    If given, the size must be identical to the number of models (gallery templates) in the OpenBR files.
+    If not given, client ids of the model will be identical to the **gallery index** in the matrix file.
+
+  probes_ids : [str] or ``None``:
+    The client ids of the probes that will be written in the second/third column of the four/five column score file.
+    If given, the size must be identical to the number of probe templates in the OpenBR files.
+    It will be checked that the OpenBR mask fits to the model/probe client ids.
+    If not given, the probe ids will be estimated automatically, i.e., to fit the OpenBR matrix.
+
+  model_names : [str] or ``None``
+    A list of model path written in the second column of the five column score file.
+    If not given, the model index in the OpenBR file will be used.
+
+    .. note::
+       This entry is ignored in the four column score file format.
+
+  probe_names : [str] or ``None``
+    A list of probe path to be written in the third/fourth column in the four/five column score file.
+    If given, the size must be identical to the number of probe templates in the OpenBR files.
+    If not given, the probe index in the OpenBR file will be used.
+
+  score_file_format : one of ``('4column', '5column')``
+    The format, in which the ``score_file`` should be written.
+
+  replace_nan : float or ``None``:
+    If NaN values are encountered in the OpenBR matrix (which are not ignored due to the mask being non-NULL), this value will be written instead.
+    If ``None``, the values will not be written in the score file at all.
+  """
+  def _read_matrix(filename):
+    ## Helper function to read a matrix file as written by OpenBR
+    with open(filename, 'rb') as f:
+      # get version
+      header = f.readline()
+      assert header[:2] == "S2"
+      # skip gallery and probe files
+      f.readline()
+      f.readline()
+      # read size and type of matrix
+      size = f.readline()
+      splits = size.rstrip().split()
+      # TODO: check the endianess of the magic number stored in split[3]
+      assert splits[0][0] == 'M'
+      w,h = int(splits[1]), int(splits[2])
+      # read matrix data
+      data = numpy.fromfile(f, dtype={'B':numpy.uint8, 'F': numpy.float32}[splits[0][1]])
+      assert data.shape[0] == w*h
+      data.shape = (w,h)
+    return data
+
+  # check parameters
+  if score_file_format not in ("4column", "5column"):
+    raise ValueError("The given score file format %s is not known; choose one of ('4column', '5column')" % score_file_format)
+  # get type of score file
+  four_col = score_file_format == "4column"
+
+  # read the two matrices
+  scores = _read_matrix(matrix_file)
+  mask = _read_matrix(mask_file)
+
+  # generate the id lists, if not given
+  if models_ids is None:
+    models_ids = [str(g+1) for g in range(mask.shape[1])]
+  assert len(models_ids) == mask.shape[1]
+
+  if probes_ids is None:
+    probes_ids = []
+    # iterate over all probes
+    for p in range(mask.shape[0]):
+      # get indices, where model and probe id should be identical
+      equal_indices = numpy.where(mask[p] == 0xff)
+      if len(equal_indices):
+        # model id found, use the first one
+        probes_ids.append(models_ids[equal_indices[0]])
+      else:
+        # no model found; add non-existing id
+        probes_ids.append("unknown")
+  else:
+    assert len(probes_ids) == mask.shape[0]
+    # check that the probes client ids are in the correct order
+    for p in range(mask.shape[0]):
+      for g in range(mask.shape[1]):
+        if mask[p,g] == 0x7f:
+          if models_ids[g] == probes_ids[p]: raise ValueError("The probe id %s with index %d should not be identical to model id %s with index %d" % (probes_ids[p], p, models_ids[g], g))
+        elif mask[p,g] == 0xff:
+          if models_ids[g] != probes_ids[p]: raise ValueError("The probe id %s with index %d should be identical to model id %s with index %d" % (probes_ids[p], p, models_ids[g], g))
+
+  # generate model and probe names, if not given
+  if not four_col and model_names is None:
+    model_names = [str(g+1) for g in range(mask.shape[1])]
+  if probe_names is None:
+    probe_names = [str(p+1) for p in range(mask.shape[0])]
+
+
+  # iterate through the files and write scores
+  with open(score_file, 'w') as f:
+    for g in range(mask.shape[1]):
+      for p in range(mask.shape[0]):
+        if mask[p,g]:
+          score = scores[p,g]
+          # handle NaN values
+          if numpy.isnan(score):
+            if replace_nan is None: continue
+            score = replace_nan
+          # write score file
+          if four_col:
+            f.write("%s %s %s %3.8f\n" % (models_ids[g], probes_ids[p], probe_names[p], score))
+          else:
+            f.write("%s %s %s %s %3.8f\n" % (models_ids[g], model_names[g], probes_ids[p], probe_names[p], score))
