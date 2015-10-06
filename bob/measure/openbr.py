@@ -235,16 +235,19 @@ def write_score_file(
     If ``None``, the values will not be written in the score file at all.
   """
   def _read_matrix(filename):
+    py3 = sys.version_info[0] >=3
     ## Helper function to read a matrix file as written by OpenBR
     with open(filename, 'rb') as f:
       # get version
       header = f.readline()
+      if py3: header = header.decode("utf-8")
       assert header[:2] == "S2"
       # skip gallery and probe files
       f.readline()
       f.readline()
       # read size and type of matrix
       size = f.readline()
+      if py3: size = size.decode("utf-8")
       splits = size.rstrip().split()
       # TODO: check the endianess of the magic number stored in split[3]
       assert splits[0][0] == 'M'
