@@ -87,6 +87,10 @@ def recognition_rate(cmc_scores):
   the number of all test items.  If several positive scores for one test item
   exist, the **highest** score is taken.
   """
+  # If no scores are given, the recognition rate is exactly 0.
+  if not cmc_scores:
+    return 0
+
   correct = 0.
   for neg, pos in cmc_scores:
     # get the maximum positive score for the current probe item
@@ -96,7 +100,7 @@ def recognition_rate(cmc_scores):
     if (neg < max_pos).all():
       correct += 1
 
-  # return relative number of
+  # return relative number of correctly matched scores
   return correct / float(len(cmc_scores))
 
 def cmc(cmc_scores):
@@ -115,6 +119,11 @@ def cmc(cmc_scores):
   many test items have rank r or higher.
   """
 
+  # If no scores are given, we cannot plot anything
+  probe_count = float(len(cmc_scores))
+  if not probe_count:
+    raise ValueError("The given set of scores is empty")
+
   # compute MC
   match_characteristic = numpy.zeros((max([len(neg) for (neg,pos) in cmc_scores])+1,), numpy.int)
   for neg, pos in cmc_scores:
@@ -126,7 +135,6 @@ def cmc(cmc_scores):
     match_characteristic[index] += 1
 
   # cumulate
-  probe_count = float(len(cmc_scores))
   cumulative_match_characteristic = numpy.ndarray(match_characteristic.shape, numpy.float64)
   count = 0.
   for i in range(match_characteristic.shape[0]):
