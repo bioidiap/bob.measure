@@ -211,7 +211,7 @@ def test_plots():
   xy = epc(dev_negatives, dev_positives,
       test_negatives, test_positives, 100)
   # uncomment the next line to save a reference value
-  # save('nonsep-epc.hdf5', xy)
+  # bob.io.base.save(xy, F('nonsep-epc.hdf5'))
   xyref = bob.io.base.load(F('nonsep-epc.hdf5'))
   assert numpy.allclose(xy, xyref, atol=1e-15)
 
