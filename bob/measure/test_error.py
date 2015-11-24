@@ -172,7 +172,7 @@ def test_thresholding():
 
 def test_plots():
 
-  from . import eer_threshold, roc, precision_recall_curve, det, epc
+  from . import eer_threshold, roc, roc_for_far, precision_recall_curve, det, epc
 
   # This test set is not separable.
   positives = bob.io.base.load(F('nonsep-positives.hdf5'))
@@ -185,6 +185,14 @@ def test_plots():
   # save('nonsep-roc.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-roc.hdf5'))
   assert numpy.array_equal(xy, xyref)
+
+  # This example will test the ROC for FAR plot calculation functionality.
+  far = [0.01, 0.1, 1]
+  ref = [0.48, 0.22, 0]
+  xy = roc_for_far(negatives, positives, far)
+  # uncomment the next line to save a reference value
+  assert numpy.array_equal(xy[0], far)
+  assert numpy.array_equal(xy[1], ref)
 
   # This example will test the Precision-Recall plot calculation functionality.
   xy = precision_recall_curve(negatives, positives, 100)
