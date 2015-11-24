@@ -13,7 +13,6 @@
 #include <blitz/array.h>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 namespace bob { namespace measure {
 
@@ -63,7 +62,7 @@ namespace bob { namespace measure {
    * or "client"). 'negatives' holds the score information for samples that are
    * labeled *not* to belong to the class (a.k.a., "noise" or "impostor").
    *
-   * For more precise details about how the method considers error rates, please refer to the documentation of the method bob.measure.farfrr.
+   * For more precise details about how the method considers error rates, please refer to the documentation of the method bob.measure.farfrr. 
    *
    * It is possible that scores are inverted in the negative/positive sense. In
    * some setups the designer may have setup the system so 'positive' samples
@@ -109,6 +108,61 @@ namespace bob { namespace measure {
     }
 
   /**
+   * Recursively minimizes w.r.t. to the given predicate method. Please refer
+   * to minimizingThreshold() for a full explanation. This method is only
+   * supposed to be used through that method.
+   */
+  template <typename T>
+  static double recursive_minimization(const blitz::Array<double,1>& negatives,
+      const blitz::Array<double,1>& positives, T& predicate,
+      double min, double max, size_t steps) {
+    static const double QUIT_THRESHOLD = 1e-10;
+    const double diff = max - min;
+    const double too_small = std::abs(diff/max);
+
+    //if the difference between max and min is too small, we quit.
+    if ( too_small < QUIT_THRESHOLD ) return min; //or max, does not matter...
+
+    double step_size = diff/(double)steps;
+    double min_value = predicate(1.0, 0.0); ///< to the left of the range
+
+    //the accumulator holds the thresholds that given the minimum value for the
+    //input predicate.
+    std::vector<double> accumulator;
+    accumulator.reserve(steps);
+
+    for (size_t i=0; i<steps; ++i) {
+      double threshold = ((double)i * step_size) + min;
+
+      std::pair<double, double> ratios =
+        farfrr(negatives, positives, threshold);
+
+      double current_cost = predicate(ratios.first, ratios.second);
+
+      if (current_cost < min_value) {
+        min_value = current_cost;
+        accumulator.clear(); ///< clean-up, we got a better minimum
+        accumulator.push_back(threshold); ///< remember this threshold
+      }
+      else if (std::abs(current_cost - min_value) < 1e-16) {
+        //accumulate to later decide...
+        accumulator.push_back(threshold);
+      }
+    }
+
+    //we stop when it doesn't matter anymore to threshold.
+    if (accumulator.size() != steps) {
+      //still needs some refinement: pick-up the middle of the range and go
+      return recursive_minimization(negatives, positives, predicate,
+          accumulator[accumulator.size()/2]-step_size,
+          accumulator[accumulator.size()/2]+step_size,
+          steps);
+    }
+
+    return accumulator[accumulator.size()/2];
+  }
+
+  /**
    * This method can calculate a threshold based on a set of scores (positives
    * and negatives) given a certain minimization criteria, input as a
    * functional predicate. For a discussion on 'positive' and 'negative' see
@@ -124,95 +178,29 @@ namespace bob { namespace measure {
    * Please note that this method will only work with single-minimum smooth
    * predicates.
    *
-   * The minimization is carried out in a data-driven way.
-   * First, it sorts the positive and negative scores.
-   * Starting from the lowest score (might be a positive or a negative), it
-   * increases the threshold based on the distance between the current score
-   * and the following higher score (also keeping track of duplicate scores)
-   * and computes the predicate for each possible threshold.
+   * The minimization is carried out in a recursive manner. First, we identify
+   * the threshold that minimizes the predicate given a set of N (N=100)
+   * thresholds between the min(negatives, positives) and the max(negatives,
+   * positives). If the minimum lies in a range of values, the center value is
+   * picked up.
    *
-   * Finally, that threshold is returned, for which the predicate returned the
-   * lowest value.
+   * In a second round of minimization new minimum and maximum bounds are
+   * defined based on the center value plus/minus the step (max-min/N) and a
+   * new minimization round is restarted for N samples within the new bounds.
+   *
+   * The procedure continues until all calculated predicates in a given round
+   * give the same minimum. At this point, the center threshold is picked up and
+   * returned.
    */
-  template <typename T>
-  double minimizingThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, T& predicate){
-    // sort negative and positive scores ascendingly
-    std::vector<double> negatives_(negatives.extent(0));
-    std::copy(negatives.begin(), negatives.end(), negatives_.begin());
-    std::sort(negatives_.begin(), negatives_.end(), std::less<double>());
-
-    std::vector<double> positives_(positives.extent(0));
-    std::copy(positives.begin(), positives.end(), positives_.begin());
-    std::sort(positives_.begin(), positives_.end(), std::less<double>());
-
-    // iterate over the whole set of points
-    std::vector<double>::const_iterator pos_it = positives_.begin(), neg_it = negatives_.begin();
-
-    // iterate over all possible far and frr points and compute the predicate for each possible threshold...
-    double min_predicate = 1e8;
-    double min_threshold = 1e8;
-    double current_predicate = 1e8;
-    // we start with the extreme values for far and frr
-    double far = 1., frr = 0.;
-    // the decrease/increase for far/frr when moving one negative/positive
-    double far_decrease = 1./negatives_.size(), frr_increase = 1./positives_.size();
-    // we start with the threshold based on the minimum score
-    double current_threshold = std::min(*pos_it, *neg_it);
-    // now, iterate over both lists, in a sorted order
-    while (pos_it != positives_.end() && neg_it != negatives_.end()){
-      // compute predicate
-      current_predicate = predicate(far, frr);
-      if (current_predicate <= min_predicate){
-        min_predicate = current_predicate;
-        min_threshold = current_threshold;
-      }
-      if (*pos_it >= *neg_it){
-        // compute current threshold
-        current_threshold = *neg_it;
-        // go to the next negative value
-        ++neg_it;
-        far -= far_decrease;
-      } else {
-        // compute current threshold
-        current_threshold = *pos_it;
-        // go to the next positive
-        ++pos_it;
-        frr += frr_increase;
-      }
-      // increase positive and negative as long as they contain the same value
-      while (neg_it != negatives_.end() && *neg_it == current_threshold) {
-        // go to next negative
-        ++neg_it;
-        far -= far_decrease;
-      }
-      while (pos_it != positives_.end() && *pos_it == current_threshold) {
-        // go to next positive
-        ++pos_it;
-        frr += frr_increase;
-      }
-      // compute a new threshold based on the center between last and current score, if we are not already at the end of the score lists
-      if (neg_it != negatives_.end() || pos_it != positives_.end()){
-        if (neg_it != negatives_.end() && pos_it != positives_.end())
-          current_threshold += std::min(*pos_it, *neg_it);
-        else if (neg_it != negatives_.end())
-          current_threshold += *neg_it;
-        else
-          current_threshold += *pos_it;
-        current_threshold /= 2;
-      }
-    } // while
-
-    // now, we have reached the end of one list (usually the negatives)
-    // so, finally compute predicate for the last time
-    current_predicate = predicate(far, frr);
-    if (current_predicate < min_predicate){
-      min_predicate = current_predicate;
-      min_threshold = current_threshold;
+  template <typename T> double
+    minimizingThreshold(const blitz::Array<double,1>& negatives,
+        const blitz::Array<double,1>& positives, T& predicate) {
+      const size_t N = 100; ///< number of steps in each iteration
+      double min = std::min(blitz::min(negatives), blitz::min(positives));
+      double max = std::max(blitz::max(negatives), blitz::max(positives));
+      return recursive_minimization(negatives, positives, predicate, min,
+          max, N);
     }
-
-    // return the best threshold found
-    return min_threshold;
-  }
 
   /**
    * Calculates the threshold that is, as close as possible, to the
@@ -224,7 +212,7 @@ namespace bob { namespace measure {
       const blitz::Array<double,1>& positives);
 
   /**
-   * Calculates the equal-error-rate (EER) given the input data, on the ROC
+   * Calculates the equal-error-rate (EER) given the input data, on the ROC 
    * Convex Hull, as performed in the Bosaris toolkit.
    * (https://sites.google.com/site/bosaristoolkit/)
    */
@@ -292,7 +280,7 @@ namespace bob { namespace measure {
   blitz::Array<double,2> roc
     (const blitz::Array<double,1>& negatives,
      const blitz::Array<double,1>& positives, size_t points);
-
+     
   /**
    * Calculates the precision-recall curve given a set of positive and negative scores and a
    * number of desired points. Returns a two-dimensional blitz::Array of
@@ -306,8 +294,8 @@ namespace bob { namespace measure {
      const blitz::Array<double,1>& positives, size_t points);
 
   /**
-   * Calculates the ROC Convex Hull (ROCCH) given a set of positive and
-   * negative scores and a number of desired points. Returns a
+   * Calculates the ROC Convex Hull (ROCCH) given a set of positive and 
+   * negative scores and a number of desired points. Returns a 
    * two-dimensional blitz::Array of doubles that contain the coordinates
    * of the vertices of the ROC Convex Hull (the first row is for "pmiss"
    * and the second row is for "pfa").
@@ -320,10 +308,10 @@ namespace bob { namespace measure {
 
   /**
    * Calculates the Equal Error Rate (EER) on the ROC Convex Hull (ROCCH)
-   * from the 2-row matrices containing the pmiss and pfa vectors
+   * from the 2-row matrices containing the pmiss and pfa vectors 
    * (which is the output of the bob::measure::rocch()).
    * Note: pmiss and pfa contain the coordinates of the vertices of the
-   *       ROC Convex Hull.
+   *       ROC Convex Hull. 
    * Reference: Bosaris toolkit
    * (https://sites.google.com/site/bosaristoolkit/)
    */
