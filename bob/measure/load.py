@@ -11,16 +11,20 @@ import tarfile
 import os
 
 def open_file(filename):
-  """Opens the given score file for reading.
+  """open_file(filename) -> file_like
+
+  Opens the given score file for reading.
   Score files might be raw text files, or a tar-file including a single score file inside.
 
-  Parameters:
+  **Parameters:**
 
-  filename : str or file-like
+  ``filename`` : str or file-like
     The name of the score file to open, or a file-like object open for reading.
     If a file name is given, the according file might be a raw text file or a (compressed) tar file containing a raw text file.
 
-  Returns:
+  **Returns:**
+
+  ``file_like`` : file-like
     A read-only file-like object as it would be returned by open().
   """
   if not isinstance(filename, str) and hasattr(filename, 'read'):
@@ -47,20 +51,32 @@ def open_file(filename):
 
 
 def four_column(filename):
-  """Loads a score set from a single file to memory.
+  """four_column(filename) -> claimed_id, real_id, test_label, score
 
-  Verifies that all fields are correctly placed and contain valid fields.
+  Loads a score set from a single file and yield its lines (to avoid loading the score file at once into memory).
+  This function verifies that all fields are correctly placed and contain valid fields.
+  The score file must contain the following information in each line:
 
-  Returns a python generator of tuples containing the following fields:
+    claimed_id real_id test_label score
 
-    [0]
-      claimed identity (string)
-    [1]
-      real identity (string)
-    [2]
-      test label (string)
-    [3]
-      score (float)
+  **Parametes:**
+
+  ``filename`` : str or file-like
+    The file object that will be opened with :py:func:`open_file` containing the scores.
+
+  **Yields:**
+
+  ``claimed_id`` : str
+    The claimed identity -- the client name of the model that was used in the comparison
+
+  ``real_id`` : str
+    The real identity -- the client name of the probe that was used in the comparison
+
+  ``test_label`` : str
+    A label of the probe -- usually the probe file name, or the probe id
+
+  ``score`` : float
+    The result of the comparison of the model and the probe
   """
 
   for i, l in enumerate(open_file(filename)):
@@ -78,17 +94,28 @@ def four_column(filename):
 
 
 def split_four_column(filename):
-  """Loads a score set from a single file to memory and splits the scores
-  between positives and negatives. The score file has to respect the 4 column
-  format as defined in the method four_column().
+  """split_four_column(filename) -> negatives, positives
+
+  Loads a score set from a single file and splits the scores
+  between negatives and positives. The score file has to respect the 4 column
+  format as defined in the method :py:func:`four_column`.
 
   This method avoids loading and allocating memory for the strings present in
   the file. We only keep the scores.
 
-  Returns a python tuple (negatives, positives). The values are 1-D blitz
-  arrays of float64.
-  """
+  **Parameters:**
 
+  ``filename`` : str or file-like
+    The file that will be opened with :py:func:`open_file` containing the scores.
+
+  **Returns:**
+
+  ``negatives`` : array_like(1D, float)
+    The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` differed (see :py:func:`four_column`).
+
+  ``positives`` : array_like(1D, float)
+    The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`four_column`).
+  """
   # split in positives and negatives
   neg = []
   pos = []
@@ -102,15 +129,26 @@ def split_four_column(filename):
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
 def cmc_four_column(filename):
-  """Loads scores to compute CMC curves from a file in four column format.
-  The four column file needs to be in the same format as described in the four_column function,
-  and the "test label" (column 3) has to contain the test/probe file name.
+  """cmc_four_column(filename) -> cmc_scores
+
+  Loads scores to compute CMC curves from a file in four column format.
+  The four column file needs to be in the same format as described in :py:func:`four_column`,
+  and the ``test_label`` (column 3) has to contain the test/probe file name or a probe id.
 
   This function returns a list of tuples.
   For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
   Usually, the list of positive scores should contain only one element, but more are allowed.
-
   The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
+
+  **Parameters:**
+
+  ``filename`` : str or file-like
+    The file that will be opened with :py:func:`open_file` containing the scores.
+
+  **Returns:**
+
+  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
+    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
   """
   # extract positives and negatives
   pos_dict = {}
@@ -149,22 +187,35 @@ def cmc_four_column(filename):
   return retval
 
 def five_column(filename):
-  """Loads a score set from a single file to memory.
+  """five_column(filename) -> claimed_id, model_label, real_id, test_label, score
 
-  Verifies that all fields are correctly placed and contain valid fields.
+  Loads a score set from a single file and yield its lines (to avoid loading the score file at once into memory).
+  This function verifies that all fields are correctly placed and contain valid fields.
+  The score file must contain the following information in each line:
 
-  Returns a python generator of tuples containing the following fields:
+    claimed_id model_label real_id test_label score
 
-    [0]
-      claimed identity (string)
-    [1]
-      model label (string)
-    [2]
-      real identity (string)
-    [3]
-      test label (string)
-    [4]
-      score (float)
+  **Parametes:**
+
+  ``filename`` : str or file-like
+    The file object that will be opened with :py:func:`open_file` containing the scores.
+
+  **Yields:**
+
+  ``claimed_id`` : str
+    The claimed identity -- the client name of the model that was used in the comparison
+
+  ``model_label`` : str
+    A label for the model -- usually the model file name, or the model id
+
+  ``real_id`` : str
+    The real identity -- the client name of the probe that was used in the comparison
+
+  ``test_label`` : str
+    A label of the probe -- usually the probe file name, or the probe id
+
+  ``score`` : float
+    The result of the comparison of the model and the probe.
   """
 
   for i, l in enumerate(open_file(filename)):
@@ -181,15 +232,27 @@ def five_column(filename):
     yield (field[0], field[1], field[2], field[3], score)
 
 def split_five_column(filename):
-  """Loads a score set from a single file to memory and splits the scores
-  between positives and negatives. The score file has to respect the 5 column
-  format as defined in the method five_column().
+  """split_five_column(filename) -> negatives, positives
+
+  Loads a score set from a single file in five column format and splits the scores
+  between negatives and positives. The score file has to respect the 4 column
+  format as defined in the method :py:func:`five_column`.
 
   This method avoids loading and allocating memory for the strings present in
   the file. We only keep the scores.
 
-  Returns a python tuple (negatives, positives). The values are 1-D blitz
-  arrays of float64.
+  **Parameters:**
+
+  ``filename`` : str or file-like
+    The file that will be opened with :py:func:`open_file` containing the scores.
+
+  **Returns:**
+
+  ``negatives`` : array_like(1D, float)
+    The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` differed (see :py:func:`five_column`).
+
+  ``positives`` : array_like(1D, float)
+    The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`five_column`).
   """
 
   # split in positives and negatives
@@ -205,15 +268,26 @@ def split_five_column(filename):
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
 def cmc_five_column(filename):
-  """Loads scores to compute CMC curves from a file in five column format.
-  The four column file needs to be in the same format as described in the five_column function,
-  and the "test label" (column 4) has to contain the test/probe file name.
+  """cmc_four_column(filename) -> cmc_scores
+
+  Loads scores to compute CMC curves from a file in five column format.
+  The four column file needs to be in the same format as described in :py:func:`five_column`,
+  and the ``test_label`` (column 4) has to contain the test/probe file name or a probe id.
 
   This function returns a list of tuples.
   For each probe file, the tuple consists of a list of negative scores and a list of positive scores.
   Usually, the list of positive scores should contain only one element, but more are allowed.
-
   The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
+
+  **Parameters:**
+
+  ``filename`` : str or file-like
+    The file that will be opened with :py:func:`open_file` containing the scores.
+
+  **Returns:**
+
+  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
+    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
   """
   # extract positives and negatives
   pos_dict = {}

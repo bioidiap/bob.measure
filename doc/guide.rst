@@ -40,7 +40,7 @@ formula:
 
 .. math::
 
-  HTER(\tau, \mathcal{D}) = \frac{FAR(\tau, \mathcal{D}) + FRR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
+   HTER(\tau, \mathcal{D}) = \frac{FAR(\tau, \mathcal{D}) + FRR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
 
 where :math:`\mathcal{D}` denotes the dataset used. Since both the FAR and the
 FRR depends on the threshold :math:`\tau`, they are strongly related to each
@@ -60,7 +60,7 @@ scenarios, the threshold :math:`\tau` has to be set a priori: this is typically
 done using a development set (also called cross-validation set). Nevertheless,
 the optimal threshold can be different depending on the relative importance
 given to the FAR and the FRR. Hence, in the EPC framework, the cost
-:math:`\beta \in [0;1]` is defined as the tradeoff between the FAR and FRR. The
+:math:`\beta \in [0;1]` is defined as the trade-off between the FAR and FRR. The
 optimal threshold :math:`\tau^*` is then computed using different values of
 :math:`\beta`, corresponding to different operating points:
 
@@ -77,14 +77,14 @@ defined in the first equation.
 
 .. note::
 
-  Most of the methods availabe in this module require as input a set of 2
+  Most of the methods available in this module require as input a set of 2
   :py:class:`numpy.ndarray` objects that contain the scores obtained by the
   classification system to be evaluated, without specific order. Most of the
   classes that are defined to deal with two-class problems. Therefore, in this
   setting, and throughout this manual, we have defined that the **negatives**
   represents the impostor attacks or false class accesses (that is when a
   sample of class A is given to the classifier of another class, such as class
-  B) for of the classifier. The second set, refered as the **positives**
+  B) for of the classifier. The second set, referred as the **positives**
   represents the true class accesses or signal response of the classifier. The
   vectors are called this way because the procedures implemented in this module
   expects that the scores of **negatives** to be statistically distributed to
@@ -101,7 +101,7 @@ defined in the first equation.
   parsers for formats we use the most. Please refer to the documentation of
   :py:mod:`bob.measure.load` for a list of formats and details.
 
-  In the remainder of this section we assume you have successfuly parsed and
+  In the remainder of this section we assume you have successfully parsed and
   loaded your scores in two 1D float64 vectors and are ready to evaluate the
   performance of the classifier.
 
@@ -113,18 +113,18 @@ the following techniques:
 
 .. doctest::
 
-  >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
-  >>> T = 0.0 #Threshold: later we explain how one can calculate these
-  >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
-  >>> FAR = 1 - (float(correct_negatives.sum())/negatives.size)
-  >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
-  >>> FRR = 1 - (float(correct_positives.sum())/positives.size)
+   >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
+   >>> T = 0.0 #Threshold: later we explain how one can calculate these
+   >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
+   >>> FAR = 1 - (float(correct_negatives.sum())/negatives.size)
+   >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
+   >>> FRR = 1 - (float(correct_positives.sum())/positives.size)
 
 We do provide a method to calculate the FAR and FRR in a single shot:
 
 .. doctest::
 
-  >>> FAR, FRR = bob.measure.farfrr(negatives, positives, T)
+   >>> FAR, FRR = bob.measure.farfrr(negatives, positives, T)
 
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
@@ -148,15 +148,29 @@ calculation of the threshold:
 * Threshold for the minimum weighted error rate (MWER) given a certain cost
   :math:`\beta`.
 
-  .. code-block:: python
+  .. doctest:: python
 
      >>> cost = 0.3 #or "beta"
      >>> T = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost)
 
   .. note::
 
-    By setting cost to 0.5 is equivalent to use
-    :py:meth:`bob.measure.min_hter_threshold`.
+     By setting cost to 0.5 is equivalent to use
+     :py:func:`bob.measure.min_hter_threshold`.
+
+.. note::
+   Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which defaults to ``False``, throughout.
+   However, these functions need sorted ``positive`` and/or ``negative`` scores.
+   If scores are not in ascendantly sorted order, internally, they will be copied -- twice!
+   To avoid scores to be copied, you might want to sort the scores in ascending order, e.g., by:
+
+   .. doctest:: python
+
+      >>> negatives.sort()
+      >>> positives.sort()
+      >>> t = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted = True)
+      >>> assert T == t
+
 
 Plotting
 --------
@@ -174,14 +188,14 @@ town. To plot an ROC curve, in possession of your **negatives** and
 
 .. doctest::
 
-  >>> from matplotlib import pyplot
-  >>> # we assume you have your negatives and positives already split
-  >>> npoints = 100
-  >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
-  >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
-  >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
-  >>> pyplot.grid(True)
-  >>> pyplot.show() # doctest: +SKIP
+   >>> from matplotlib import pyplot
+   >>> # we assume you have your negatives and positives already split
+   >>> npoints = 100
+   >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+   >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
+   >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
+   >>> pyplot.grid(True)
+   >>> pyplot.show() # doctest: +SKIP
 
 You should see an image like the following one:
 

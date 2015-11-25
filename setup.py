@@ -52,7 +52,7 @@ setup(
 
       Extension("bob.measure._library",
         [
-          "bob/measure/error.cpp",
+          "bob/measure/cpp/error.cpp",
           "bob/measure/main.cpp",
         ],
         packages = packages,
