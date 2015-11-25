@@ -384,7 +384,8 @@ namespace bob { namespace measure {
      const blitz::Array<double,1>& dev_positives,
      const blitz::Array<double,1>& test_negatives,
      const blitz::Array<double,1>& test_positives,
-     size_t points);
+     size_t points,
+     bool isSorted = false);
 
 }}
 

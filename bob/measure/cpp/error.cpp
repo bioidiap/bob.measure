@@ -7,8 +7,6 @@
  * Copyright (C) Idiap Research Institute, Martigny, Switzerland
  */
 
-#include "error.h"
-
 #include <stdexcept>
 #include <algorithm>
 #include <limits>
@@ -22,14 +20,15 @@
 #include <bob.math/pavx.h>
 #include <bob.math/linsolve.h>
 
+#include "error.h"
 
-template <typename T, typename predicate = std::less<T>>
+template <typename T>
 static void sort(const blitz::Array<T,1>& a, blitz::Array<T,1>& b, bool isSorted){
   if (isSorted){
     b.reference(a);
   } else {
     bob::core::array::ccopy(a,b);
-    bob::core::array::sort<T,predicate>(b);
+    bob::core::array::sort<T>(b);
   }
 }
 
@@ -109,7 +108,7 @@ double bob::measure::farThreshold(const blitz::Array<double,1>& negatives, const
   // correct index if we have multiple score values at the requested position
   while (index && neg(index) == neg(index-1)) --index;
 
-  // we compute a correction term
+  // we compute a correction term to assure that we are in the middle of two cases
   double correction;
   if (index){
     // assure that we are in the middle of two cases
@@ -136,26 +135,24 @@ double bob::measure::frrThreshold(const blitz::Array<double,1>&, const blitz::Ar
 
   // sort positive scores descendantly, if necessary
   blitz::Array<double,1> pos;
-  sort<double,std::greater<double>>(positives, pos, isSorted);
+  sort(positives, pos, isSorted);
 
   // compute position of the threshold
-  double car = 1.-frr_value; // (Correct Acceptance Rate; = 1 - FRR)
-  double car_index = car * pos.extent(0);
-  // compute the index above the current CRR value
-  int index = std::min((int)std::floor(car_index), pos.extent(0)-1);
+  double frr_index = frr_value * pos.extent(0);
+  // compute the index above the current CAR value
+  int index = std::min((int)std::ceil(frr_index), pos.extent(0)-1);
 
   // correct index if we have multiple score values at the requested position
-  while (index && pos(index) == pos(index-1)) --index;
+  while (index < pos.extent(0) && pos(index) == pos(index+1)) ++index;
 
   // we compute a correction term to assure that we are in the middle of two cases
-  // we compute a correction term
   double correction;
-  if (index){
+  if (index < pos.extent(0)-1){
     // assure that we are in the middle of two cases
-    correction = 0.5 * (pos(index-1) - pos(index));
+    correction = 0.5 * (pos(index+1) - pos(index));
   } else {
     // add an overall correction term
-    correction = 0.5 * (pos(0) - pos(pos.extent(0)-1)) / pos.extent(0);
+    correction = 0.5 * (pos(pos.extent(0)-1) - pos(0)) / pos.extent(0);
   }
 
   return pos(index) + correction;
@@ -238,11 +235,6 @@ struct ComparePairs
   blitz::Array<double,1> m_v;
 };
 
-ComparePairs CreateComparePairs(const blitz::Array<double,1>& v)
-{
-  return ComparePairs(v);
-}
-
 /**
   * Sort an array and get the permutations (using stable_sort)
   */
@@ -253,7 +245,7 @@ void sortWithPermutation(const blitz::Array<double,1>& values, std::vector<size_
   for(int i=0; i<N; ++i)
     v[i] = i;
 
-  std::stable_sort(v.begin(), v.end(), CreateComparePairs(values));
+  std::stable_sort(v.begin(), v.end(), ComparePairs(values));
 }
 
 blitz::Array<double,2> bob::measure::rocch(const blitz::Array<double,1>& negatives,
@@ -423,8 +415,6 @@ blitz::Array<double,2> bob::measure::roc_for_far(const blitz::Array<double,1>& n
     // walk to the end of both lists; at least one of both lists should already have reached its limit.
     while (pos_it++ != pos.end()) ++pos_index;
     while (neg_it++ != neg.end()) ++neg_index;
-//    pos_index += positives_.end() - pos_it;
-//    neg_index += negatives_.end() - neg_it;
     // fill in the remaining elements of the CAR list
     do {
       // copy the FAR value
@@ -520,14 +510,19 @@ blitz::Array<double,2> bob::measure::epc
 (const blitz::Array<double,1>& dev_negatives,
  const blitz::Array<double,1>& dev_positives,
  const blitz::Array<double,1>& test_negatives,
- const blitz::Array<double,1>& test_positives, size_t points) {
+ const blitz::Array<double,1>& test_positives, size_t points, bool isSorted) {
+
+  blitz::Array<double,1> dev_neg, dev_pos;
+  sort(dev_negatives, dev_neg, isSorted);
+  sort(dev_positives, dev_pos, isSorted);
+
   double step = 1.0/((double)points-1.0);
   blitz::Array<double,2> retval(2, points);
   for (int i=0; i<(int)points; ++i) {
     double alpha = (double)i*step;
     retval(0,i) = alpha;
-    double threshold = bob::measure::minWeightedErrorRateThreshold(dev_negatives,
-        dev_positives, alpha);
+    double threshold = bob::measure::minWeightedErrorRateThreshold(dev_neg,
+        dev_pos, alpha, true);
     std::pair<double, double> ratios =
       bob::measure::farfrr(test_negatives, test_positives, threshold);
     retval(1,i) = (ratios.first + ratios.second) / 2;
