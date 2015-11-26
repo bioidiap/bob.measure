@@ -25,23 +25,23 @@ def write_matrix(
   If ``search`` is given (as an integer), the resulting matrix files will be in the *search* format, keeping the given number of gallery scores with the highest values for each probe.
 
   .. warning::
-    When provided with a 4-column score file, this function will work only, if there is only a single model id for each client.
+     When provided with a 4-column score file, this function will work only, if there is only a single model id for each client.
 
-  Keyword parameters:
+  **Parameters:**
 
-  score_file : str
+  ``score_file`` : str
     The 4 or 5 column style score file written by bob.
 
-  matrix_file : str
+  ``matrix_file`` : str
     The OpenBR matrix file that should be written.
     Usually, the file name extension is ``.mtx``
 
-  mask_file : str
+  ``mask_file`` : str
     The OpenBR mask file that should be written.
     The mask file defines, which values are positives, negatives or to be ignored.
     Usually, the file name extension is ``.mask``
 
-  model_names : [str] or ``None``
+  ``model_names`` : [str] or ``None``
     If given, the matrix will be written in the same order as the given model names.
     The model names must be identical with the second column in the 5-column ``score_file``.
 
@@ -51,21 +51,21 @@ def write_matrix(
 
     Only the scores of the given models will be considered.
 
-  probe_names : [str] or ``None``
+  ``probe_names`` : [str] or ``None``
     If given, the matrix will be written in the same order as the given probe names (the ``path`` of the probe).
     The probe names are identical to the third column of the 4-column (or the fourth column of the 5-column) ``score_file``.
     Only the scores of the given probe names will be considered in this case.
 
-  score_file_format : one of ``('4column', '5column')``
-    The format, in which the ``score_file`` is.
+  ``score_file_format`` : one of ``('4column', '5column')``
+    The format, in which the ``score_file`` is; defaults to ``'4column'``
 
-  gallery_file_name : str
+  ``gallery_file_name`` : str
     The name of the gallery file that will be written in the header of the OpenBR files.
 
-  probe_file_name : str
+  ``probe_file_name`` : str
     The name of the probe file that will be written in the header of the OpenBR files.
 
-  search : int or ``None``
+  ``search`` : int or ``None``
     If given, the scores will be sorted per probe, keeping the specified number of highest scores.
     If the given number is higher than the models, ``NaN`` values will be added, and the mask will contain ``0x00`` values.
   """
@@ -119,8 +119,8 @@ def write_matrix(
     for line in read_function(score_file):
       client, model, id, probe, score = line[0], line[offset], line[1+offset], line[2+offset], line[3+offset]
 
-      assert model in model_dict
-      assert probe in probe_dict
+      assert model in model_dict, "model " + model + " unknown"
+      assert probe in probe_dict, "probe " + probe + " unknown"
 
       model_index = model_dict[model]
       probe_index = probe_dict[probe]
@@ -191,46 +191,46 @@ def write_score_file(
   This is, what OpenBR is doing as well.
   However, you can also set ``replace_nan`` to any value, which will be written instead of the NaN values.
 
-  Keyword parameters:
+  **Parameters:**
 
-  matrix_file : str
+  ``matrix_file`` : str
     The OpenBR matrix file that should be read.
     Usually, the file name extension is ``.mtx``
 
-  mask_file : str
+  ``mask_file`` : str
     The OpenBR mask file that should be read.
     Usually, the file name extension is ``.mask``
 
-  score_file : str
+  ``score_file`` : str
     The 4 or 5 column style score file that should be written.
 
-  models_ids : [str] or ``None``
+  ``models_ids`` : [str] or ``None``
     The client ids of the models that will be written in the first column of the score file.
     If given, the size must be identical to the number of models (gallery templates) in the OpenBR files.
     If not given, client ids of the model will be identical to the **gallery index** in the matrix file.
 
-  probes_ids : [str] or ``None``:
+  ``probes_ids`` : [str] or ``None``:
     The client ids of the probes that will be written in the second/third column of the four/five column score file.
     If given, the size must be identical to the number of probe templates in the OpenBR files.
     It will be checked that the OpenBR mask fits to the model/probe client ids.
     If not given, the probe ids will be estimated automatically, i.e., to fit the OpenBR matrix.
 
-  model_names : [str] or ``None``
+  ``model_names`` : [str] or ``None``
     A list of model path written in the second column of the five column score file.
     If not given, the model index in the OpenBR file will be used.
 
     .. note::
        This entry is ignored in the four column score file format.
 
-  probe_names : [str] or ``None``
+  ``probe_names`` : [str] or ``None``
     A list of probe path to be written in the third/fourth column in the four/five column score file.
     If given, the size must be identical to the number of probe templates in the OpenBR files.
     If not given, the probe index in the OpenBR file will be used.
 
-  score_file_format : one of ``('4column', '5column')``
-    The format, in which the ``score_file`` should be written.
+  ``score_file_format`` : one of ``('4column', '5column')``
+    The format, in which the ``score_file`` should be written; defaults to ``'4column'``.
 
-  replace_nan : float or ``None``:
+  ``replace_nan`` : float or ``None``:
     If NaN values are encountered in the OpenBR matrix (which are not ignored due to the mask being non-NULL), this value will be written instead.
     If ``None``, the values will not be written in the score file at all.
   """
@@ -300,7 +300,6 @@ def write_score_file(
     model_names = [str(g+1) for g in range(mask.shape[1])]
   if probe_names is None:
     probe_names = [str(p+1) for p in range(mask.shape[0])]
-
 
   # iterate through the files and write scores
   with open(score_file, 'w') as f:

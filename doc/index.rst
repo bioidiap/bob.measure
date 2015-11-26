@@ -10,11 +10,7 @@
  Bob's Metric Routines
 =======================
 
-.. todolist::
-
-This module contains base functionality from Bob bound to Python, available in
-the C++ counter-part ``bob::measure``. It includes routines for assessing
-performance on machine learning and pattern recognition applications.
+This module contains routines for assessing performance on machine learning and pattern recognition applications and for generating performance plots.
 
 Documentation
 -------------
@@ -24,6 +20,12 @@ Documentation
 
    guide
    py_api
+
+TODO
+----
+
+.. todolist::
+
 
 Indices and tables
 ------------------

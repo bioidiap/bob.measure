@@ -11,7 +11,20 @@ import math
 import numpy
 
 def cllr(negatives, positives):
-  """Computes the 'cost of log likelihood ratio' measure as given in the bosaris toolkit"""
+  """cllr(negatives, positives) -> cllr
+
+  Computes the 'cost of log likelihood ratio' (:math:`C_{llr}`) measure as given in the Bosaris toolkit
+
+  **Parameters:**
+
+  ``negatives, positives`` : array_like(1D, float)
+    The scores computed by comparing elements from different classes and the same class, respectively.
+
+  **Returns**
+
+  ``cllr`` : float
+    The computed :math:`C_{llr}` value.
+  """
   sum_pos, sum_neg = 0., 0.
   for pos in positives:
     sum_pos += math.log(1. + math.exp(-pos), 2.)
@@ -21,7 +34,20 @@ def cllr(negatives, positives):
 
 
 def min_cllr(negatives, positives):
-  """Computes the 'minimum cost of log likelihood ratio' measure as given in the bosaris toolkit"""
+  """cllr(negatives, positives) -> cllr
+
+  Computes the 'minimum cost of log likelihood ratio' (:math:`C_{llr}^{min}`) measure as given in the bosaris toolkit
+
+  **Parameters:**
+
+  ``negatives, positives`` : array_like(1D, float)
+    The scores computed by comparing elements from different classes and the same class, respectively.
+
+  **Returns**
+
+  ``min_cllr`` : float
+    The computed :math:`C_{llr}^{min}` value.
+  """
 
   from bob.math import pavx
 

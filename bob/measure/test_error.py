@@ -125,6 +125,9 @@ def test_thresholding():
   negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
   threshold = eer_threshold(negatives, positives)
 
+  sorted_positives = numpy.sort(positives)
+  sorted_negatives = numpy.sort(negatives)
+
   # Of course we have to make sure that will set the EER correctly:
   ccp = count(correctly_classified_positives(positives,threshold))
   ccn = count(correctly_classified_negatives(negatives,threshold))
@@ -132,8 +135,8 @@ def test_thresholding():
 
   for t in (0, 0.001, 0.1, 0.5, 0.9, 0.999, 1):
     # Lets also test the far_threshold and the frr_threshold functions
-    threshold_far = far_threshold(negatives, positives, t)
-    threshold_frr = frr_threshold(negatives, positives, t)
+    threshold_far = far_threshold(sorted_negatives, [], t, is_sorted=True)
+    threshold_frr = frr_threshold([], sorted_positives, t, is_sorted=True)
     # Check that the requested FAR and FRR values are smaller than the requested ones
     far = farfrr(negatives, positives, threshold_far)[0]
     frr = farfrr(negatives, positives, threshold_frr)[1]
@@ -151,7 +154,8 @@ def test_thresholding():
   positives = bob.io.base.load(F('linsep-positives.hdf5'))
   negatives = bob.io.base.load(F('linsep-negatives.hdf5'))
   threshold = eer_threshold(negatives, positives)
-  # the result here is 3.242 (which is what is expect ;-)
+  # the result here is 3.2 (which is what is expect ;-)
+  assert threshold == 3.2
 
   # Of course we have to make sure that will set the EER correctly:
   ccp = count(correctly_classified_positives(positives,threshold))
@@ -161,7 +165,7 @@ def test_thresholding():
   # The second option for the calculation of the threshold is to use the
   # minimum HTER.
   threshold2 = min_hter_threshold(negatives, positives)
-  # the result here is 3.242 (which is what is expect ;-)
+  assert threshold2 == 3.2
   nose.tools.eq_(threshold, threshold2) #in this particular case
 
   # Of course we have to make sure that will set the EER correctly:

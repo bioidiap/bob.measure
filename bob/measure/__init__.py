@@ -13,7 +13,9 @@ from . import openbr
 import numpy
 
 def mse (estimation, target):
-  """Calculates the mean square error between a set of outputs and target
+  """mse(estimation, target) -> error
+
+  Calculates the mean square error between a set of outputs and target
   values using the following formula:
 
   .. math::
@@ -28,7 +30,9 @@ def mse (estimation, target):
   return numpy.mean((estimation - target)**2, 0)
 
 def rmse (estimation, target):
-  """Calculates the root mean square error between a set of outputs and target
+  """rmse(estimation, target) -> error
+
+  Calculates the root mean square error between a set of outputs and target
   values using the following formula:
 
   .. math::
@@ -43,12 +47,14 @@ def rmse (estimation, target):
   return numpy.sqrt(mse(estimation, target))
 
 def relevance (input, machine):
-  """Calculates the relevance of every input feature to the estimation process
+  """relevance (input, machine) -> relevances
+
+  Calculates the relevance of every input feature to the estimation process
   using the following definition from:
 
-  Neural Triggering System Operating on High Resolution Calorimetry
-  Information, Anjos et al, April 2006, Nuclear Instruments and Methods in
-  Physics Research, volume 559, pages 134-138
+    Neural Triggering System Operating on High Resolution Calorimetry
+    Information, Anjos et al, April 2006, Nuclear Instruments and Methods in
+    Physics Research, volume 559, pages 134-138
 
   .. math::
 
@@ -73,10 +79,12 @@ def relevance (input, machine):
   return retval
 
 def recognition_rate(cmc_scores):
-  """Calculates the recognition rate from the given input, which is identical
+  """recognition_rate(cmc_scores) -> RR
+
+  Calculates the recognition rate from the given input, which is identical
   to the rank 1 (C)MC value.
 
-  The input has a specific format, which is a list of two-element tuples.  Each
+  The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one test
   item.  To read the lists from score files in 4 or 5 column format, please use
   the :py:func:`bob.measure.load.cmc_four_column` or
@@ -86,10 +94,20 @@ def recognition_rate(cmc_scores):
   positive score is greater than or equal to all negative scores, divided by
   the number of all test items.  If several positive scores for one test item
   exist, the **highest** score is taken.
+
+  **Parameters:**
+
+  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
+    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
+
+  **Returns:**
+
+  ``RR`` : float
+    The rank 1 recognition rate, i.e., the relative number of correctly identified identities
   """
   # If no scores are given, the recognition rate is exactly 0.
   if not cmc_scores:
-    return 0
+    return 0.
 
   correct = 0.
   for neg, pos in cmc_scores:
@@ -98,15 +116,17 @@ def recognition_rate(cmc_scores):
     max_pos = numpy.max(pos)
     # check if the positive score is smaller than all negative scores
     if (neg < max_pos).all():
-      correct += 1
+      correct += 1.
 
   # return relative number of correctly matched scores
   return correct / float(len(cmc_scores))
 
 def cmc(cmc_scores):
-  """Calculates the cumulative match characteristic (CMC) from the given input.
+  """cmc(cmc_scores) -> curve
 
-  The input has a specific format, which is a list of two-element tuples.  Each
+  Calculates the cumulative match characteristic (CMC) from the given input.
+
+  The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one test
   item.  To read the lists from score files in 4 or 5 column format, please use
   the :py:func:`bob.measure.load.cmc_four_column` or
@@ -117,6 +137,16 @@ def cmc(cmc_scores):
   higher than the positive score.  If several positive scores for one test item
   exist, the **highest** positive score is taken. The CMC finally computes how
   many test items have rank r or higher.
+
+  **Parameters:**
+
+  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
+    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
+
+  **Returns:**
+
+  ``curve`` : array_like(2D, float)
+    The CMC curve, with the Rank in the first column and the number of correctly classified clients (in this rank) in the second column.
   """
 
   # If no scores are given, we cannot plot anything
@@ -147,6 +177,7 @@ def cmc(cmc_scores):
 def get_config():
   """Returns a string containing the configuration information.
   """
+  import bob.extension
   return bob.extension.get_config(__name__, version.externals)
 
 
