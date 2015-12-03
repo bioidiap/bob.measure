@@ -952,18 +952,20 @@ static PyObject* create_module (void) {
 
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
+  auto m_ = make_xsafe(m);
+  const char* ret = "O";
 # else
   PyObject* m = Py_InitModule3(BOB_EXT_MODULE_NAME, module_methods, module_docstr);
+  const char* ret = "N";
 # endif
   if (!m) return 0;
-  auto m_ = make_safe(m); ///< protects against early returns
 
   /* imports bob.blitz C-API + dependencies */
   if (import_bob_blitz() < 0) return 0;
   if (import_bob_core_logging() < 0) return 0;
   if (import_bob_io_base() < 0) return 0;
 
-  return Py_BuildValue("O", m);
+  return Py_BuildValue(ret, m);
 }
 
 PyMODINIT_FUNC BOB_EXT_ENTRY_NAME (void) {
