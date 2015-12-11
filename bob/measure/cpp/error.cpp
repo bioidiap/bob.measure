@@ -398,7 +398,10 @@ blitz::Array<double,2> bob::measure::roc_for_far(const blitz::Array<double,1>& n
     }
     // check, if we have reached a new FAR limit,
     // i.e. if the relative number of negative similarities is greater than 1-FAR (which is the CRR)
-    if ((double)neg_index / (double)n_neg > 1. - far_list(far_index)){
+
+    
+    if (((double)neg_index / (double)n_neg > 1. - far_list(far_index)) &&  
+       !(bob::core::isClose  ((double)neg_index / (double)n_neg, 1. - far_list(far_index), 1e-9, 1e-9)))   {
       // copy the far value
       retval(0,far_index) = far_list(far_index);
       // calculate the FRR for the current FAR
