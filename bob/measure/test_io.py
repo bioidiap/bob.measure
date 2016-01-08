@@ -167,7 +167,10 @@ def test_from_openbr():
           assert columns[i][j] == reference[i][j], str(columns[i]) + " != " + str(reference[i])
         # check that the score is close (OpenBR write scores in float32 precision only)
         assert abs(columns[i][-1] - numpy.float32(reference[i][-1])) <= 1e-8, str(columns[i][-1]) + " != " + str(reference[i][-1])
-        assert numpy.isclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
+        
+        #assert numpy.isclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
+        assert numpy.allclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
+        
 
   finally:
     shutil.rmtree(temp_dir)
