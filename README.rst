@@ -8,7 +8,7 @@
    :target: https://www.idiap.ch/software/bob/docs/latest/bioidiap/bob.measure/master/index.html
 .. image:: https://travis-ci.org/bioidiap/bob.measure.svg?branch=master
    :target: https://travis-ci.org/bioidiap/bob.measure?branch=master
-.. image:: https://coveralls.io/repos/bioidiap/bob.measure/badge.png?branch=master
+.. image:: https://coveralls.io/repos/bioidiap/bob.measure/badge.svg?branch=master
    :target: https://coveralls.io/r/bioidiap/bob.measure?branch=master
 .. image:: https://img.shields.io/badge/github-master-0000c0.png
    :target: https://github.com/bioidiap/bob.measure/tree/master
