@@ -34,7 +34,7 @@ def cllr(negatives, positives):
 
 
 def min_cllr(negatives, positives):
-  """cllr(negatives, positives) -> cllr
+  """min_cllr(negatives, positives) -> min_cllr
 
   Computes the 'minimum cost of log likelihood ratio' (:math:`C_{llr}^{min}`) measure as given in the bosaris toolkit
 
