@@ -129,8 +129,7 @@ def split_four_column(filename):
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
 def cmc_four_column(filename):
-  """
-  cmc_four_column(filename) -> cmc_scores
+  """cmc_four_column(filename) -> cmc_scores
   
 
   Loads scores to compute CMC curves from a file in four column format.
@@ -278,8 +277,7 @@ def split_five_column(filename):
 
 
 def cmc_five_column(filename):
-  """
-  cmc_four_column(filename) -> cmc_scores
+  """cmc_four_column(filename) -> cmc_scores
   
   Loads scores to compute CMC curves from a file in five column format.
   The four column file needs to be in the same format as described in :py:func:`five_column`,
