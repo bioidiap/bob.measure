@@ -321,3 +321,25 @@ def test_calibration():
   assert min_cllr <= cllr
   assert cllr, 3.61833457
   assert min_cllr, 0.337364136
+  
+  
+
+def test_open_set_recognition_rate():
+  
+  #No error files
+  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"),   load_only_negatives=True)
+  assert bob.measure.recognition_rate(scores, threshold=0.5), 1.0
+  assert bob.measure.recognition_rate(scores, threshold=10.), 0.222222222222
+  
+  #One error
+  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-one-error.txt"), 
+  load_only_negatives=True)
+  assert bob.measure.recognition_rate(scores, threshold=0.5), 0.888888888889
+  assert bob.measure.recognition_rate(scores, threshold=10.), 0.222222222222
+
+  #Two errors
+  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-two-errors.txt"), 
+  load_only_negatives=True)
+  assert bob.measure.recognition_rate(scores, threshold=0.5), 0.777777777778
+  assert bob.measure.recognition_rate(scores, threshold=10.), 0.111111111111  
+

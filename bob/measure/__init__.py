@@ -78,9 +78,10 @@ def relevance (input, machine):
 
   return retval
 
-def recognition_rate(cmc_scores):
-  """recognition_rate(cmc_scores) -> RR
 
+def recognition_rate(cmc_scores, threshold=None):
+  """recognition_rate(cmc_scores) -> RR 
+  
   Calculates the recognition rate from the given input, which is identical
   to the rank 1 (C)MC value.
 
@@ -90,16 +91,23 @@ def recognition_rate(cmc_scores):
   the :py:func:`bob.measure.load.cmc_four_column` or
   :py:func:`bob.measure.load.cmc_five_column` function.
 
-  The recognition rate is defined as the number of test items, for which the
+  If **threshold** is set to `None`, the recognition rate is defined as the number of test items, for which the
   positive score is greater than or equal to all negative scores, divided by
-  the number of all test items.  If several positive scores for one test item
-  exist, the **highest** score is taken.
+  the number of all test items. If several positive scores for one test item exist, the **highest** score is taken.
+
+  If **threshold** assumes one value, the recognition rate is defined as the number of test items, for which the
+  positive score is greater than or equal to all negative scores and the threshold divided by
+  the number of all test items. If several positive scores for one test item exist, the **highest** score is taken.
+  
+  If a particular test item has only negative scores a correct classification hit it done if all the negative scores are higher than 
+  the **threshold**. For this particular test, the definition of threshold is mandatory.  
 
   **Parameters:**
+  
+    ``cmc_scores`` : CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or
+  :py:func:`bob.measure.load.cmc_five_column`)
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
-
+    ``threshold`` : Decision threshold. If `None`, the decision threshold will be the **highest** positive score.
   **Returns:**
 
   ``RR`` : float
@@ -111,15 +119,37 @@ def recognition_rate(cmc_scores):
 
   correct = 0.
   for neg, pos in cmc_scores:
-    # get the maximum positive score for the current probe item
-    # (usually, there is only one positive score, but just in case...)
-    max_pos = numpy.max(pos)
-    # check if the positive score is smaller than all negative scores
-    if (neg < max_pos).all():
-      correct += 1.
+
+    #If threshold is none, let's use the highest positive score as the decision threshold
+    if(threshold is None):
+      # get the maximum positive score for the current probe item
+      # (usually, there is only one positive score, but just in case...)
+      max_pos = numpy.max(pos)
+      # check if the positive score is smaller than all negative scores
+      if (neg < max_pos).all():
+        correct += 1.
+        
+    else:
+
+      #If threshold is NOT None, we have an openset identification
+      if(len(pos)>0):
+        # if we have positive scores the comparison is considered correct
+        # if the positive score is higher than the threshold AND all negative scores
+        max_pos = numpy.max(pos)
+
+        if((threshold < max_pos) and (neg < max_pos).all()):
+            correct += 1.
+
+      else:
+        #If we don't have a positive score we only will consider 
+        #a correct classification if ALL the negative scores are smaller than the threshold
+        if (neg < threshold).all():
+          correct += 1.
 
   # return relative number of correctly matched scores
   return correct / float(len(cmc_scores))
+
+
 
 def cmc(cmc_scores):
   """cmc(cmc_scores) -> curve
@@ -143,6 +173,8 @@ def cmc(cmc_scores):
   ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
     A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
 
+  ``threshold`` : Decision threshold. If `None`, the decision threshold will be the **highest** positive score.
+
   **Returns:**
 
   ``curve`` : array_like(2D, float)
@@ -156,14 +188,19 @@ def cmc(cmc_scores):
 
   # compute MC
   match_characteristic = numpy.zeros((max([len(neg) for (neg,pos) in cmc_scores])+1,), numpy.int)
-  for neg, pos in cmc_scores:
-    # get the maximum positive score for the current probe item
-    # (usually, there is only one positive score, but just in case...)
-    max_pos = numpy.max(pos)
-    # count the number of negative scores that are higher than the best positive score
-    index = numpy.sum(neg >= max_pos)
-    match_characteristic[index] += 1
 
+  for neg, pos in cmc_scores:
+    if((type(pos)!=float) and (len(pos) == 0)):
+      raise ValueError("For the CMC computation at least one positive score is necessary. Please review who you are loading the scores. You must set `load_only_negatives=False` in the :py:func:`bob.measure.load.cmc_four_column` or `:py:func:`bob.measure.load.cmc_five_column` methods.")
+
+    # get the maximum positive score for the current probe item
+    # (usually, there is only one positive score, but just in case...)    
+    max_pos = numpy.max(pos)
+
+    # count the number of negative scores that are higher than the best positive score            
+    index = numpy.sum(neg >= max_pos)
+    match_characteristic[index] += 1  
+    
   # cumulate
   cumulative_match_characteristic = numpy.ndarray(match_characteristic.shape, numpy.float64)
   count = 0.
@@ -172,6 +209,7 @@ def cmc(cmc_scores):
     cumulative_match_characteristic[i] = count / probe_count
 
   return cumulative_match_characteristic
+
 
 
 def get_config():
