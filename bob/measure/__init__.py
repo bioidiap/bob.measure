@@ -80,7 +80,7 @@ def relevance (input, machine):
 
 
 def recognition_rate(cmc_scores, threshold=None):
-  """recognition_rate(cmc_scores) -> RR 
+  """recognition_rate(cmc_scores, threshold) -> RR 
   
   Calculates the recognition rate from the given input, which is identical
   to the rank 1 (C)MC value.
@@ -99,15 +99,12 @@ def recognition_rate(cmc_scores, threshold=None):
   positive score is greater than or equal to all negative scores and the threshold divided by
   the number of all test items. If several positive scores for one test item exist, the **highest** score is taken.
   
-  If a particular test item has only negative scores a correct classification hit it done if all the negative scores are higher than 
-  the **threshold**. For this particular test, the definition of threshold is mandatory.  
-
   **Parameters:**
   
-    ``cmc_scores`` : CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or
-  :py:func:`bob.measure.load.cmc_five_column`)
+    ``cmc_scores`` : CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`)
 
     ``threshold`` : Decision threshold. If `None`, the decision threshold will be the **highest** positive score.
+    
   **Returns:**
 
   ``RR`` : float
