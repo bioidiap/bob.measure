@@ -281,7 +281,7 @@ def write_score_file(
       equal_indices = numpy.where(mask[p] == 0xff)
       if len(equal_indices):
         # model id found, use the first one
-        probes_ids.append(models_ids[equal_indices[0]])
+        probes_ids.append(models_ids[equal_indices[0][0]])
       else:
         # no model found; add non-existing id
         probes_ids.append("unknown")
