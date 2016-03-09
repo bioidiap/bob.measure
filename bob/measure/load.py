@@ -130,6 +130,7 @@ def split_four_column(filename):
 
 def cmc_four_column(filename):
   """cmc_four_column(filename) -> cmc_scores
+  
 
   Loads scores to compute CMC curves from a file in four column format.
   The four column file needs to be in the same format as described in :py:func:`four_column`,
@@ -140,20 +141,23 @@ def cmc_four_column(filename):
   Usually, the list of positive scores should contain only one element, but more are allowed.
   The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
 
+  
   **Parameters:**
 
   ``filename`` : str or file-like
     The file that will be opened with :py:func:`open_file` containing the scores.
 
+
   **Returns:**
 
   ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
     A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
+
   """
   # extract positives and negatives
   pos_dict = {}
   neg_dict = {}
-  # read four column list
+  # read four column list  
   for (client_id, probe_id, probe_name, score_str) in four_column(filename):
     try:
       score = float(score_str)
@@ -179,12 +183,15 @@ def cmc_four_column(filename):
       retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
     else:
       logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
-  # test if there are probes for which only negatives exist
+
+  #test if there are probes for which only negatives exist
   for probe_name in sorted(neg_dict.keys()):
     if not probe_name in pos_dict.keys():
-       logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
+      logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
+
 
   return retval
+  
 
 def five_column(filename):
   """five_column(filename) -> claimed_id, model_label, real_id, test_label, score
@@ -231,6 +238,7 @@ def five_column(filename):
       raise SyntaxError('Cannot convert score to float at line %d of file "%s": %s' % (i, filename, l))
     yield (field[0], field[1], field[2], field[3], score)
 
+
 def split_five_column(filename):
   """split_five_column(filename) -> negatives, positives
 
@@ -267,9 +275,10 @@ def split_five_column(filename):
 
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
+
 def cmc_five_column(filename):
   """cmc_four_column(filename) -> cmc_scores
-
+  
   Loads scores to compute CMC curves from a file in five column format.
   The four column file needs to be in the same format as described in :py:func:`five_column`,
   and the ``test_label`` (column 4) has to contain the test/probe file name or a probe id.
@@ -288,6 +297,7 @@ def cmc_five_column(filename):
 
   ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
     A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
+
   """
   # extract positives and negatives
   pos_dict = {}
@@ -309,6 +319,7 @@ def cmc_five_column(filename):
   retval = []
   import logging
   logger = logging.getLogger('bob')
+
   for probe_name in sorted(pos_dict.keys()):
     if probe_name in neg_dict:
       retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
@@ -318,4 +329,5 @@ def cmc_five_column(filename):
   for probe_name in sorted(neg_dict.keys()):
     if not probe_name in pos_dict.keys():
        logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
+
   return retval
