@@ -128,7 +128,7 @@ def split_four_column(filename):
 
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
-def cmc_four_column(filename, load_only_negatives=False):
+def cmc_four_column(filename):
   """
   cmc_four_column(filename) -> cmc_scores
   
@@ -147,9 +147,6 @@ def cmc_four_column(filename, load_only_negatives=False):
 
   ``filename`` : str or file-like
     The file that will be opened with :py:func:`open_file` containing the scores.
-
-  ``load_only_negatives`` : boolean
-    Set this argument to **True** if you want also to load the probes that has negative scores **only** (used for open-set recognition).
 
 
   **Returns:**
@@ -182,25 +179,17 @@ def cmc_four_column(filename, load_only_negatives=False):
   retval = []
   import logging
   logger = logging.getLogger('bob')
-  if(not load_only_negatives):
-    for probe_name in sorted(pos_dict.keys()):
-      if probe_name in neg_dict:
-        retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
-      else:
-        logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
-
-    #test if there are probes for which only negatives exist
-    for probe_name in sorted(neg_dict.keys()):
-      if not probe_name in pos_dict.keys():
-        logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
-
-  else:
-    for probe_name in sorted(pos_dict.keys()):
+  for probe_name in sorted(pos_dict.keys()):
+    if probe_name in neg_dict:
       retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
+    else:
+      logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
 
-    for probe_name in sorted(neg_dict.keys()):
-      if not probe_name in pos_dict.keys():
-        retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array([], numpy.float64)))
+  #test if there are probes for which only negatives exist
+  for probe_name in sorted(neg_dict.keys()):
+    if not probe_name in pos_dict.keys():
+      logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
+
 
   return retval
   
@@ -288,7 +277,7 @@ def split_five_column(filename):
   return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
 
 
-def cmc_five_column(filename, load_only_negatives=False):
+def cmc_five_column(filename):
   """
   cmc_four_column(filename) -> cmc_scores
   
@@ -305,10 +294,6 @@ def cmc_five_column(filename, load_only_negatives=False):
 
   ``filename`` : str or file-like
     The file that will be opened with :py:func:`open_file` containing the scores.
-
-  ``load_only_negatives`` : boolean
-    Set this argument to **True** if you want also to load the probes that has negative scores **only** (used for open-set recognition).
-
 
   **Returns:**
 
@@ -336,25 +321,15 @@ def cmc_five_column(filename, load_only_negatives=False):
   retval = []
   import logging
   logger = logging.getLogger('bob')
-  if(not load_only_negatives):
 
-    for probe_name in sorted(pos_dict.keys()):
-      if probe_name in neg_dict:
-        retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
-      else:
-        logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
-    # test if there are probes for which only negatives exist
-    for probe_name in sorted(neg_dict.keys()):
-      if not probe_name in pos_dict.keys():
-         logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
-  else:
-  
-    for probe_name in sorted(pos_dict.keys()):
+  for probe_name in sorted(pos_dict.keys()):
+    if probe_name in neg_dict:
       retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
-
-    for probe_name in sorted(neg_dict.keys()):
-      if not probe_name in pos_dict.keys():
-        retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array([], numpy.float64)))
-  
+    else:
+      logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
+  # test if there are probes for which only negatives exist
+  for probe_name in sorted(neg_dict.keys()):
+    if not probe_name in pos_dict.keys():
+       logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
 
   return retval

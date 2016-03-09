@@ -130,22 +130,11 @@ def recognition_rate(cmc_scores, threshold=None):
         correct += 1.
         
     else:
-
       #If threshold is NOT None, we have an openset identification
-      if(len(pos)>0):
-        # if we have positive scores the comparison is considered correct
-        # if the positive score is higher than the threshold AND all negative scores
-        max_pos = numpy.max(pos)
+      max_pos = numpy.max(pos)
 
-        if((threshold < max_pos) and (neg < max_pos).all()):
-            correct += 1.
-
-      else:
-        #If we don't have a positive score we only will consider 
-        #a correct classification if ALL the negative scores are smaller than the threshold
-        if (neg < threshold).all():
+      if((threshold < max_pos) and (neg < max_pos).all()):
           correct += 1.
-
   # return relative number of correctly matched scores
   return correct / float(len(cmc_scores))
 

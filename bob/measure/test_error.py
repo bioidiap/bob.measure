@@ -326,20 +326,30 @@ def test_calibration():
 
 def test_open_set_recognition_rate():
   
+  far_value = 0.01
+  
   #No error files
-  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"),   load_only_negatives=True)
-  assert bob.measure.recognition_rate(scores, threshold=0.5), 1.0
-  assert bob.measure.recognition_rate(scores, threshold=10.), 0.222222222222
+  cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
+  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
+  assert bob.measure.recognition_rate(cmc_scores), 1.0
+  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 1.0    
+  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
+  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 1.0
   
   #One error
-  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-one-error.txt"), 
-  load_only_negatives=True)
-  assert bob.measure.recognition_rate(scores, threshold=0.5), 0.888888888889
-  assert bob.measure.recognition_rate(scores, threshold=10.), 0.222222222222
+  cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
+  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
+  assert bob.measure.recognition_rate(cmc_scores), 0.857142857143
+  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 0.857142857143
+  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)  
+  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 0.857142857143
 
   #Two errors
-  scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-two-errors.txt"), 
-  load_only_negatives=True)
-  assert bob.measure.recognition_rate(scores, threshold=0.5), 0.777777777778
-  assert bob.measure.recognition_rate(scores, threshold=10.), 0.111111111111  
+  cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
+  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
+  assert bob.measure.recognition_rate(cmc_scores), 0.857142857143
+  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 0.857142857143
+  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)  
+  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 0.0
+
 
