@@ -331,3 +331,68 @@ def cmc_five_column(filename):
        logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
 
   return retval
+
+
+def load_score(filename, ncolumns=None):
+  """Load scores using numpy.loadtxt and return the data as a numpy array.
+
+  **Parameters:**
+
+  ``filename`` : str or file-like
+    A path or file-like object that will be read with :py:func:`numpy.loadtxt`
+    containing the scores.
+
+  ``ncolumns`` : 4 or 5 [default is 4]
+    Specifies the number of columns in the score file.
+
+  **Returns:**
+
+  ``score_lines`` : numpy array
+    An array which contains not only the actual scores but also the
+    'claimed_id', 'real_id', 'test_label', and ['model_label']
+
+  """
+  if ncolumns is None:
+    ncolumns = 4
+  if ncolumns == 4:
+    dtype = [('claimed_id', 'S50'),
+             ('real_id', 'S50'),
+             ('test_label', 'S200'),
+             ('score', numpy.float64)]
+  elif ncolumns == 5:
+    dtype = [('claimed_id', 'S50'),
+             ('model_label', 'S50'),
+             ('real_id', 'S50'),
+             ('test_label', 'S200'),
+             ('score', numpy.float64)]
+  else:
+    raise ValueError("ncolumns of 4 and 5 are supported only.")
+
+  return numpy.loadtxt(filename, dtype=dtype, comments='#')
+
+
+def get_negatives_positives(score_lines):
+  """Take the output of load_score and return negatives and positives."""
+  pos_mask = score_lines['claimed_id'] == score_lines['real_id']
+  positives = score_lines['score'][pos_mask]
+  negatives = score_lines['score'][numpy.logical_not(pos_mask)]
+  return (negatives, positives)
+
+
+def get_negatives_positives_all(score_lines_list):
+  """Take a list of outputs of load_score and return stacked negatives and
+  positives."""
+  negatives, positives = [], []
+  for score_lines in score_lines_list:
+    neg_pos = get_negatives_positives(score_lines)
+    negatives.append(neg_pos[0])
+    positives.append(neg_pos[1])
+  negatives = numpy.vstack(negatives).T
+  positives = numpy.vstack(positives).T
+  return (negatives, positives)
+
+
+def get_all_scores(score_lines_list):
+  """Take a list of outputs of load_score and return stacked scores"""
+  return numpy.vstack([score_lines['score']
+                       for score_lines in score_lines_list]).T
