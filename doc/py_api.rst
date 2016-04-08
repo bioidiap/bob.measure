@@ -92,6 +92,7 @@ Plotting
    bob.measure.plot.epc
    bob.measure.plot.precision_recall_curve
    bob.measure.plot.cmc
+   bob.measure.plot.detection_identification_rate
 
 OpenBR conversions
 ------------------

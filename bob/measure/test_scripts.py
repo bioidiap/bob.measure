@@ -72,3 +72,4 @@ def test_compute_cmc():
   from .script.plot_cmc import main
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--log-x-scale']), 0)
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_5COL_CMC, '--parser', '5column']), 0)
+  nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--rank', '1']), 0)

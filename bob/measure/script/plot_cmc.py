@@ -30,6 +30,7 @@ def parse_command_line(command_line_options):
   parser.add_argument('-s', '--score-file', required = True, help = 'The score file in 4 or 5 column format to test.')
   parser.add_argument('-o', '--output-pdf-file', default = 'cmc.pdf', help = 'The PDF file to write.')
   parser.add_argument('-l', '--log-x-scale', action='store_true', help = 'Plot logarithmic Rank axis.')
+  parser.add_argument('-r', '--rank', type=int, help = 'Plot Detection & Identification rate curve for the given rank instead of the CMC curve.')
   parser.add_argument('-x', '--no-plot', action = 'store_true', help = 'Do not print a PDF file, but only report the results.')
   parser.add_argument('-p', '--parser', default = '4column', choices = ('4column', '5column'), help = 'The type of the score file.')
 
@@ -57,7 +58,7 @@ def main(command_line_options = None):
   data = {'4column' : load.cmc_four_column, '5column' : load.cmc_five_column}[args.parser](args.score_file)
 
   # compute recognition rate
-  rr = recognition_rate(data)
+  rr = recognition_rate(data, args.rank)
   print("Recognition rate for score file", args.score_file, "is %3.2f%%" % (rr * 100))
 
   if not args.no_plot:
@@ -71,19 +72,34 @@ def main(command_line_options = None):
 
     # CMC
     fig = mpl.figure()
-    max_rank = plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
-    mpl.title("CMC Curve")
-    if args.log_x_scale:
-      mpl.xlabel('Rank (log)')
+    if args.rank is None:
+      max_rank = plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+      mpl.title("CMC Curve")
+      if args.log_x_scale:
+        mpl.xlabel('Rank (log)')
+      else:
+        mpl.xlabel('Rank')
+      mpl.ylabel('Recognition Rate in %')
+
+      ticks = [int(t) for t in mpl.xticks()[0]]
+      mpl.xticks(ticks, ticks)
+      mpl.xlim([1, max_rank])
     else:
-      mpl.xlabel('Rank')
-    mpl.ylabel('Recognition Rate in %')
+      plot.detection_identification_rate(data, rank = args.rank, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+      mpl.title("Detection & Identification Curve")
+      if args.log_x_scale:
+        mpl.xlabel('False Acceptance Rate (log) in %')
+      else:
+        mpl.xlabel('False Acceptance Rate in %')
+      mpl.ylabel('Detection & Identification Rate in %')
+
+      ticks = ["%s"%(t*100) for t in mpl.xticks()[0]]
+      mpl.xticks(mpl.xticks()[0], ticks)
+      mpl.xlim([1e-4, 1])
+
     mpl.grid(True, color=(0.3,0.3,0.3))
     mpl.ylim(ymax=101)
     # convert log-scale ticks to normal numbers
-    ticks = [int(t) for t in mpl.xticks()[0]]
-    mpl.xticks(ticks, ticks)
-    mpl.xlim([0.9, max_rank + 0.1])
 
     pp.savefig(fig)
     pp.close()
