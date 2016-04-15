@@ -116,17 +116,8 @@ def split_four_column(filename):
   ``positives`` : array_like(1D, float)
     The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`four_column`).
   """
-  # split in positives and negatives
-  neg = []
-  pos = []
-  # read four column list line by line
-  for (client_id, probe_id, _, score) in four_column(filename):
-    if client_id == probe_id:
-      pos.append(score)
-    else:
-      neg.append(score)
-
-  return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
+  score_lines = load_score(filename, 4)
+  return get_negatives_positives(score_lines)
 
 def cmc_four_column(filename):
   """cmc_four_column(filename) -> cmc_scores
@@ -262,18 +253,8 @@ def split_five_column(filename):
   ``positives`` : array_like(1D, float)
     The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`five_column`).
   """
-
-  # split in positives and negatives
-  neg = []
-  pos = []
-  # read five column list
-  for (client_id, _, probe_id, _, score) in five_column(filename):
-    if client_id == probe_id:
-      pos.append(score)
-    else:
-      neg.append(score)
-
-  return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
+  score_lines = load_score(filename, 5)
+  return get_negatives_positives(score_lines)
 
 
 def cmc_five_column(filename):
@@ -354,25 +335,39 @@ def load_score(filename, ncolumns=None):
   """
   if ncolumns is None:
     ncolumns = 4
+
+  def convertfunc(x):
+    return x
+
   if ncolumns == 4:
-    dtype = [('claimed_id', 'S50'),
-             ('real_id', 'S50'),
-             ('test_label', 'S200'),
-             ('score', numpy.float64)]
+    names = ('claimed_id', 'real_id', 'test_label', 'score')
+    converters = {
+      0: convertfunc,
+      1: convertfunc,
+      2: convertfunc,
+      3: float}
+
   elif ncolumns == 5:
-    dtype = [('claimed_id', 'S50'),
-             ('model_label', 'S50'),
-             ('real_id', 'S50'),
-             ('test_label', 'S200'),
-             ('score', numpy.float64)]
+    names = ('claimed_id', 'model_label', 'real_id', 'test_label', 'score')
+    converters = {
+      0: convertfunc,
+      1: convertfunc,
+      2: convertfunc,
+      3: convertfunc,
+      4: float}
   else:
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
-  return numpy.loadtxt(filename, dtype=dtype, comments='#')
+  return numpy.genfromtxt(
+    filename, dtype=None, names=names, converters=converters,
+    invalid_raise=True)
 
 
 def get_negatives_positives(score_lines):
-  """Take the output of load_score and return negatives and positives."""
+  """Take the output of load_score and return negatives and positives.
+  This function aims to replace split_four_column and split_five_column
+  but takes a different input. It's up to you to use which one.
+  """
   pos_mask = score_lines['claimed_id'] == score_lines['real_id']
   positives = score_lines['score'][pos_mask]
   negatives = score_lines['score'][numpy.logical_not(pos_mask)]
@@ -396,3 +391,14 @@ def get_all_scores(score_lines_list):
   """Take a list of outputs of load_score and return stacked scores"""
   return numpy.vstack([score_lines['score']
                        for score_lines in score_lines_list]).T
+
+
+def dump_score(filename, score_lines):
+  """Dump scores that were loaded using :py:func:`load_score`
+  The number of columns is automatically detected.
+  """
+  if 'model_label' in score_lines:
+    fmt = '%s %s %s %s %.9f'
+  else:
+    fmt = '%s %s %s %.9f'
+  numpy.savetxt(filename, score_lines, fmt=fmt)
