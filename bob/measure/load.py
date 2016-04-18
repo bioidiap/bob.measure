@@ -10,7 +10,7 @@ import numpy
 import tarfile
 import os
 
-def open_file(filename):
+def open_file(filenamem, mode='rt'):
   """open_file(filename) -> file_like
 
   Opens the given score file for reading.
@@ -34,7 +34,7 @@ def open_file(filename):
   if not os.path.isfile(filename):
     raise IOError("Score file '%s' does not exist." % filename)
   if not tarfile.is_tarfile(filename):
-    return open(filename, 'rt')
+    return open(filename, mode)
 
   # open the tar file for reading
   tar = tarfile.open(filename, 'r')
@@ -359,8 +359,8 @@ def load_score(filename, ncolumns=None):
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
   return numpy.genfromtxt(
-    open_file(filename), dtype=None, names=names, converters=converters,
-    invalid_raise=True)
+    open_file(filename, mode='rb'), dtype=None, names=names,
+    converters=converters, invalid_raise=True)
 
 
 def get_negatives_positives(score_lines):
