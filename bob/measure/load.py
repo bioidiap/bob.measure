@@ -359,7 +359,7 @@ def load_score(filename, ncolumns=None):
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
   return numpy.genfromtxt(
-    filename, dtype=None, names=names, converters=converters,
+    open_file(filename), dtype=None, names=names, converters=converters,
     invalid_raise=True)
 
 
