@@ -37,6 +37,48 @@ def test_load_scores():
     assert all(c[i] == s[i] for c,s in zip(compressed_scores, normal_scores) for i in range(cols[variant]))
 
 
+def test_load_score():
+  # This function tests the IO functionality of loading score files in different ways
+
+  scores = []
+  cols = {'4col' : 4, '5col' : 5}
+
+  for variant in ('4col', '5col'):
+    # read score file in normal way
+    normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
+    normal_scores = bob.measure.load.load_score(normal_score_file, cols[variant])
+
+    assert len(normal_scores) == 910
+    assert len(normal_scores.dtype) == cols[variant]
+
+    # read the compressed score file
+    compressed_score_file = bob.io.base.test_utils.datafile('dev-%s.tar.gz' % variant, 'bob.measure')
+    compressed_scores = bob.measure.load.load_score(compressed_score_file, cols[variant])
+
+    assert len(compressed_scores) == len(normal_scores)
+    assert len(compressed_scores.dtype) == cols[variant]
+    assert all(normal_scores == compressed_scores)
+
+
+def test_dump_score():
+  # This function tests the IO functionality of dumping score files
+
+  scores = []
+  cols = {'4col' : 4, '5col' : 5}
+
+  for variant in ('4col', '5col'):
+    # read score file
+    normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
+    normal_scores = bob.measure.load.load_score(normal_score_file, cols[variant])
+
+    with tempfile.TemporaryFile() as f:
+      bob.measure.load.dump_score(f, normal_scores)
+      f.seek(0)
+      loaded_scores = bob.measure.load.load_score(f, cols[variant])
+
+    assert all(loaded_scores == normal_scores)
+
+
 def _check_binary_identical(name1, name2):
   # see: http://www.peterbe.com/plog/using-md5-to-check-equality-between-files
   from hashlib import md5
