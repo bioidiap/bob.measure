@@ -10,7 +10,7 @@ import numpy
 import tarfile
 import os
 
-def open_file(filenamem, mode='rt'):
+def open_file(filename, mode='rt'):
   """open_file(filename) -> file_like
 
   Opens the given score file for reading.
