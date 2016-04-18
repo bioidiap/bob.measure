@@ -397,8 +397,10 @@ def dump_score(filename, score_lines):
   """Dump scores that were loaded using :py:func:`load_score`
   The number of columns is automatically detected.
   """
-  if 'model_label' in score_lines:
+  if len(score_lines.dtype) == 5:
     fmt = '%s %s %s %s %.9f'
-  else:
+  elif len(score_lines.dtype) == 4:
     fmt = '%s %s %s %.9f'
+  else:
+    raise ValueError("Only scores with 4 and 5 columns are supported.")
   numpy.savetxt(filename, score_lines, fmt=fmt)
