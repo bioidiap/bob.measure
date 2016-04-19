@@ -57,7 +57,8 @@ def test_load_score():
 
     assert len(compressed_scores) == len(normal_scores)
     assert len(compressed_scores.dtype) == cols[variant]
-    assert all(normal_scores == compressed_scores)
+    for name in normal_scores.dtype.names:
+      assert all(normal_scores[name] == compressed_scores[name])
 
 
 def test_dump_score():
@@ -76,7 +77,8 @@ def test_dump_score():
       f.seek(0)
       loaded_scores = bob.measure.load.load_score(f, cols[variant])
 
-    assert all(loaded_scores == normal_scores)
+    for name in normal_scores.dtype.names:
+      assert all(normal_scores[name] == loaded_scores[name])
 
 
 def _check_binary_identical(name1, name2):

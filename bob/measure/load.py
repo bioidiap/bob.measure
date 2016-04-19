@@ -358,9 +358,15 @@ def load_score(filename, ncolumns=None):
   else:
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
-  return numpy.genfromtxt(
+  score_lines = numpy.genfromtxt(
     open_file(filename, mode='rb'), dtype=None, names=names,
     converters=converters, invalid_raise=True)
+  new_dtype = []
+  for name in score_lines.dtype.names[:-1]:
+    new_dtype.append((name, str(score_lines.dtype[name]).replace('S', 'U')))
+  new_dtype.append(('score', float))
+  score_lines = numpy.array(score_lines, new_dtype)
+  return score_lines
 
 
 def get_negatives_positives(score_lines):
