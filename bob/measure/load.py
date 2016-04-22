@@ -10,7 +10,7 @@ import numpy
 import tarfile
 import os
 
-def open_file(filename):
+def open_file(filename, mode='rt'):
   """open_file(filename) -> file_like
 
   Opens the given score file for reading.
@@ -34,7 +34,7 @@ def open_file(filename):
   if not os.path.isfile(filename):
     raise IOError("Score file '%s' does not exist." % filename)
   if not tarfile.is_tarfile(filename):
-    return open(filename, 'rt')
+    return open(filename, mode)
 
   # open the tar file for reading
   tar = tarfile.open(filename, 'r')
@@ -116,17 +116,8 @@ def split_four_column(filename):
   ``positives`` : array_like(1D, float)
     The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`four_column`).
   """
-  # split in positives and negatives
-  neg = []
-  pos = []
-  # read four column list line by line
-  for (client_id, probe_id, _, score) in four_column(filename):
-    if client_id == probe_id:
-      pos.append(score)
-    else:
-      neg.append(score)
-
-  return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
+  score_lines = load_score(filename, 4)
+  return get_negatives_positives(score_lines)
 
 def cmc_four_column(filename):
   """cmc_four_column(filename) -> cmc_scores
@@ -262,18 +253,8 @@ def split_five_column(filename):
   ``positives`` : array_like(1D, float)
     The list of ``score``'s, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`five_column`).
   """
-
-  # split in positives and negatives
-  neg = []
-  pos = []
-  # read five column list
-  for (client_id, _, probe_id, _, score) in five_column(filename):
-    if client_id == probe_id:
-      pos.append(score)
-    else:
-      neg.append(score)
-
-  return (numpy.array(neg, numpy.float64), numpy.array(pos, numpy.float64))
+  score_lines = load_score(filename, 5)
+  return get_negatives_positives(score_lines)
 
 
 def cmc_five_column(filename):
@@ -331,3 +312,101 @@ def cmc_five_column(filename):
        logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
 
   return retval
+
+
+def load_score(filename, ncolumns=None):
+  """Load scores using numpy.loadtxt and return the data as a numpy array.
+
+  **Parameters:**
+
+  ``filename`` : str or file-like
+    A path or file-like object that will be read with :py:func:`numpy.loadtxt`
+    containing the scores.
+
+  ``ncolumns`` : 4 or 5 [default is 4]
+    Specifies the number of columns in the score file.
+
+  **Returns:**
+
+  ``score_lines`` : numpy array
+    An array which contains not only the actual scores but also the
+    'claimed_id', 'real_id', 'test_label', and ['model_label']
+
+  """
+  if ncolumns is None:
+    ncolumns = 4
+
+  def convertfunc(x):
+    return x
+
+  if ncolumns == 4:
+    names = ('claimed_id', 'real_id', 'test_label', 'score')
+    converters = {
+      0: convertfunc,
+      1: convertfunc,
+      2: convertfunc,
+      3: float}
+
+  elif ncolumns == 5:
+    names = ('claimed_id', 'model_label', 'real_id', 'test_label', 'score')
+    converters = {
+      0: convertfunc,
+      1: convertfunc,
+      2: convertfunc,
+      3: convertfunc,
+      4: float}
+  else:
+    raise ValueError("ncolumns of 4 and 5 are supported only.")
+
+  score_lines = numpy.genfromtxt(
+    open_file(filename, mode='rb'), dtype=None, names=names,
+    converters=converters, invalid_raise=True)
+  new_dtype = []
+  for name in score_lines.dtype.names[:-1]:
+    new_dtype.append((name, str(score_lines.dtype[name]).replace('S', 'U')))
+  new_dtype.append(('score', float))
+  score_lines = numpy.array(score_lines, new_dtype)
+  return score_lines
+
+
+def get_negatives_positives(score_lines):
+  """Take the output of load_score and return negatives and positives.
+  This function aims to replace split_four_column and split_five_column
+  but takes a different input. It's up to you to use which one.
+  """
+  pos_mask = score_lines['claimed_id'] == score_lines['real_id']
+  positives = score_lines['score'][pos_mask]
+  negatives = score_lines['score'][numpy.logical_not(pos_mask)]
+  return (negatives, positives)
+
+
+def get_negatives_positives_all(score_lines_list):
+  """Take a list of outputs of load_score and return stacked negatives and
+  positives."""
+  negatives, positives = [], []
+  for score_lines in score_lines_list:
+    neg_pos = get_negatives_positives(score_lines)
+    negatives.append(neg_pos[0])
+    positives.append(neg_pos[1])
+  negatives = numpy.vstack(negatives).T
+  positives = numpy.vstack(positives).T
+  return (negatives, positives)
+
+
+def get_all_scores(score_lines_list):
+  """Take a list of outputs of load_score and return stacked scores"""
+  return numpy.vstack([score_lines['score']
+                       for score_lines in score_lines_list]).T
+
+
+def dump_score(filename, score_lines):
+  """Dump scores that were loaded using :py:func:`load_score`
+  The number of columns is automatically detected.
+  """
+  if len(score_lines.dtype) == 5:
+    fmt = '%s %s %s %s %.9f'
+  elif len(score_lines.dtype) == 4:
+    fmt = '%s %s %s %.9f'
+  else:
+    raise ValueError("Only scores with 4 and 5 columns are supported.")
+  numpy.savetxt(filename, score_lines, fmt=fmt)
