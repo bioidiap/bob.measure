@@ -124,20 +124,46 @@ def recognition_rate(cmc_scores, rank = None, threshold=None):
     rank = 1
 
   correct = 0
+  counter = 0
   for neg, pos in cmc_scores:
-    if((type(pos)!=float) and (len(pos) == 0)):
-      raise ValueError("For the CMC computation at least one positive score per pair is necessary.")
+    if pos is None and neg is None:
+      raise ValueError("One pair of the CMC scores has neither positive nor negative values")
 
-    # get the maximum positive score for the current probe item
-    # (usually, there is only one positive score, but just in case...)
-    max_pos = numpy.max(pos)
+    # filter out any negative or positive scores below threshold
+    if threshold is not None and neg is not None:
+      neg = numpy.array(neg[neg >= threshold])
 
-    # count the number of negative scores that are higher than the best positive score
-    index = numpy.sum(neg >= max_pos)
-    if index < rank and (threshold is None or threshold <= max_pos):
-      correct += 1
+    if pos is None:
+      # no positives, so we definitely do not have a match;
+      # check if we have negatives above threshold
+      if not neg.ndim:
+        # we have no negative scores over the threshold, so we have correctly rejected the probe
+        # don't increase any of the two counters...
+        continue
+      # we have negatives over threshold, so we have incorrect classifications; independent on the actual rank
+      counter += 1
+    else:
+      # we have a positive, so we need to count the probe
+      counter += 1
 
-  return correct / float(len(cmc_scores))
+      # get the maximum positive score for the current probe item
+      # (usually, there is only one positive score, but just in case...)
+      max_pos = numpy.max(pos)
+
+      if threshold is not None and max_pos < threshold:
+        # we have filtered out all positives, so any match is incorrect
+        continue
+
+      if neg is None or not neg.ndim:
+        # if we had no negatives, or all negatives were below threshold, we have a match at rank 1
+        correct += 1
+      else:
+        # count the number of negative scores that are higher than the best positive score
+        index = numpy.sum(neg >= max_pos)
+        if index < rank and (threshold is None or max_pos >= threshold):
+          correct += 1
+
+  return float(correct) / float(counter)
 
 
 def cmc(cmc_scores, threshold = None):
