@@ -330,26 +330,26 @@ def test_open_set_recognition_rate():
 
   far_value = 0.01
 
-  #No error files
+  # No error files
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
   normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
-  assert bob.measure.recognition_rate(cmc_scores), 1.0
-  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 1.0
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 1.0) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 1.0) < 1e-8
   t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 1.0
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t) - 1.0) < 1e-8
 
-  #One error
+  # One error
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
   normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
-  assert bob.measure.recognition_rate(cmc_scores), 0.857142857143
-  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 0.857142857143
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 0.857142857143) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 0.857142857143) < 1e-8
   t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 0.857142857143
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t) - 0.857142857143) < 1e-8
 
-  #Two errors
+  # Two errors
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
   normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
-  assert bob.measure.recognition_rate(cmc_scores), 0.857142857143
-  assert bob.measure.recognition_rate(cmc_scores, threshold=0.5), 0.857142857143
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 0.857142857143) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 0.857142857143) < 1e-8
   t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert bob.measure.recognition_rate(cmc_scores, threshold=t), 0.0
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t)) < 1e-8
