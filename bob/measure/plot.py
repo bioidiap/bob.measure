@@ -407,20 +407,26 @@ def cmc(cmc_scores, logx = True, **kwargs):
   return len(out)
 
 
-def detection_identification_rate(cmc_scores, far_values = log_values(), rank = None, logx = True, **kwargs):
-  """Plots the Detection & Identification rate curve over the FAR for the given FAR values.
+def detection_identification_curve(cmc_scores, far_values = log_values(), rank = 1, logx = True, **kwargs):
+  """Plots the Detection & Identification curve over the FAR for the given FAR values.
   This curve is designed to be used in an open set identification protocol, and defined in Chapter 14.1 of [LiJain2005]_.
+  It requires to have at least one open set probe item, i.e., with no corresponding gallery, such that the positives for that pair are ``None``.
+
+  The detection and identification curve first computes FAR thresholds based on the out-of-set probe scores (negative scores).
+  For each probe item, the **maximum** negative score is used.
+  Then, it plots the detection and identification rates for those thresholds, which are based on the in-set probe scores only.
+  See [LiJain2005]_ for more details.
 
   **Parameters:**
 
   ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    See :py:func:`bob.measure.cmc`
+    See :py:func:`bob.measure.detection_identification_rate`
 
   ``far_values`` : [float]
     The values for the FAR, where the CAR should be plotted; each value should be in range [0,1].
 
   ``rank`` : int or ``None``
-    The rank for which the curve should be plotted. If ``None``, rank 1 is assumed.
+    The rank for which the curve should be plotted, 1 by default.
 
   ``logx`` : bool
     Plot the FAR axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in linear scale using :py:func:`matplotlib.pyplot.plot`? (Default: ``True``)
@@ -435,17 +441,20 @@ def detection_identification_rate(cmc_scores, far_values = log_values(), rank = 
   .. [LiJain2005] **Stan Li and Anil K. Jain**, *Handbook of Face Recognition*, Springer, 2005
   """
 
+  import numpy
   from matplotlib import pyplot
-  from . import far_threshold, recognition_rate
+  from . import far_threshold, detection_identification_rate
 
-  # get all negative scores and sort them to compute the FAR thresholds
-  negatives = sorted(n for neg,pos in cmc_scores for n in neg)
+  # for each probe, for which no positives exists, get the highest negative score; and sort them to compute the FAR thresholds
+  negatives = sorted(max(neg) for neg,pos in cmc_scores if (pos is None or not numpy.array(pos).size) and neg is not None)
+  if not negatives:
+    raise ValueError("There need to be at least one pair with only negative scores")
 
   # compute thresholds based on FAR values
   thresholds = [far_threshold(negatives, [], v, True) for v in far_values]
 
-  # compute recognition rates based on threshold for the given rank
-  rates = [100.*recognition_rate(cmc_scores, rank, t) for t in thresholds]
+  # compute detection and identification rate based on the thresholds for the given rank
+  rates = [100.*detection_identification_rate(cmc_scores, t, rank) for t in thresholds]
 
   # plot curve
   if logx:

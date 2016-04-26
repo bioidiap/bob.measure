@@ -85,7 +85,7 @@ def main(command_line_options = None):
       mpl.xticks(ticks, ticks)
       mpl.xlim([1, max_rank])
     else:
-      plot.detection_identification_rate(data, rank = args.rank, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+      plot.detection_identification_curve(data, rank = args.rank, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
       mpl.title("Detection & Identification Curve")
       if args.log_x_scale:
         mpl.xlabel('False Acceptance Rate (log) in %')

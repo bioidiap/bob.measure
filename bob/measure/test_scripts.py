@@ -25,6 +25,8 @@ TEST_SCORES_5COL = F('test-5col.txt')
 SCORES_4COL_CMC = F('scores-cmc-4col.txt')
 SCORES_5COL_CMC = F('scores-cmc-5col.txt')
 
+SCORES_4COL_CMC_OS = F('scores-cmc-4col-open-set.txt')
+
 def test_compute_perf():
 
   # sanity checks
@@ -68,8 +70,9 @@ def test_compute_cmc():
   # sanity checks
   assert os.path.exists(SCORES_4COL_CMC)
   assert os.path.exists(SCORES_5COL_CMC)
+  assert os.path.exists(SCORES_4COL_CMC_OS)
 
   from .script.plot_cmc import main
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--log-x-scale']), 0)
   nose.tools.eq_(main(['--self-test', '--score-file', SCORES_5COL_CMC, '--parser', '5column']), 0)
-  nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC, '--rank', '1']), 0)
+  nose.tools.eq_(main(['--self-test', '--score-file', SCORES_4COL_CMC_OS, '--rank', '1']), 0)
