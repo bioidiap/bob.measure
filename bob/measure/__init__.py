@@ -79,64 +79,77 @@ def relevance (input, machine):
   return retval
 
 
-def recognition_rate(cmc_scores, rank = None, threshold=None):
-  """recognition_rate(cmc_scores, threshold) -> RR
+def recognition_rate(cmc_scores, rank = 1, threshold=None):
+  """recognition_rate(cmc_scores, rank, threshold) -> RR
 
   Calculates the recognition rate from the given input, which is identical
   to the CMC value for the given ``rank``.
 
-  The input has a specific format, which is a list of two-element tuples. Each
-  of the tuples contains the negative and the positive scores for one test
-  item.  To read the lists from score files in 4 or 5 column format, please use
-  the :py:func:`bob.measure.load.cmc_four_column` or
-  :py:func:`bob.measure.load.cmc_five_column` function.
-  This function requires that at least one positive example is provided for each pair -- a property that is assured by these functions.
+  The input has a specific format, which is a list of two-element tuples.
+  Each of the tuples contains the negative :math:`\\{S_p^-\\}` and the positive :math:`\\{S_p^+\\}` scores for one probe item :math:`p`, or ``None`` in case of open set recognition.
+  To read the lists from score files in 4 or 5 column format, please use the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` function.
 
-  If **threshold** is set to `None`, the recognition rate is defined as the number of test items, for which the
-  positive score is greater than or equal to all negative scores, divided by
-  the number of all test items. If several positive scores for one test item exist, the **highest** score is taken.
+  If **threshold** is set to ``None``, the rank 1 recognition rate is defined as the number of test items, for which the highest positive :math:`\\max\\{S_p^+\\}` score is greater than or equal to all negative scores, divided by the number of all probe items :math:`P`:
 
-  If **threshold** is given, the recognition rate is defined as the number of test items, for which the
-  positive score is greater than or equal to all negative scores and the threshold divided by
-  the number of all test items. If several positive scores for one test item exist, the **highest** score is taken.
+  .. math::
+
+    \\mathrm{RR} = \\frac{1}{P} \\sum_{p=1}^{P} \\begin{cases} 1 & \\mathrm{if } \\max\\{S_p^+\\} >= \\max\\{S_p^-\\}\\\\ 0 & \\mathrm{otherwise} \\end{cases}
+
+  For a given rank :math:`r>1`, up to :math:`r` negative scores that are higher than the highest positive score are allowed to still count as correctly classified in the top :math:`r` rank.
+
+  If ``threshold`` :math:`\\theta` is given, **all** scores below threshold will be filtered out.
+  Hence, if all positive scores are below threshold :math:`\\max\\{S_p^+\\} < \\theta`, the probe will be misclassified **at any rank**.
+
+  For open set recognition, i.e., when there exist a tuple including negative scores without corresponding positive scores (``None``), and **all** negative scores are below ``threshold`` :math:`\\max\\{S_p^+\\} < \\theta`, the probe item is correctly rejected, **and it does not count into the denominator** :math:`P`.
+  When no ``threshold`` is provided, the open set probes will **always** count as misclassified, regardless of the ``rank``.
 
   **Parameters:**
 
   ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`)
+    CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`).
+    Each pair contains the ``negative`` and the ``positive`` scores for **one probe item**.
+    Each pair can contain up to one empty array (or ``None``), i.e., in case of open set recognition.
 
-  ``rank`` : int
-    The ranks for which the recognition rate should be computed.
+  ``rank`` : int or ``None``
+    The rank for which the recognition rate should be computed, 1 by default.
 
   ``threshold`` : float or ``None``
-    Decision threshold. If ``None``, the decision threshold will be the **highest** positive score.
+    Decision threshold. If not ``None``, **all** scores will be filtered by the threshold.
+    In an open set recognition problem, all open set scores (negatives with no corresponding positive) for which all scores are below threshold, will be counted as correctly rejected and **removed** from the probe list (i.e., the denominator).
 
   **Returns:**
 
   ``RR`` : float
-    The rank 1 recognition rate, i.e., the relative number of correctly identified identities
+    The (open set) recognition rate for the given rank, a value between 0 and 1.
   """
   # If no scores are given, the recognition rate is exactly 0.
   if not cmc_scores:
     return 0.
 
-  if rank is None:
-    rank = 1
-
   correct = 0
   counter = 0
   for neg, pos in cmc_scores:
+    # set all values that are empty before to None
+    if pos is not None and not numpy.array(pos).size:
+      pos = None
+    if neg is not None and not numpy.array(neg).size:
+      neg = None
+
     if pos is None and neg is None:
       raise ValueError("One pair of the CMC scores has neither positive nor negative values")
 
-    # filter out any negative or positive scores below threshold
-    if threshold is not None and neg is not None:
-      neg = numpy.array(neg[neg >= threshold])
+    # filter out any negative or positive scores below threshold; scores with exactly the threshold are also filtered out
+    # now, None and an empty array have different meanings.
+    if threshold is not None:
+      if neg is not None:
+        neg = numpy.array(neg)[neg > threshold]
+      if pos is not None:
+        pos = numpy.array(pos)[pos > threshold]
 
     if pos is None:
       # no positives, so we definitely do not have a match;
       # check if we have negatives above threshold
-      if not neg.ndim:
+      if not neg.size:
         # we have no negative scores over the threshold, so we have correctly rejected the probe
         # don't increase any of the two counters...
         continue
@@ -146,21 +159,21 @@ def recognition_rate(cmc_scores, rank = None, threshold=None):
       # we have a positive, so we need to count the probe
       counter += 1
 
+      if not pos.size:
+        # all positive scores have been filtered out by the threshold, we definitely have a mis-match
+        continue
+
       # get the maximum positive score for the current probe item
       # (usually, there is only one positive score, but just in case...)
       max_pos = numpy.max(pos)
 
-      if threshold is not None and max_pos < threshold:
-        # we have filtered out all positives, so any match is incorrect
-        continue
-
-      if neg is None or not neg.ndim:
+      if neg is None or not neg.size:
         # if we had no negatives, or all negatives were below threshold, we have a match at rank 1
         correct += 1
       else:
         # count the number of negative scores that are higher than the best positive score
         index = numpy.sum(neg >= max_pos)
-        if index < rank and (threshold is None or max_pos >= threshold):
+        if index < rank:
           correct += 1
 
   return float(correct) / float(counter)
