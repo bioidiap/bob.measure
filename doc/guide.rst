@@ -189,8 +189,7 @@ For each probe item, the scores for negative and positive comparisons are comput
    ...   pos = numpy.random.normal(1, 1, 1)
    ...   neg = numpy.random.normal(0, 1, 19)
    ...   rr_scores.append((neg, pos))
-   >>> bob.measure.recognition_rate(rr_scores, rank=1)
-   0.3
+   >>> rr = bob.measure.recognition_rate(rr_scores, rank=1)
 
 For open set identification, according to Li and Jain (2005) there are two different error measures defined.
 The first measure is the :py:func:`bob.measure.detection_identification_rate`, which counts the number of correctly classified in-gallery probe items.
@@ -206,10 +205,8 @@ Both functions require that at least one probe item exists, which has no accordi
    ...   pos = None
    ...   neg = numpy.random.normal(-2, 1, 10)
    ...   rr_scores.append((neg, pos))
-   >>> bob.measure.detection_identification_rate(rr_scores, threshold = 0, rank=1)
-   0.3
-   >>> bob.measure.false_alarm_rate(rr_scores, threshold = 0)
-   0.2
+   >>> dir = bob.measure.detection_identification_rate(rr_scores, threshold = 0, rank=1)
+   >>> far = bob.measure.false_alarm_rate(rr_scores, threshold = 0)
 
 
 Plotting
