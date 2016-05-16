@@ -270,7 +270,7 @@ def test_cmc():
 
   # tests the CMC calculation
   # test data; should give match characteristics [1/2,1/4,1/3] and CMC [1/3,2/3,1]
-  test_data = [((0.3, 1.1, 0.5), (0.7)), ((1.4, -1.3, 0.6), (0.2)), ((0.8, 0., 1.5), (-0.8, 1.8)), ((2., 1.3, 1.6, 0.9), (2.4))]
+  test_data = [((0.3, 1.1, 0.5), (0.7,)), ((1.4, -1.3, 0.6), (0.2,)), ((0.8, 0., 1.5), (-0.8, 1.8)), ((2., 1.3, 1.6, 0.9), (2.4,))]
   # compute recognition rate
   rr = recognition_rate(test_data)
   nose.tools.eq_(rr, 0.5)
@@ -319,36 +319,34 @@ def test_calibration():
   min_cllr = calibration.min_cllr(negatives, positives)
 
   assert min_cllr <= cllr
-  assert abs(cllr - 3.6183) < 1e-4
-  assert abs(min_cllr - 0.3373) < 1e-4
+  assert abs(cllr - 3.61833) < 1e-5, cllr
+  assert abs(min_cllr - 0.33736) < 1e-5, min_cllr
 
 
 
-def test_open_set_recognition_rate():
-
-  far_value = 0.01
+def test_open_set_rates():
 
   # No error files
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
-  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set.txt"))
+  assert abs(bob.measure.detection_identification_rate(cmc_scores, threshold=0.5) - 1.0) < 1e-8
+  assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
 
-  assert abs(bob.measure.recognition_rate(cmc_scores) - 1.0) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 7./9.) < 1e-8
   assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 1.0) < 1e-8
-  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t) - 1.0) < 1e-8
 
   # One error
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-one-error.txt"))
-  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set-one-error.txt"))
-  assert abs(bob.measure.recognition_rate(cmc_scores) - 0.857142857143) < 1e-8
-  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 0.857142857143) < 1e-8
-  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t) - 0.857142857143) < 1e-8
+  assert abs(bob.measure.detection_identification_rate(cmc_scores, threshold=0.5) - 6./7.) < 1e-8
+  assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
+
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 6./9.) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 6./7.) < 1e-8
+
 
   # Two errors
   cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-two-errors.txt"))
-  normal_scores = bob.measure.load.split_four_column(F("scores-cmc-4col-open-set-two-errors.txt"))
-  assert abs(bob.measure.recognition_rate(cmc_scores) - 0.857142857143) < 1e-8
-  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 0.857142857143) < 1e-8
-  t = bob.measure.far_threshold(normal_scores[0], normal_scores[1],far_value)
-  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=t)) < 1e-8
+  assert abs(bob.measure.detection_identification_rate(cmc_scores, threshold=0.5) - 6./7.) < 1e-8
+  assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5) - 0.5) < 1e-8
+
+  assert abs(bob.measure.recognition_rate(cmc_scores) - 6./9.) < 1e-8
+  assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 6./8.) < 1e-8

@@ -10,6 +10,9 @@ import numpy
 import tarfile
 import os
 
+import logging
+logger = logging.getLogger('bob.measure')
+
 def open_file(filename, mode='rt'):
   """open_file(filename) -> file_like
 
@@ -121,7 +124,6 @@ def split_four_column(filename):
 
 def cmc_four_column(filename):
   """cmc_four_column(filename) -> cmc_scores
-  
 
   Loads scores to compute CMC curves from a file in four column format.
   The four column file needs to be in the same format as described in :py:func:`four_column`,
@@ -132,7 +134,7 @@ def cmc_four_column(filename):
   Usually, the list of positive scores should contain only one element, but more are allowed.
   The result of this function can directly be passed to, e.g., the :py:func:`bob.measure.cmc` function.
 
-  
+
   **Parameters:**
 
   ``filename`` : str or file-like
@@ -141,48 +143,29 @@ def cmc_four_column(filename):
 
   **Returns:**
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
+  ``cmc_scores`` : [(negatives, positives)]
+    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database.
+    Both ``negatives`` and ``positives`` can be either an 1D :py:class:`numpy.ndarray` of type ``float``, or ``None``.
 
   """
   # extract positives and negatives
   pos_dict = {}
   neg_dict = {}
-  # read four column list  
-  for (client_id, probe_id, probe_name, score_str) in four_column(filename):
-    try:
-      score = float(score_str)
-      # check in which dict we have to put the score
-      if client_id == probe_id:
-        correct_dict = pos_dict
-      else:
-        correct_dict = neg_dict
-      # append score
-      if probe_name in correct_dict:
-        correct_dict[probe_name].append(score)
-      else:
-        correct_dict[probe_name] = [score]
-    except:
-      raise SyntaxError("Cannot convert score '%s' to float" % score_str)
+  # read four column list
+  for (client_id, probe_id, probe_name, score) in four_column(filename):
+    # check in which dict we have to put the score
+    correct_dict = pos_dict if client_id == probe_id else neg_dict
 
-  # convert to lists of tuples of ndarrays
-  retval = []
-  import logging
-  logger = logging.getLogger('bob')
-  for probe_name in sorted(pos_dict.keys()):
-    if probe_name in neg_dict:
-      retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
+    # append score
+    if probe_name in correct_dict:
+      correct_dict[probe_name].append(score)
     else:
-      logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
+      correct_dict[probe_name] = [score]
 
-  #test if there are probes for which only negatives exist
-  for probe_name in sorted(neg_dict.keys()):
-    if not probe_name in pos_dict.keys():
-      logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
+  # convert that into the desired format
+  return _convert_cmc_scores(neg_dict, pos_dict)
 
 
-  return retval
-  
 
 def five_column(filename):
   """five_column(filename) -> claimed_id, model_label, real_id, test_label, score
@@ -259,7 +242,7 @@ def split_five_column(filename):
 
 def cmc_five_column(filename):
   """cmc_four_column(filename) -> cmc_scores
-  
+
   Loads scores to compute CMC curves from a file in five column format.
   The four column file needs to be in the same format as described in :py:func:`five_column`,
   and the ``test_label`` (column 4) has to contain the test/probe file name or a probe id.
@@ -286,35 +269,19 @@ def cmc_five_column(filename):
   # read four column list
   for (client_id, _, probe_id, probe_name, score) in five_column(filename):
     # check in which dict we have to put the score
-    if client_id == probe_id:
-      correct_dict = pos_dict
-    else:
-      correct_dict = neg_dict
+    correct_dict = pos_dict if client_id == probe_id else neg_dict
+
     # append score
     if probe_name in correct_dict:
       correct_dict[probe_name].append(score)
     else:
       correct_dict[probe_name] = [score]
 
-  # convert to lists of tuples of ndarrays
-  retval = []
-  import logging
-  logger = logging.getLogger('bob')
-
-  for probe_name in sorted(pos_dict.keys()):
-    if probe_name in neg_dict:
-      retval.append((numpy.array(neg_dict[probe_name], numpy.float64), numpy.array(pos_dict[probe_name], numpy.float64)))
-    else:
-      logger.warn('For probe name "%s" there are only positive scores. This probe name is ignored.' % probe_name)
-  # test if there are probes for which only negatives exist
-  for probe_name in sorted(neg_dict.keys()):
-    if not probe_name in pos_dict.keys():
-       logger.warn('For probe name "%s" there are only negative scores. This probe name is ignored.' % probe_name)
-
-  return retval
+  # convert that into the desired format
+  return _convert_cmc_scores(neg_dict, pos_dict)
 
 
-def load_score(filename, ncolumns=None):
+def load_score(filename, ncolumns = 4):
   """Load scores using numpy.loadtxt and return the data as a numpy array.
 
   **Parameters:**
@@ -333,11 +300,8 @@ def load_score(filename, ncolumns=None):
     'claimed_id', 'real_id', 'test_label', and ['model_label']
 
   """
-  if ncolumns is None:
-    ncolumns = 4
 
-  def convertfunc(x):
-    return x
+  convertfunc = lambda x : x
 
   if ncolumns == 4:
     names = ('claimed_id', 'real_id', 'test_label', 'score')
@@ -410,3 +374,13 @@ def dump_score(filename, score_lines):
   else:
     raise ValueError("Only scores with 4 and 5 columns are supported.")
   numpy.savetxt(filename, score_lines, fmt=fmt)
+
+def _convert_cmc_scores(neg_dict, pos_dict):
+  """Converts the negative and positive scores read with :py:func:`cmc_four_column` or :py:func:`cmc_four_column` into a format that is handled by the :py:func:`bob.measure.cmc` and similar functions."""
+  # convert to lists of tuples of ndarrays (or None)
+  probe_names = sorted(set(neg_dict.keys()).union(set(pos_dict.keys())))
+  # get all scores in the desired format
+  return [(
+    numpy.array(neg_dict[probe_name], numpy.float64) if probe_name in neg_dict else None,
+    numpy.array(pos_dict[probe_name], numpy.float64) if probe_name in pos_dict else None
+  ) for probe_name in probe_names]

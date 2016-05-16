@@ -19,7 +19,8 @@
 Methods in the :py:mod:`bob.measure` module can help you to quickly and easily
 evaluate error for multi-class or binary classification problems. If you are
 not yet familiarized with aspects of performance evaluation, we recommend the
-following papers for an overview of some of the methods implemented.
+following papers and book chapters for an overview of some of the implemented
+methods.
 
 * Bengio, S., Keller, M., Mariéthoz, J. (2004). `The Expected Performance
   Curve`_.  International Conference on Machine Learning ICML Workshop on ROC
@@ -27,6 +28,8 @@ following papers for an overview of some of the methods implemented.
 * Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
   `The DET curve in assessment of detection task performance`_. Fifth European
   Conference on Speech Communication and Technology (pp. 1895-1898).
+* Li, S., Jain, A.K. (2005), `Handbook of Face Recognition`, Chapter 14, Springer
+
 
 Overview
 --------
@@ -105,8 +108,8 @@ defined in the first equation.
   loaded your scores in two 1D float64 vectors and are ready to evaluate the
   performance of the classifier.
 
-Evaluation
-----------
+Verification
+------------
 
 To count the number of correctly classified positives and negatives you can use
 the following techniques:
@@ -171,6 +174,40 @@ calculation of the threshold:
       >>> t = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted = True)
       >>> assert T == t
 
+Identification
+--------------
+
+For identification, the Recognition Rate is one of the standard measures.
+To compute recognition rates, you can use the :py:func:`bob.measure.recognition_rate` function.
+This function expects a relatively complex data structure, which is the same as for the `CMC`_ below.
+For each probe item, the scores for negative and positive comparisons are computed, and collected for all probe items:
+
+.. doctest::
+
+   >>> rr_scores = []
+   >>> for probe in range(10):
+   ...   pos = numpy.random.normal(1, 1, 1)
+   ...   neg = numpy.random.normal(0, 1, 19)
+   ...   rr_scores.append((neg, pos))
+   >>> rr = bob.measure.recognition_rate(rr_scores, rank=1)
+
+For open set identification, according to Li and Jain (2005) there are two different error measures defined.
+The first measure is the :py:func:`bob.measure.detection_identification_rate`, which counts the number of correctly classified in-gallery probe items.
+The second measure is the :py:func:`bob.measure.false_alarm_rate`, which counts, how often an out-of-gallery probe item was incorrectly accepted.
+Both rates can be computed using the same data structure, with one exception.
+Both functions require that at least one probe item exists, which has no according gallery item, i.e., where the positives are empty or ``None``:
+
+(continued from above...)
+
+.. doctest::
+
+   >>> for probe in range(10):
+   ...   pos = None
+   ...   neg = numpy.random.normal(-2, 1, 10)
+   ...   rr_scores.append((neg, pos))
+   >>> dir = bob.measure.detection_identification_rate(rr_scores, threshold = 0, rank=1)
+   >>> far = bob.measure.false_alarm_rate(rr_scores, threshold = 0)
+
 
 Plotting
 --------
@@ -202,6 +239,7 @@ You should see an image like the following one:
 .. plot::
 
    import numpy
+   numpy.random.seed(42)
    import bob.measure
    from matplotlib import pyplot
 
@@ -215,13 +253,13 @@ You should see an image like the following one:
    pyplot.title('ROC')
 
 As can be observed, plotting methods live in the namespace
-:py:mod:`bob.measure.plot`. They work like `Matplotlib`_'s `plot()`_ method
+:py:mod:`bob.measure.plot`. They work like the :py:func:`matplotlib.pyplot.plot`
 itself, except that instead of receiving the x and y point coordinates as
 parameters, they receive the two :py:class:`numpy.ndarray` arrays with
 negatives and positives, as well as an indication of the number of points the
 curve must contain.
 
-As in `Matplotlib`_'s `plot()`_ command, you can pass optional parameters for
+As in the :py:func:`matplotlib.pyplot.plot` command, you can pass optional parameters for
 the line as shown in the example to setup its color, shape and even the label.
 For an overview of the keywords accepted, please refer to the `Matplotlib`_'s
 Documentation. Other plot properties such as the plot title, axis labels,
@@ -250,6 +288,7 @@ This will produce an image like the following one:
 .. plot::
 
    import numpy
+   numpy.random.seed(42)
    import bob.measure
    from matplotlib import pyplot
 
@@ -300,6 +339,7 @@ This will produce an image like the following one:
 .. plot::
 
    import numpy
+   numpy.random.seed(42)
    import bob.measure
    from matplotlib import pyplot
 
@@ -323,25 +363,58 @@ The CMC can be calculated from a relatively complex data structure, which define
 .. plot::
 
    import numpy
+   numpy.random.seed(42)
    import bob.measure
    from matplotlib import pyplot
 
-   scores = []
+   cmc_scores = []
    for probe in range(10):
      positives = numpy.random.normal(1, 1, 1)
      negatives = numpy.random.normal(0, 1, 19)
-     scores.append((negatives, positives))
-   bob.measure.plot.cmc(scores, logx=False)
+     cmc_scores.append((negatives, positives))
+   bob.measure.plot.cmc(cmc_scores, logx=False)
    pyplot.title('CMC')
    pyplot.xlabel('Rank')
    pyplot.xticks([1,5,10,20])
    pyplot.xlim([1,20])
    pyplot.ylim([0,100])
+   pyplot.ylabel('Probability of Recognition (%)')
 
 Usually, there is only a single positive score per probe, but this is not a fixed restriction.
 
 .. note::
    The complex data structure can be read from our default 4 or 5 column score files using the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` function.
+
+
+Detection & Identification Curve
+================================
+
+The detection & identification curve is designed to evaluate open set identification tasks.
+It can be plotted using the :py:func:`bob.measure.plot.detection_identification_curve` function, but it requires at least one open-set probe, i.e., where no corresponding positive score exists, for which the FAR values are computed.
+Here, we plot the detection and identification curve for rank 1, so that the recognition rate for FAR=1 will be identical to the rank one :py:func:`bob.measure.recognition_rate` obtained in the CMC plot above.
+
+.. plot::
+
+   import numpy
+   numpy.random.seed(42)
+   import bob.measure
+   from matplotlib import pyplot
+
+   cmc_scores = []
+   for probe in range(10):
+     positives = numpy.random.normal(1, 1, 1)
+     negatives = numpy.random.normal(0, 1, 19)
+     cmc_scores.append((negatives, positives))
+   for probe in range(10):
+     negatives = numpy.random.normal(-1, 1, 10)
+     cmc_scores.append((negatives, None))
+
+   bob.measure.plot.detection_identification_curve(cmc_scores, rank=1, logx=True)
+   pyplot.xlabel('False Alarm Rate')
+   pyplot.ylabel('Detection & Identification Rate (%)')
+   pyplot.ylim([0,100])
+
+
 
 Fine-tunning
 ============
@@ -497,5 +570,4 @@ These information are simply stored in the score file, and no further check is a
 
 .. _`The Expected Performance Curve`: http://publications.idiap.ch/downloads/reports/2005/bengio_2005_icml.pdf
 .. _`The DET curve in assessment of detection task performance`: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&rep=rep1&type=pdf
-.. _`plot()`: http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot
 .. _openbr: http://openbiometrics.org

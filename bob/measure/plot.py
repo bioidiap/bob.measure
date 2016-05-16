@@ -3,10 +3,34 @@
 # Chakka Murali Mohan, Trainee, IDIAP Research Institute, Switzerland.
 # Mon 23 May 2011 14:36:14 CEST
 
+def log_values(min_step = -4, counts_per_step = 4):
+  """log_values(min_step, counts_per_step) -> log_list
+
+  This function computes log-scaled values between :math:`10^{M}` and 1 (including), where :math:`M` is the ``min_ste`` argument, which needs to be a negative integer.
+  The integral ``counts_per_step`` value defines how many values between two adjacent powers of 10 will be created.
+  The total number of values will be ``-min_step * counts_per_step + 1``.
+
+  **Parameters:**
+
+  ``min_step`` : int (negative)
+    The power of 10 that will be the minimum value. E.g., the default ``-4`` will result in the first number to be :math:`10^{-4}` = ``0.00001`` or ``0.01%``
+
+  ``counts_per_step`` : int (positive)
+    The number of values that will be put between two adjacent powers of 10.
+    With the default value ``4`` (and default values of ``min_step``), we will get ``log_list[0] == 1e-4``, ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
+
+  **Returns**
+
+  ``log_list`` : [float]
+    A list of logarithmically scaled values between :math:`10^{M}` and 1.
+  """
+  import math
+  return [math.pow(10., i * 1./counts_per_step) for i in range(min_step*counts_per_step,0)] + [1.]
+
 """Methods to plot error analysis figures such as ROC, precision-recall curve, EPC and DET"""
 
 def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
-  """Plots Receiver Operating Charactaristic (ROC) curve.
+  """Plots Receiver Operating Characteristic (ROC) curve.
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
@@ -49,6 +73,46 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
     return pyplot.plot(100.0*out[0,:], 100.0*out[1,:], **kwargs)
   else:
     return pyplot.semilogx(100.0*out[0,:], 100.0*(1-out[1,:]), **kwargs)
+
+
+def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
+  """Plots Receiver Operating Characteristic (ROC) curve for the given list of False Acceptance Rates (FAR).
+
+  This method will call ``matplotlib`` to plot the ROC curve for a system which
+  contains a particular set of negatives (impostors) and positives (clients)
+  scores. We use the standard :py:func:`matplotlib.pyplot.semilogx` command. All parameters
+  passed with exception of the three first parameters of this method will be
+  directly passed to the plot command.
+
+  The plot will represent the False Acceptance Rate (FAR) on the horizontal axis and the Correct Acceptance Rate (CAR) on the vertical axis.
+  The values for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
+
+  .. note::
+
+    This function does not initiate and save the figure instance, it only
+    issues the plotting command. You are the responsible for setting up and
+    saving the figure as you see fit.
+
+  **Parameters:**
+
+  ``negatives, positives`` : array_like(1D, float)
+    The list of negative and positive scores forwarded to :py:func:`bob.measure.roc`
+
+  ``far_values`` : [float]
+    The values for the FAR, where the CAR should be plotted; each value should be in range [0,1].
+
+  ``kwargs`` : keyword arguments
+    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
+
+  **Returns:**
+
+  The return value is the matplotlib line that was added as defined by :py:func:`matplotlib.pyplot.semilogx`.
+  """
+
+  from matplotlib import pyplot
+  from . import roc_for_far as calc
+  out = calc(negatives, positives, far_values)
+  return pyplot.semilogx(100.0*out[0,:], 100.0*(1-out[1,:]), **kwargs)
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
@@ -341,3 +405,59 @@ def cmc(cmc_scores, logx = True, **kwargs):
     pyplot.plot(range(1, len(out)+1), out * 100, **kwargs)
 
   return len(out)
+
+
+def detection_identification_curve(cmc_scores, far_values = log_values(), rank = 1, logx = True, **kwargs):
+  """Plots the Detection & Identification curve over the FAR for the given FAR values.
+  This curve is designed to be used in an open set identification protocol, and defined in Chapter 14.1 of [LiJain2005]_.
+  It requires to have at least one open set probe item, i.e., with no corresponding gallery, such that the positives for that pair are ``None``.
+
+  The detection and identification curve first computes FAR thresholds based on the out-of-set probe scores (negative scores).
+  For each probe item, the **maximum** negative score is used.
+  Then, it plots the detection and identification rates for those thresholds, which are based on the in-set probe scores only.
+  See [LiJain2005]_ for more details.
+
+  **Parameters:**
+
+  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
+    See :py:func:`bob.measure.detection_identification_rate`
+
+  ``far_values`` : [float]
+    The values for the FAR, where the CAR should be plotted; each value should be in range [0,1].
+
+  ``rank`` : int or ``None``
+    The rank for which the curve should be plotted, 1 by default.
+
+  ``logx`` : bool
+    Plot the FAR axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in linear scale using :py:func:`matplotlib.pyplot.plot`? (Default: ``True``)
+
+  ``kwargs`` : keyword arguments
+    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot` or :py:func:`matplotlib.pyplot.semilogx`.
+
+  **Returns:**
+
+  The return value is the ``matplotlib`` line that was added as defined by :py:func:`matplotlib.pyplot.plot`.
+
+  .. [LiJain2005] **Stan Li and Anil K. Jain**, *Handbook of Face Recognition*, Springer, 2005
+  """
+
+  import numpy
+  from matplotlib import pyplot
+  from . import far_threshold, detection_identification_rate
+
+  # for each probe, for which no positives exists, get the highest negative score; and sort them to compute the FAR thresholds
+  negatives = sorted(max(neg) for neg,pos in cmc_scores if (pos is None or not numpy.array(pos).size) and neg is not None)
+  if not negatives:
+    raise ValueError("There need to be at least one pair with only negative scores")
+
+  # compute thresholds based on FAR values
+  thresholds = [far_threshold(negatives, [], v, True) for v in far_values]
+
+  # compute detection and identification rate based on the thresholds for the given rank
+  rates = [100.*detection_identification_rate(cmc_scores, t, rank) for t in thresholds]
+
+  # plot curve
+  if logx:
+    return pyplot.semilogx(far_values, rates, **kwargs)
+  else:
+    return pyplot.plot(far_values, rates, **kwargs)

@@ -28,6 +28,8 @@ Single point measurements
    bob.measure.f_score
    bob.measure.precision_recall
    bob.measure.recognition_rate
+   bob.measure.detection_identification_rate
+   bob.measure.false_alarm_rate
    bob.measure.eer_rocch
 
 Thresholds
@@ -92,6 +94,7 @@ Plotting
    bob.measure.plot.epc
    bob.measure.plot.precision_recall_curve
    bob.measure.plot.cmc
+   bob.measure.plot.detection_identification_curve
 
 OpenBR conversions
 ------------------
