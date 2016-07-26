@@ -281,7 +281,7 @@ def cmc_five_column(filename):
   return _convert_cmc_scores(neg_dict, pos_dict)
 
 
-def load_score(filename, ncolumns = 4):
+def load_score(filename, ncolumns=None):
   """Load scores using numpy.loadtxt and return the data as a numpy array.
 
   **Parameters:**
@@ -290,18 +290,32 @@ def load_score(filename, ncolumns = 4):
     A path or file-like object that will be read with :py:func:`numpy.loadtxt`
     containing the scores.
 
-  ``ncolumns`` : 4 or 5 [default is 4]
-    Specifies the number of columns in the score file.
+  ``ncolumns`` : 4 or 5 or None [default: None]
+    Specify the number of columns in the score file. If None is provided,
+     the number of columns will be guessed.
 
   **Returns:**
 
-  ``score_lines`` : numpy array
+  ``score_lines`` : numpy.array
     An array which contains not only the actual scores but also the
     'claimed_id', 'real_id', 'test_label', and ['model_label']
 
   """
 
-  convertfunc = lambda x : x
+  def convertfunc(x):
+    return x
+
+  if ncolumns not in (4, 5):
+    f = open_file(filename)
+    try:
+      line = f.readline()
+      ncolumns = len(line.split())
+    except Exception:
+      logger.warn('Could not guess the number of columns in file: {}. '
+                  'Assuming 4 column format.'.format(filename))
+      ncolumns = 4
+    finally:
+      f.close()
 
   if ncolumns == 4:
     names = ('claimed_id', 'real_id', 'test_label', 'score')
