@@ -197,6 +197,13 @@ htmlhelp_basename = project_variable + u'_doc'
 
 # -- Post configuration --------------------------------------------------------
 
+# Included after all input documents
+rst_epilog = """
+.. |project| replace:: Bob
+.. |version| replace:: %s
+.. |current-year| date:: %%Y
+""" % (version,)
+
 # Default processing flags for sphinx
 autoclass_content = 'class'
 autodoc_member_order = 'bysource'
@@ -207,11 +214,9 @@ autodoc_default_flags = [
   'show-inheritance',
   ]
 
-
 # For inter-documentation mapping:
 from bob.extension.utils import link_documentation
 intersphinx_mapping = link_documentation()
-
 
 # We want to remove all private (i.e. _. or __.__) members
 # that are not in the list of accepted functions
