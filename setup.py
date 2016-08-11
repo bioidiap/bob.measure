@@ -22,8 +22,8 @@ setup(
 
     name='bob.measure',
     version=version,
-    description='Bob\'s evalution metrics',
-    url='http://github.com/bioidiap/bob.measure',
+    description='Evalution metrics for Bob',
+    url='http://gitlab.idiap.ch/bob/bob.measure',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
@@ -36,8 +36,6 @@ setup(
 
     setup_requires = build_requires,
     install_requires = build_requires,
-
-
 
     ext_modules = [
       Extension("bob.measure.version",
