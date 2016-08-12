@@ -52,7 +52,8 @@ variables:
   variables: &linux_build_variables
     <<: *build_variables
     CONDA_FOLDER: "/local/conda"
-    CFLAGS: "-coverage"
+    CFLAGS: "-D_GLIBCXX_USE_CXX11_ABI=0 -coverage"
+    CXXFLAGS: "-D_GLIBCXX_USE_CXX11_ABI=0 -coverage"
 
 
 # Template for building on a Mac OSX machine
@@ -63,6 +64,8 @@ variables:
     CONDA_FOLDER: "/opt/conda"
     MACOSX_DEPLOYMENT_TARGET: "10.9"
     CFLAGS: "-pthread -coverage"
+    CXXFLAGS: "-pthread -coverage"
+    LDFLAGS: "-lpthread"
 
 
 # Template for the test stage - re-install from uploaded wheels
@@ -92,8 +95,11 @@ variables:
   only:
     - master
     - tags
+  before_script:
+    - curl --silent https://gitlab.idiap.ch/bob/bob/snippets/8/raw | tr -d '\r' > upload-wheel.sh
+    - chmod 755 upload-wheel.sh
   script:
-    - curl --silent --insecure --upload-file dist/*.whl https://${DOCUSER}:${DOCPASS}@www.idiap.ch/software/bob/wheels-upload/gitlab/
+    - ./upload-wheel.sh
 
 
 # Template for (latest) documentation upload stage
@@ -102,16 +108,11 @@ variables:
   stage: docs
   only:
     - master
+  before_script:
+    - curl --silent https://gitlab.idiap.ch/bob/bob/snippets/9/raw | tr -d '\r' > upload-sphinx.sh
+    - chmod 755 upload-sphinx.sh
   script:
-    - echo "repo=${CI_PROJECT_PATH}" > sphinx/.gitlab-ci.info
-    - echo "branch=${CI_BUILD_REF_NAME}" >> sphinx/.gitlab-ci.info
-    - echo "tag=${CI_BUILD_TAG}" >> sphinx/.gitlab-ci.info
-    - echo "build=${CI_BUILD_ID}" >> sphinx/.gitlab-ci.info
-    - echo "commit=${CI_BUILD_REF}" >> sphinx/.gitlab-ci.info
-    - echo "runner=${CI_RUNNER_DESCRIPTION}" >> sphinx/.gitlab-ci.info
-    - tar cfj ${CI_PROJECT_NAME}-${CI_BUILD_REF}.tar.bz2 sphinx
-    - curl --silent --insecure --upload-file *.tar.bz2 https://${DOCUSER}:${DOCPASS}@www.idiap.ch/software/bob/docs-upload/
-
+    - ./upload-sphinx.sh
 
 
 # 2) Package specific instructions (you may tune this if needed)
