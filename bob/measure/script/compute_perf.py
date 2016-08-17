@@ -156,6 +156,9 @@ def get_options(user_input):
       help="Name of the output file that will contain the plots (defaults to %(default)s)", metavar="FILE")
   parser.add_argument('-x', '--no-plot', dest="doplot", default=True,
       action='store_false', help="If set, then I'll execute no plotting")
+  parser.add_argument('-xd', '--no-dist-plot', dest="dodistplot", default=True,
+      action='store_false', help="If set, then I'll execute no distribution plotting")
+
   parser.add_argument('-p', '--parser', dest="parser", default="4column",
       help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
 
@@ -198,8 +201,64 @@ def get_options(user_input):
 
   return args
 
-def main(user_input=None):
+def score_distribution_plot(dev_neg, dev_pos, test_neg, test_pos, title=""):
+  """Plots the score distributions in 2 different subplots"""
+  import matplotlib.pyplot as mpl
+  import bob.measure
+  import numpy 
+  
+  fig = mpl.figure()
 
+  dev_set  = [dev_neg,dev_pos]
+  eval_set = [test_neg,test_pos]
+  thres    = bob.measure.eer_threshold(dev_neg,dev_pos)
+  bins        = 20
+
+
+  mi = min(numpy.min(dev_neg), numpy.min(test_neg), numpy.min(dev_pos), numpy.min(test_pos))
+  ma = max(numpy.max(dev_neg), numpy.max(test_neg), numpy.max(dev_pos), numpy.max(test_pos))
+  scoresRange = (mi, ma)
+
+  axis_fontsize = 8
+
+  # 2 plots (same page) with the two sets
+  mpl.subplot(2,1,1)
+
+  mpl.hist(dev_set[0], label='Impostors', normed=True, facecolor='red', bins=bins)
+  mpl.hist(dev_set[1], label='Genuine', normed=True, facecolor='green', alpha=0.5, bins=bins)
+  xmax, xmin, ymax, ymin = mpl.axis()
+  mpl.xlim(scoresRange[0], scoresRange[1])
+
+  mpl.vlines(thres, ymin, ymax, color='red', label='threshold',
+      linestyles='solid')
+  mpl.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+       ncol=4, mode="expand", borderaxespad=0.)
+  mpl.grid(True, alpha=0.5)
+  mpl.ylabel("Development set")
+  axis = mpl.gca()
+  axis.yaxis.set_label_position('right')
+
+  #mpl.title(title)
+
+  mpl.subplot(2,1,2)
+  mpl.hist(eval_set[0], normed=True, facecolor='red', bins=bins)
+  mpl.hist(eval_set[1], normed=True, facecolor='green', alpha=0.5, bins=bins)
+
+  xmax, xmin, ymax, ymin = mpl.axis()
+  mpl.xlim(scoresRange[0], scoresRange[1])
+
+  mpl.vlines(thres, ymin, ymax, color='red', linestyles='solid',
+      label='threshold')
+  mpl.grid(True, alpha=0.5)
+  mpl.ylabel("Test set")
+  axis = mpl.gca()
+  axis.yaxis.set_label_position('right')
+
+  mpl.title("Score Distributions")
+  return fig
+
+def main(user_input=None):
+  print 'BlaBlaBlaaaaaaaaaaaaaaaaaaaaaa'
   options = get_options(user_input)
 
   dev_neg, dev_pos = options.parser(options.dev)
@@ -211,6 +270,10 @@ def main(user_input=None):
     plots(dev_neg, dev_pos, test_neg, test_pos, options.npoints,
         options.plotfile)
     print("[Plots] Performance curves => '%s'" % options.plotfile)
+  
+  if options.dodistplot:
+    fig = score_distribution_plot(dev_neg, dev_pos, test_neg, test_pos, title="")
+    fig.savefig("Distribution.pdf")
 
   if options.selftest: #remove output file + tmp directory
     import shutil
