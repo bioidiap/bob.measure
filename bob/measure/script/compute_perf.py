@@ -258,7 +258,6 @@ def score_distribution_plot(dev_neg, dev_pos, test_neg, test_pos, title=""):
   return fig
 
 def main(user_input=None):
-  print 'BlaBlaBlaaaaaaaaaaaaaaaaaaaaaa'
   options = get_options(user_input)
 
   dev_neg, dev_pos = options.parser(options.dev)
