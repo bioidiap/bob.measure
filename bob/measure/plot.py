@@ -196,6 +196,8 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   from . import epc as calc
 
   out = calc(dev_negatives, dev_positives, test_negatives, test_positives, npoints)
+  print 'lenght of out[0,:] is:', len(out[0,:])
+  print 'lenght of out[1,:] is:', len(out[1,:])
   return pyplot.plot(out[0,:], 100.0*out[1,:], **kwargs)
 
 

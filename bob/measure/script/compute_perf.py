@@ -86,6 +86,9 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
   """Saves ROC, DET and EPC curves on the file pointed out by filename."""
 
   from .. import plot
+  import matplotlib.pyplot as mpl
+  import bob.measure
+  import numpy
 
   import matplotlib
   if not hasattr(matplotlib, 'backends'): matplotlib.use('pdf')
@@ -258,6 +261,7 @@ def score_distribution_plot(dev_neg, dev_pos, test_neg, test_pos, title=""):
   return fig
 
 def main(user_input=None):
+  print('%%%%%%%%THIS IS A TEST FOR THE COMPUTE_PERF FUCNTION%%%%%%%%')
   options = get_options(user_input)
 
   dev_neg, dev_pos = options.parser(options.dev)
