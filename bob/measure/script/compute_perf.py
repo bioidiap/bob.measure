@@ -1,34 +1,61 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Wed May 25 13:27:46 2011 +0200
+# Wed 28 Sep 2016 15:39:05 CEST
 
-"""This script runs error analysis on the development and test set scores, in a
-four column format:
+"""Runs error analysis on score sets
+
   1. Computes the threshold using either EER or min. HTER criteria on
      develoment set scores;
   2. Applies the above threshold on test set scores to compute the HTER
   3. Plots ROC, EPC and DET curves to a multi-page PDF file
-"""
 
-__epilog__ = """
+
+Usage: %(prog)s [-v...] [options] <dev-scores> <test-scores>
+       %(prog)s --help
+       %(prog)s --version
+
+
+Arguments:
+  <dev-scores>   Path to the file containing the development scores
+  <test-scores>  Path to the file containing the test scores
+
+
+Options:
+  -h, --help                  Shows this help message and exits
+  -V, --version               Prints the version and exits
+  -v, --verbose               Increases the output verbosity level
+  -n <int>, --points=<int>    Number of points to use in the curves
+                              [default: 100]
+  -o <path>, --output=<path>  Name of the output file that will contain the
+                              plots [default: curves.pdf]
+  -x, --no-plot               If set, then I'll execute no plotting
+
+
 Examples:
 
   1. Specify a different output filename
 
-     $ %(prog)s --output=mycurves.pdf --devel=dev.scores --test=test.scores
+     $ %(prog)s -vv --output=mycurves.pdf dev.scores test.scores
 
   2. Specify a different number of points
 
-     $ %(prog)s --points=500 --devel=dev.scores --test=test.scores
+     $ %(prog)s --points=500 dev.scores test.scores
 
   3. Don't plot (only calculate thresholds)
 
-     $ %(prog)s --no-plot --devel=dev.scores --test=test.scores
+     $ %(prog)s --no-plot dev.scores test.scores
+
 """
 
 import os
 import sys
 import numpy
+
+import logging
+__logging_format__='[%(levelname)s] %(message)s'
+logging.basicConfig(format=__logging_format__)
+logger = logging.getLogger('bob')
+
 
 def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   """Prints a single output line that contains all info for a given criterium"""
@@ -79,7 +106,8 @@ def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   print("  HTER | %s | %s" % (fmt(dev_hter_str, -1*dev_max_len),
     fmt(test_hter_str, -1*test_max_len)))
 
-def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
+
+def plots(dev_neg, dev_pos, test_neg, test_pos, points, filename):
   """Saves ROC, DET and EPC curves on the file pointed out by filename."""
 
   from .. import plot
@@ -93,9 +121,9 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # ROC
   fig = mpl.figure()
-  plot.roc(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
+  plot.roc(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
       linestyle='--', dashes=(6,2), label='development')
-  plot.roc(test_neg, test_pos, npoints, color=(0,0,0),
+  plot.roc(test_neg, test_pos, points, color=(0,0,0),
       linestyle='-', label='test')
   mpl.axis([0,40,0,40])
   mpl.title("ROC Curve")
@@ -107,9 +135,9 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # DET
   fig = mpl.figure()
-  plot.det(dev_neg, dev_pos, npoints, color=(0.3,0.3,0.3),
+  plot.det(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
       linestyle='--', dashes=(6,2), label='development')
-  plot.det(test_neg, test_pos, npoints, color=(0,0,0),
+  plot.det(test_neg, test_pos, points, color=(0,0,0),
       linestyle='-', label='test')
   plot.det_axis([0.01, 40, 0.01, 40])
   mpl.title("DET Curve")
@@ -121,7 +149,7 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   # EPC
   fig = mpl.figure()
-  plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints,
+  plot.epc(dev_neg, dev_pos, test_neg, test_pos, points,
       color=(0,0,0), linestyle='-')
   mpl.title('EPC Curve')
   mpl.xlabel('Cost')
@@ -131,86 +159,53 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, npoints, filename):
 
   pp.close()
 
-def get_options(user_input):
-  """Parse the program options"""
-
-  usage = 'usage: %s [arguments]' % os.path.basename(sys.argv[0])
-
-  import argparse
-  parser = argparse.ArgumentParser(usage=usage,
-      description=(__doc__ % {'prog': os.path.basename(sys.argv[0])}),
-      epilog=(__epilog__ % {'prog': os.path.basename(sys.argv[0])}),
-      formatter_class=argparse.RawDescriptionHelpFormatter)
-
-  parser.add_argument('-d', '--devel', dest="dev", default=None,
-      help="Name of the file containing the development scores (defaults to %(default)s)", metavar="FILE")
-  parser.add_argument('-t', '--test', dest="test", default=None,
-      help="Name of the file containing the test scores (defaults to %(default)s)", metavar="FILE")
-  parser.add_argument('-n', '--points', dest="npoints", default=100, type=int,
-      help="Number of points to use in the curves (defaults to %(default)s)",
-      metavar="INT(>0)")
-  parser.add_argument('-o', '--output', dest="plotfile", default="curves.pdf",
-      help="Name of the output file that will contain the plots (defaults to %(default)s)", metavar="FILE")
-  parser.add_argument('-x', '--no-plot', dest="doplot", default=True,
-      action='store_false', help="If set, then I'll execute no plotting")
-  parser.add_argument('-p', '--parser', dest="parser", default="4column",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details", metavar="NAME.FUNCTION")
-
-  # This option is not normally shown to the user...
-  parser.add_argument("--self-test",
-      action="store_true", dest="selftest", default=False,
-      help=argparse.SUPPRESS)
-      #help="if set, runs an internal verification test and erases any output")
-
-  args = parser.parse_args(args=user_input)
-
-  if args.selftest:
-    # then we go into test mode, all input is preset
-    import tempfile
-    outputdir = tempfile.mkdtemp(prefix='bobtest_')
-    args.plotfile = os.path.join(outputdir, "curves.pdf")
-
-  if args.dev is None:
-    parser.error("you should give a development score set with --devel")
-
-  if args.test is None:
-    parser.error("you should give a test score set with --test")
-
-  #parse the score-parser
-  from .. import load
-
-  if args.parser.lower() in ('4column', '4col'):
-    args.parser = load.split_four_column
-  elif args.parser.lower() in ('5column', '5col'):
-    args.parser = load.split_five_column
-  else: #try an import
-    if args.parser.find('.') == -1:
-      parser.error("parser module should be either '4column', '5column' or a valid python function identifier in the format 'module.function': '%s' is invalid" % arg.parser)
-
-    mod, fct = args.parser.rsplit('.', 1)
-    try:
-      args.parser = getattr(__import__(mod, fromlist=['*']), fct)
-    except Exception as e:
-      parser.error("error importing '%s': %s" % (args.parser, e))
-
-  return args
 
 def main(user_input=None):
 
-  options = get_options(user_input)
+  if user_input is not None:
+    argv = user_input
+  else:
+    argv = sys.argv[1:]
 
-  dev_neg, dev_pos = options.parser(options.dev)
-  test_neg, test_pos = options.parser(options.test)
+  import docopt
+  import pkg_resources
+
+  completions = dict(
+      prog=os.path.basename(sys.argv[0]),
+      version=pkg_resources.require('bob.measure')[0].version
+      )
+
+  args = docopt.docopt(
+      __doc__ % completions,
+      argv=argv,
+      version=completions['version'],
+      )
+
+  # Sets-up logging
+  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+
+  # Checks number of points option
+  try:
+    args['--points'] = int(args['--points'])
+  except:
+    raise docopt.DocoptExit("cannot convert %s into int for points" % \
+        args['--points'])
+
+  if args['--points'] <= 0:
+    raise docopt.DocoptExit('Number of points (--points) should greater ' \
+        'than zero')
+
+  from ..load import load_score, get_negatives_positives
+  dev_neg, dev_pos = get_negatives_positives(load_score(args['<dev-scores>']))
+  test_neg, test_pos = get_negatives_positives(load_score(args['<test-scores>']))
 
   print_crit(dev_neg, dev_pos, test_neg, test_pos, 'EER')
   print_crit(dev_neg, dev_pos, test_neg, test_pos, 'Min. HTER')
-  if options.doplot:
-    plots(dev_neg, dev_pos, test_neg, test_pos, options.npoints,
-        options.plotfile)
-    print("[Plots] Performance curves => '%s'" % options.plotfile)
 
-  if options.selftest: #remove output file + tmp directory
-    import shutil
-    shutil.rmtree(os.path.dirname(options.plotfile))
+  if not args['--no-plot']:
+    plots(dev_neg, dev_pos, test_neg, test_pos, args['--points'],
+        args['--output'])
+    print("[Plots] Performance curves => '%s'" % args['--output'])
 
   return 0
