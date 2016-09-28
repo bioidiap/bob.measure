@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Andre Anjos <andre.anjos@idiap.ch>
 # Wed May 25 13:27:46 2011 +0200
-#
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
 """This script runs error analysis on the development and test set scores, in a
 four column format:

@@ -1,29 +1,33 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Manuel Guenther <Manuel.Guenther@idiap.ch>
 # Thu May 16 11:41:49 CEST 2013
-#
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
 """Measures for calibration"""
 
 import math
 import numpy
 
+
 def cllr(negatives, positives):
-  """cllr(negatives, positives) -> cllr
+  """Cost of log likelihood ratio as defined by the Bosaris toolkit
 
-  Computes the 'cost of log likelihood ratio' (:math:`C_{llr}`) measure as given in the Bosaris toolkit
+  Computes the 'cost of log likelihood ratio' (:math:`C_{llr}`) measure as
+  given in the Bosaris toolkit
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The scores computed by comparing elements from different classes and the same class, respectively.
+  Parameters:
 
-  **Returns**
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier.
 
-  ``cllr`` : float
-    The computed :math:`C_{llr}` value.
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier.
+
+
+  Returns:
+
+    float: The computed :math:`C_{llr}` value.
+
   """
   sum_pos, sum_neg = 0., 0.
   for pos in positives:
@@ -34,19 +38,25 @@ def cllr(negatives, positives):
 
 
 def min_cllr(negatives, positives):
-  """min_cllr(negatives, positives) -> min_cllr
+  """Minimum cost of log likelihood ratio as defined by the Bosaris toolkit
 
-  Computes the 'minimum cost of log likelihood ratio' (:math:`C_{llr}^{min}`) measure as given in the bosaris toolkit
+  Computes the 'minimum cost of log likelihood ratio' (:math:`C_{llr}^{min}`)
+  measure as given in the bosaris toolkit
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The scores computed by comparing elements from different classes and the same class, respectively.
+  Parameters:
 
-  **Returns**
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier.
 
-  ``min_cllr`` : float
-    The computed :math:`C_{llr}^{min}` value.
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier.
+
+
+  Returns:
+
+    float: The computed :math:`C_{llr}^{min}` value.
+
   """
 
   from bob.math import pavx

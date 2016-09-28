@@ -1,45 +1,52 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Chakka Murali Mohan, Trainee, IDIAP Research Institute, Switzerland.
 # Mon 23 May 2011 14:36:14 CEST
 
+
 def log_values(min_step = -4, counts_per_step = 4):
-  """log_values(min_step, counts_per_step) -> log_list
+  """Computes log-scaled values between :math:`10^{M}` and 1
 
-  This function computes log-scaled values between :math:`10^{M}` and 1 (including), where :math:`M` is the ``min_ste`` argument, which needs to be a negative integer.
-  The integral ``counts_per_step`` value defines how many values between two adjacent powers of 10 will be created.
-  The total number of values will be ``-min_step * counts_per_step + 1``.
+  This function computes log-scaled values between :math:`10^{M}` and 1
+  (including), where :math:`M` is the ``min_ste`` argument, which needs to be a
+  negative integer.  The integral ``counts_per_step`` value defines how many
+  values between two adjacent powers of 10 will be created.  The total number
+  of values will be ``-min_step * counts_per_step + 1``.
 
-  **Parameters:**
 
-  ``min_step`` : int (negative)
-    The power of 10 that will be the minimum value. E.g., the default ``-4`` will result in the first number to be :math:`10^{-4}` = ``0.00001`` or ``0.01%``
+  Parameters:
 
-  ``counts_per_step`` : int (positive)
-    The number of values that will be put between two adjacent powers of 10.
-    With the default value ``4`` (and default values of ``min_step``), we will get ``log_list[0] == 1e-4``, ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
+    min_step (Optional[int]): The power of 10 that will be the minimum value.
+      E.g., the default ``-4`` will result in the first number to be
+      :math:`10^{-4}` = ``0.00001`` or ``0.01%``
 
-  **Returns**
+    counts_per_step (Optional[int]): The number of values that will be put
+      between two adjacent powers of 10.  With the default value ``4`` (and
+      default values of ``min_step``), we will get ``log_list[0] == 1e-4``,
+      ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
 
-  ``log_list`` : [float]
-    A list of logarithmically scaled values between :math:`10^{M}` and 1.
+
+  Returns:
+
+    list: A list of logarithmically scaled values between :math:`10^{M}` and 1.
+
   """
+
   import math
   return [math.pow(10., i * 1./counts_per_step) for i in range(min_step*counts_per_step,0)] + [1.]
 
-"""Methods to plot error analysis figures such as ROC, precision-recall curve, EPC and DET"""
 
 def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   """Plots Receiver Operating Characteristic (ROC) curve.
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
-  scores. We use the standard :py:func:`matplotlib.pyplot.plot` command. All parameters
-  passed with exception of the three first parameters of this method will be
-  directly passed to the plot command.
+  scores. We use the standard :py:func:`matplotlib.pyplot.plot` command. All
+  parameters passed with exception of the three first parameters of this method
+  will be directly passed to the plot command.
 
-  The plot will represent the false-alarm on the horizontal axis and the false-rejection on the vertical axis.
-  The values for the axis will be computed using :py:func:`bob.measure.roc`.
+  The plot will represent the false-alarm on the horizontal axis and the
+  false-rejection on the vertical axis.  The values for the axis will be
+  computed using :py:func:`bob.measure.roc`.
 
   .. note::
 
@@ -47,23 +54,34 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
     issues the plotting command. You are the responsible for setting up and
     saving the figure as you see fit.
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The list of negative and positive scores forwarded to :py:func:`bob.measure.roc`
+  Parameters:
 
-  ``npoints`` : int
-    The number of points forwarded to :py:func:`bob.measure.roc`
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier. See
+      (:py:func:`bob.measure.roc`)
 
-  ``CAR`` : bool
-    If set to ``True``, it will plot the CAR over FAR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the FAR over FRR linearly using :py:func:`matplotlib.pyplot.plot`.
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier. See
+      (:py:func:`bob.measure.roc`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
+    npoints (Optional[int]): The number of points for the plot. See
+      (:py:func:`bob.measure.roc`)
 
-  **Returns:**
+    CAR (Optional[bool]): If set to ``True``, it will plot the CAR over FAR in
+      using :py:func:`matplotlib.pyplot.semilogx`, otherwise the FAR over FRR
+      linearly using :py:func:`matplotlib.pyplot.plot`.
 
-  The return value is the matplotlib line that was added as defined by :py:func:`matplotlib.pyplot.plot` or :py:func:`matplotlib.pyplot.semilogx`.
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.plot` or
+      :py:func:`matplotlib.pyplot.semilogx`.
+
   """
 
   from matplotlib import pyplot
@@ -76,16 +94,17 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
 
 
 def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
-  """Plots Receiver Operating Characteristic (ROC) curve for the given list of False Acceptance Rates (FAR).
+  """Plots the ROC curve for the given list of False Acceptance Rates (FAR).
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
-  scores. We use the standard :py:func:`matplotlib.pyplot.semilogx` command. All parameters
-  passed with exception of the three first parameters of this method will be
-  directly passed to the plot command.
+  scores. We use the standard :py:func:`matplotlib.pyplot.semilogx` command.
+  All parameters passed with exception of the three first parameters of this
+  method will be directly passed to the plot command.
 
-  The plot will represent the False Acceptance Rate (FAR) on the horizontal axis and the Correct Acceptance Rate (CAR) on the vertical axis.
-  The values for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
+  The plot will represent the False Acceptance Rate (FAR) on the horizontal
+  axis and the Correct Acceptance Rate (CAR) on the vertical axis.  The values
+  for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
 
   .. note::
 
@@ -93,20 +112,29 @@ def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
     issues the plotting command. You are the responsible for setting up and
     saving the figure as you see fit.
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The list of negative and positive scores forwarded to :py:func:`bob.measure.roc`
+  Parameters:
 
-  ``far_values`` : [float]
-    The values for the FAR, where the CAR should be plotted; each value should be in range [0,1].
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier. See
+      (:py:func:`bob.measure.roc`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier. See
+      (:py:func:`bob.measure.roc`)
 
-  **Returns:**
+    far_values (Optional[list]): The values for the FAR, where the CAR should
+      be plotted; each value should be in range [0,1].
 
-  The return value is the matplotlib line that was added as defined by :py:func:`matplotlib.pyplot.semilogx`.
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.semilogx`.
+
   """
 
   from matplotlib import pyplot
@@ -116,13 +144,14 @@ def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
-  """Plots Precision-Recall curve.
+  """Plots a Precision-Recall curve.
 
-  This method will call ``matplotlib`` to plot the precision-recall curve for a system which
-  contains a particular set of ``negatives`` (impostors) and ``positives`` (clients)
-  scores. We use the standard :py:func:`matplotlib.pyplot.plot` command. All parameters
-  passed with exception of the three first parameters of this method will be
-  directly passed to the plot command.
+  This method will call ``matplotlib`` to plot the precision-recall curve for a
+  system which contains a particular set of ``negatives`` (impostors) and
+  ``positives`` (clients) scores. We use the standard
+  :py:func:`matplotlib.pyplot.plot` command. All parameters passed with
+  exception of the three first parameters of this method will be directly
+  passed to the plot command.
 
   .. note::
 
@@ -130,20 +159,30 @@ def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
     issues the plotting command. You are the responsible for setting up and
     saving the figure as you see fit.
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The list of negative and positive scores forwarded to :py:func:`bob.measure.precision_recall_curve`
+  Parameters:
 
-  ``npoints`` : int
-    The number of points forwarded to :py:func:`bob.measure.precision_recall_curve`
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier. See
+      (:py:func:`bob.measure.precision_recall_curve`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
 
-  **Returns:**
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier. See
+      (:py:func:`bob.measure.precision_recall_curve`)
 
-  The return value is the ``matplotlib`` line that was added as defined by :py:func:`matplotlib.pyplot.plot`.
+    npoints (Optional[int]): The number of points for the plot. See
+      (:py:func:`bob.measure.precision_recall_curve`)
+
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.plot`.
+
   """
 
   from matplotlib import pyplot
@@ -164,11 +203,12 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   This method will call ``matplotlib`` to plot the EPC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
   for both the development and test sets. We use the standard
-  :py:func:`matplotlib.pyplot.plot` command. All parameters passed with exception of
-  the five first parameters of this method will be directly passed to the plot
-  command.
+  :py:func:`matplotlib.pyplot.plot` command. All parameters passed with
+  exception of the five first parameters of this method will be directly passed
+  to the plot command.
 
-  The plot will represent the minimum HTER on the vertical axis and the cost on the horizontal axis.
+  The plot will represent the minimum HTER on the vertical axis and the cost on
+  the horizontal axis.
 
   .. note::
 
@@ -176,26 +216,45 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
     issues the plotting commands. You are the responsible for setting up and
     saving the figure as you see fit.
 
-  **Parameters:**
 
-  ``dev_negatives, dev_positvies, test_negatives, test_positives`` : array_like(1D, float)
-    See :py:func:bob.measure.epc` for details
+  Parameters:
 
-  ``npoints`` : int
-    See :py:func:bob.measure.epc` for details
+    dev_negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier, from the
+      development set. See (:py:func:`bob.measure.epc`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
 
-  **Returns:**
+    dev_positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier, from the
+      development set. See (:py:func:`bob.measure.epc`)
 
-  The return value is the ``matplotlib`` line that was added as defined by :py:func:`matplotlib.pyplot.plot`.
+    test_negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier, from the test
+      set. See (:py:func:`bob.measure.epc`)
+
+    test_positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier, from the test set.
+      See (:py:func:`bob.measure.epc`)
+
+    npoints (Optional[int]): The number of points for the plot. See
+      (:py:func:`bob.measure.epc`)
+
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.plot`.
+
   """
 
   from matplotlib import pyplot
   from . import epc as calc
 
-  out = calc(dev_negatives, dev_positives, test_negatives, test_positives, npoints)
+  out = calc(dev_negatives, dev_positives, test_negatives, test_positives,
+      npoints)
   return pyplot.plot(out[0,:], 100.0*out[1,:], **kwargs)
 
 
@@ -207,11 +266,11 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
   Conference on Speech Communication and Technology (pp. 1895-1898). Available:
   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&rep=rep1&type=pdf
 
-  This method will call ``matplotlib`` to plot the DET curve(s) for a system which
-  contains a particular set of negatives (impostors) and positives (clients)
-  scores. We use the standard :py:func:`matplotlib.pyplot.plot` command. All parameters
-  passed with exception of the three first parameters of this method will be
-  directly passed to the plot command.
+  This method will call ``matplotlib`` to plot the DET curve(s) for a system
+  which contains a particular set of negatives (impostors) and positives
+  (clients) scores. We use the standard :py:func:`matplotlib.pyplot.plot`
+  command. All parameters passed with exception of the three first parameters
+  of this method will be directly passed to the plot command.
 
   The plot will represent the false-alarm on the horizontal axis and the
   false-rejection on the vertical axis.
@@ -231,8 +290,9 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
 
     If you wish to reset axis zooming, you must use the Gaussian scale rather
     than the visual marks showed at the plot, which are just there for
-    displaying purposes. The real axis scale is based on :py:func:`bob.measure.ppndf`.
-    For example, if you wish to set the x and y  axis to display data between 1% and 40% here is the recipe:
+    displaying purposes. The real axis scale is based on
+    :py:func:`bob.measure.ppndf`.  For example, if you wish to set the x and y
+    axis to display data between 1% and 40% here is the recipe:
 
     .. code-block:: python
 
@@ -243,7 +303,8 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       pyplot.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)])
 
     We provide a convenient way for you to do the above in this module. So,
-    optionally, you may use the :py:func:`bob.measure.plot.det_axis` method like this:
+    optionally, you may use the :py:func:`bob.measure.plot.det_axis` method
+    like this:
 
     .. code-block:: python
 
@@ -252,23 +313,32 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       # please note we convert percentage values in det_axis()
       bob.measure.plot.det_axis([1, 40, 1, 40])
 
-  **Parameters:**
 
-  ``negatives, positives`` : array_like(1D, float)
-    The list of negative and positive scores forwarded to :py:func:`bob.measure.det`
+  Parameters:
 
-  ``npoints`` : int
-    The number of points forwarded to :py:func:`bob.measure.det`
+    negatives (array): 1D float array that contains the scores of the
+      "negative" (noise, non-class) samples of your classifier. See
+      (:py:func:`bob.measure.det`)
 
-  ``axisfontsize`` : str
-    The size to be used by x/y-tick-labels to set the font size on the axis
+    positives (array): 1D float array that contains the scores of the
+      "positive" (signal, class) samples of your classifier. See
+      (:py:func:`bob.measure.det`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot`.
+    npoints (Optional[int]): The number of points for the plot. See
+      (:py:func:`bob.measure.det`)
 
-  **Returns:**
+    axisfontsize (Optional[str]): The size to be used by x/y-tick-labels to set
+      the font size on the axis
 
-  The return value is the ``matplotlib`` line that was added as defined by :py:func:`matplotlib.pyplot.plot`.
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.plot`.
+
   """
 
   # these are some constants required in this method
@@ -319,23 +389,26 @@ def det_axis(v, **kwargs):
   """Sets the axis in a DET plot.
 
   This method wraps the :py:func:`matplotlib.pyplot.axis` by calling
-  :py:func:`bob.measure.ppndf` on the values passed by the user so they are meaningful
-  in a DET plot as performed by :py:func:`bob.measure.plot.det`.
+  :py:func:`bob.measure.ppndf` on the values passed by the user so they are
+  meaningful in a DET plot as performed by :py:func:`bob.measure.plot.det`.
 
-  **Parameters:**
 
-  ``v`` : (int, int, int, int)
-    The X and Y limits in the order ``(xmin, xmax, ymin, ymax)``.
-    Expected values should be in percentage (between 0 and 100%).
-    If ``v`` is not a list or tuple that contains 4 numbers it is passed
-    without further inspection to :py:func:`matplotlib.pyplot.axis`.
+  Parameters:
 
-  ``kwargs`` : keyword arguments
-    Extra parameters, which are passed directly to :py:func:`matplotlib.pyplot.axis`.
+  v (list, tuple): A sequence contaiing the X and Y limits in the order
+    ``(xmin, xmax, ymin, ymax)``. Expected values should be in percentage
+    (between 0 and 100%).  If ``v`` is not a list or tuple that contains 4
+    numbers it is passed without further inspection to
+    :py:func:`matplotlib.pyplot.axis`.
 
-  **Returns:**
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.axis`.
 
-  Returns whatever :py:func:`matplotlib.pyplot.axis` returns.
+
+  Returns:
+
+    object: Whatever is returned by :py:func:`matplotlib.pyplot.axis`.
+
   """
 
   import logging
@@ -372,28 +445,36 @@ def det_axis(v, **kwargs):
 
 
 def cmc(cmc_scores, logx = True, **kwargs):
-  """Plots the (cumulative) match characteristics curve and returns the maximum rank.
+  """Plots the (cumulative) match characteristics and returns the maximum rank.
 
-  This function plots a CMC curve using the given CMC scores, which can be read from the our score files using the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` methods.
-  The structure of the ``cmc_scores`` parameter is relatively complex.
-  It contains a list of pairs of lists.
-  For each probe object, a pair of list negative and positive scores is required.
+  This function plots a CMC curve using the given CMC scores, which can be read
+  from the our score files using the
+  :py:func:`bob.measure.load.cmc_four_column` or
+  :py:func:`bob.measure.load.cmc_five_column` methods.  The structure of the
+  ``cmc_scores`` parameter is relatively complex.  It contains a list of pairs
+  of lists.  For each probe object, a pair of list negative and positive scores
+  is required.
 
-  **Parameters:**
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    See :py:func:`bob.measure.cmc`
+  Parameters:
 
-  ``logx`` : bool
-    Plot the rank axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in linear scale using :py:func:`matplotlib.pyplot.plot`? (Default: ``True``)
+    cmc_scores (array): 1D float array containing the CMC values (See
+      :py:func:`bob.measure.cmc`)
 
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot` or :py:func:`matplotlib.pyplot.semilogx`.
+    logx (Optional[bool]): If set (the default), plots the rank axis in
+      logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
+      linear scale using :py:func:`matplotlib.pyplot.plot`
 
-  **Returns:**
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
 
-  The number of classes (clients) in the given scores.
+
+  Returns:
+
+    int: The number of classes (clients) in the given scores.
+
   """
+
   from matplotlib import pyplot
   from . import cmc as calc
 
@@ -407,38 +488,47 @@ def cmc(cmc_scores, logx = True, **kwargs):
   return len(out)
 
 
-def detection_identification_curve(cmc_scores, far_values = log_values(), rank = 1, logx = True, **kwargs):
-  """Plots the Detection & Identification curve over the FAR for the given FAR values.
-  This curve is designed to be used in an open set identification protocol, and defined in Chapter 14.1 of [LiJain2005]_.
-  It requires to have at least one open set probe item, i.e., with no corresponding gallery, such that the positives for that pair are ``None``.
+def detection_identification_curve(cmc_scores, far_values = log_values(), rank
+    = 1, logx = True, **kwargs):
+  """Plots the Detection & Identification curve over the FAR
 
-  The detection and identification curve first computes FAR thresholds based on the out-of-set probe scores (negative scores).
-  For each probe item, the **maximum** negative score is used.
-  Then, it plots the detection and identification rates for those thresholds, which are based on the in-set probe scores only.
-  See [LiJain2005]_ for more details.
+  This curve is designed to be used in an open set identification protocol, and
+  defined in Chapter 14.1 of [LiJain2005]_.  It requires to have at least one
+  open set probe item, i.e., with no corresponding gallery, such that the
+  positives for that pair are ``None``.
 
-  **Parameters:**
-
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    See :py:func:`bob.measure.detection_identification_rate`
-
-  ``far_values`` : [float]
-    The values for the FAR, where the CAR should be plotted; each value should be in range [0,1].
-
-  ``rank`` : int or ``None``
-    The rank for which the curve should be plotted, 1 by default.
-
-  ``logx`` : bool
-    Plot the FAR axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in linear scale using :py:func:`matplotlib.pyplot.plot`? (Default: ``True``)
-
-  ``kwargs`` : keyword arguments
-    Extra plotting parameters, which are passed directly to :py:func:`matplotlib.pyplot.plot` or :py:func:`matplotlib.pyplot.semilogx`.
-
-  **Returns:**
-
-  The return value is the ``matplotlib`` line that was added as defined by :py:func:`matplotlib.pyplot.plot`.
+  The detection and identification curve first computes FAR thresholds based on
+  the out-of-set probe scores (negative scores).  For each probe item, the
+  **maximum** negative score is used.  Then, it plots the detection and
+  identification rates for those thresholds, which are based on the in-set
+  probe scores only. See [LiJain2005]_ for more details.
 
   .. [LiJain2005] **Stan Li and Anil K. Jain**, *Handbook of Face Recognition*, Springer, 2005
+
+
+  Parameters:
+
+    cmc_scores (array): 1D float array containing the CMC values (See
+      :py:func:`bob.measure.cmc`)
+
+    rank (Optional[int]): The rank for which the curve should be plotted
+
+    far_values (Optional[list]): The values for the FAR, where the CAR should
+      be plotted; each value should be in range [0,1].
+
+    logx (Optional[bool]): If set (the default), plots the rank axis in
+      logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
+      linear scale using :py:func:`matplotlib.pyplot.plot`
+
+    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+      directly to :py:func:`matplotlib.pyplot.plot`.
+
+
+  Returns:
+
+    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
+      the return value of :py:func:`matplotlib.pyplot.plot`.
+
   """
 
   import numpy

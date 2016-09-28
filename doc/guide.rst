@@ -45,6 +45,7 @@ formula:
 
    HTER(\tau, \mathcal{D}) = \frac{FAR(\tau, \mathcal{D}) + FRR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
 
+
 where :math:`\mathcal{D}` denotes the dataset used. Since both the FAR and the
 FRR depends on the threshold :math:`\tau`, they are strongly related to each
 other: increasing the FAR will reduce the FRR and vice-versa. For this reason,
@@ -70,8 +71,9 @@ optimal threshold :math:`\tau^*` is then computed using different values of
 .. math::
   \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FAR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FRR}(\tau, \mathcal{D}_{d})
 
+
 where :math:`\mathcal{D}_{d}` denotes the development set and should be
-completely separate to the evaluation set `\mathcal{D}`.
+completely separate to the evaluation set :math:`\mathcal{D}`.
 
 Performance for different values of :math:`\beta` is then computed on the test
 set :math:`\mathcal{D}_{t}` using the previously derived threshold. Note that
@@ -373,6 +375,7 @@ The CMC can be calculated from a relatively complex data structure, which define
      negatives = numpy.random.normal(0, 1, 19)
      cmc_scores.append((negatives, positives))
    bob.measure.plot.cmc(cmc_scores, logx=False)
+   pyplot.grid(True)
    pyplot.title('CMC')
    pyplot.xlabel('Rank')
    pyplot.xticks([1,5,10,20])
@@ -383,15 +386,23 @@ The CMC can be calculated from a relatively complex data structure, which define
 Usually, there is only a single positive score per probe, but this is not a fixed restriction.
 
 .. note::
-   The complex data structure can be read from our default 4 or 5 column score files using the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` function.
+
+   The complex data structure can be read from our default 4 or 5 column score
+   files using the :py:func:`bob.measure.load.cmc_four_column` or
+   :py:func:`bob.measure.load.cmc_five_column` function.
 
 
 Detection & Identification Curve
 ================================
 
-The detection & identification curve is designed to evaluate open set identification tasks.
-It can be plotted using the :py:func:`bob.measure.plot.detection_identification_curve` function, but it requires at least one open-set probe, i.e., where no corresponding positive score exists, for which the FAR values are computed.
-Here, we plot the detection and identification curve for rank 1, so that the recognition rate for FAR=1 will be identical to the rank one :py:func:`bob.measure.recognition_rate` obtained in the CMC plot above.
+The detection & identification curve is designed to evaluate open set
+identification tasks.  It can be plotted using the
+:py:func:`bob.measure.plot.detection_identification_curve` function, but it
+requires at least one open-set probe, i.e., where no corresponding positive
+score exists, for which the FAR values are computed.  Here, we plot the
+detection and identification curve for rank 1, so that the recognition rate for
+FAR=1 will be identical to the rank one :py:func:`bob.measure.recognition_rate`
+obtained in the CMC plot above.
 
 .. plot::
 
@@ -423,9 +434,10 @@ The methods inside :py:mod:`bob.measure.plot` are only provided as a
 `Matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
 only calculate the points without doing any plotting. You may prefer to tweak
 the plotting or even use a different plotting system such as gnuplot. Have a
-look at the implementations at :py:mod:`bob.measure.plot` to understand how
-to use the |project| methods to compute the curves and interlace that in the
-way that best suits you.
+look at the implementations at :py:mod:`bob.measure.plot` to understand how to
+use the |project| methods to compute the curves and interlace that in the way
+that best suits you.
+
 
 Full applications
 -----------------

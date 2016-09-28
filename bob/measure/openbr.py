@@ -1,4 +1,10 @@
-"""This file includes functionality to convert between Bob's four column or five column score files and the Matrix files used in OpenBR."""
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+
+
+"""This file includes functionality to convert between Bob's four column or
+   five column score files and the Matrix files used in OpenBR."""
+
 
 import numpy
 import sys
@@ -6,6 +12,7 @@ import logging
 logger = logging.getLogger("bob.measure")
 
 from .load import open_file, four_column, five_column
+
 
 def write_matrix(
     score_file,
@@ -16,58 +23,70 @@ def write_matrix(
     score_file_format = '4column',
     gallery_file_name = 'unknown-gallery.lst',
     probe_file_name = 'unknown-probe.lst',
-    search = None
-):
-  """Writes the OpenBR matrix and mask files (version 2), given the score file.
-  If gallery and probe names are provided, the matrices in both files will be sorted by gallery and probe names.
-  Otherwise, the order will be the same as given in the score file.
+    search = None):
+  """Writes the OpenBR matrix and mask files (version 2), given a score file.
 
-  If ``search`` is given (as an integer), the resulting matrix files will be in the *search* format, keeping the given number of gallery scores with the highest values for each probe.
+  If gallery and probe names are provided, the matrices in both files will be
+  sorted by gallery and probe names.  Otherwise, the order will be the same as
+  given in the score file.
+
+  If ``search`` is given (as an integer), the resulting matrix files will be in
+  the *search* format, keeping the given number of gallery scores with the
+  highest values for each probe.
 
   .. warning::
-     When provided with a 4-column score file, this function will work only, if there is only a single model id for each client.
 
-  **Parameters:**
+     When provided with a 4-column score file, this function will work only, if
+     there is only a single model id for each client.
 
-  ``score_file`` : str
-    The 4 or 5 column style score file written by bob.
+  Parameters:
 
-  ``matrix_file`` : str
-    The OpenBR matrix file that should be written.
-    Usually, the file name extension is ``.mtx``
+    score_file (str): The 4 or 5 column style score file written by bob.
 
-  ``mask_file`` : str
-    The OpenBR mask file that should be written.
-    The mask file defines, which values are positives, negatives or to be ignored.
-    Usually, the file name extension is ``.mask``
+    matrix_file (str): The OpenBR matrix file that should be written.
+      Usually, the file name extension is ``.mtx``
 
-  ``model_names`` : [str] or ``None``
-    If given, the matrix will be written in the same order as the given model names.
-    The model names must be identical with the second column in the 5-column ``score_file``.
+    mask_file (str): The OpenBR mask file that should be written.
+      The mask file defines, which values are positives, negatives or to be
+      ignored.  Usually, the file name extension is ``.mask``
 
-    .. note::
-       If the score file is in four column format, the model_names must be the client ids stored in the first column.
-       In this case, there might be only a single model per client
+    model_names (Optional[str]): If given, the matrix will be written in the
+      same order as the given model names.  The model names must be identical
+      with the second column in the 5-column ``score_file``.
 
-    Only the scores of the given models will be considered.
+      .. note::
 
-  ``probe_names`` : [str] or ``None``
-    If given, the matrix will be written in the same order as the given probe names (the ``path`` of the probe).
-    The probe names are identical to the third column of the 4-column (or the fourth column of the 5-column) ``score_file``.
-    Only the scores of the given probe names will be considered in this case.
+         If the score file is in four column format, the model_names must be
+         the client ids stored in the first column.  In this case, there might
+         be only a single model per client
 
-  ``score_file_format`` : one of ``('4column', '5column')``
-    The format, in which the ``score_file`` is; defaults to ``'4column'``
+      Only the scores of the given models will be considered.
 
-  ``gallery_file_name`` : str
-    The name of the gallery file that will be written in the header of the OpenBR files.
+    probe_names (Optional[list]): A list of strings. If given, the matrix will
+      be written in the same order as the given probe names (the ``path`` of
+      the probe).  The probe names are identical to the third column of the
+      4-column (or the fourth column of the 5-column) ``score_file``.  Only the
+      scores of the given probe names will be considered in this case.
 
-  ``probe_file_name`` : str
-    The name of the probe file that will be written in the header of the OpenBR files.
+    score_file_format (Optional[str]): One of ``('4column', '5column')``. The
+      format, in which the ``score_file`` is; defaults to ``'4column'``
 
-  ``search`` : int or ``None``
-    If given, the scores will be sorted per probe, keeping the specified number of highest scores.
-    If the given number is higher than the models, ``NaN`` values will be added, and the mask will contain ``0x00`` values.
+    gallery_file_name (Optional[str]): The name of the gallery file that will
+      be written in the header of the OpenBR files.
+
+    probe_file_name (Optional[str]): The name of the probe file that will be
+      written in the header of the OpenBR files.
+
+    search (Optional[int]): If given, the scores will be sorted per probe,
+      keeping the specified number of highest scores.  If the given number is
+      higher than the models, ``NaN`` values will be added, and the mask will
+      contain ``0x00`` values.
+
+
+  Returns:
+
+    None
+
   """
 
   def _write_matrix(filename, matrix):
@@ -178,61 +197,77 @@ def write_score_file(
     score_file_format = '4column',
     replace_nan = None
 ):
-  """Writes the Bob score file in the desired ``score_file_format`` (four or five column), given the OpenBR matrix and mask files.
+  """Writes the Bob score file in the desired format from OpenBR files.
 
-  In principle, the score file can be written based on the matrix and mask files, and the format suffice the requirements to compute CMC curves.
-  However, the contents of the score files can be adapted.
-  If given, the ``models_ids`` and ``probes_ids`` define the **client ids** of model and probe, and they have to be in the same order as used to compute the OpenBR matrix.
-  The ``model_names`` and ``probe_names`` define the **paths** of model and probe, and they should be in the same order as the ids.
+  Writes a Bob score file in the desired format (four or five column), given
+  the OpenBR matrix and mask files.
 
-  In rare cases, the OpenBR matrix contains NaN values, which Bob's score files cannot handle.
-  You can use the ``replace_nan`` parameter to decide, what to do with these values.
-  By default (``None``), these values are ignored, i.e., not written into the score file.
-  This is, what OpenBR is doing as well.
-  However, you can also set ``replace_nan`` to any value, which will be written instead of the NaN values.
+  In principle, the score file can be written based on the matrix and mask
+  files, and the format suffice the requirements to compute CMC curves.
+  However, the contents of the score files can be adapted.  If given, the
+  ``models_ids`` and ``probes_ids`` define the **client ids** of model and
+  probe, and they have to be in the same order as used to compute the OpenBR
+  matrix.  The ``model_names`` and ``probe_names`` define the **paths** of
+  model and probe, and they should be in the same order as the ids.
 
-  **Parameters:**
+  In rare cases, the OpenBR matrix contains NaN values, which Bob's score files
+  cannot handle.  You can use the ``replace_nan`` parameter to decide, what to
+  do with these values.  By default (``None``), these values are ignored, i.e.,
+  not written into the score file.  This is, what OpenBR is doing as well.
+  However, you can also set ``replace_nan`` to any value, which will be written
+  instead of the NaN values.
 
-  ``matrix_file`` : str
-    The OpenBR matrix file that should be read.
-    Usually, the file name extension is ``.mtx``
 
-  ``mask_file`` : str
-    The OpenBR mask file that should be read.
-    Usually, the file name extension is ``.mask``
+  Parameters:
 
-  ``score_file`` : str
-    The 4 or 5 column style score file that should be written.
+    matrix_file (str): The OpenBR matrix file that should be read. Usually, the
+      file name extension is ``.mtx``
 
-  ``models_ids`` : [str] or ``None``
-    The client ids of the models that will be written in the first column of the score file.
-    If given, the size must be identical to the number of models (gallery templates) in the OpenBR files.
-    If not given, client ids of the model will be identical to the **gallery index** in the matrix file.
+    mask_file (str): The OpenBR mask file that should be read. Usually, the
+      file name extension is ``.mask``
 
-  ``probes_ids`` : [str] or ``None``:
-    The client ids of the probes that will be written in the second/third column of the four/five column score file.
-    If given, the size must be identical to the number of probe templates in the OpenBR files.
-    It will be checked that the OpenBR mask fits to the model/probe client ids.
-    If not given, the probe ids will be estimated automatically, i.e., to fit the OpenBR matrix.
+    score_file (str): Path to the 4 or 5 column style score file that should be
+      written.
 
-  ``model_names`` : [str] or ``None``
-    A list of model path written in the second column of the five column score file.
-    If not given, the model index in the OpenBR file will be used.
+    models_ids (Optional[list]): A list of strings with the client ids of the
+      models that will be written in the first column of the score file. If
+      given, the size must be identical to the number of models (gallery
+      templates) in the OpenBR files.  If not given, client ids of the model
+      will be identical to the **gallery index** in the matrix file.
 
-    .. note::
-       This entry is ignored in the four column score file format.
+    probes_ids (Optional[list]): A list of strings with the client ids of the
+      probes that will be written in the second/third column of the four/five
+      column score file.  If given, the size must be identical to the number of
+      probe templates in the OpenBR files.  It will be checked that the OpenBR
+      mask fits to the model/probe client ids.  If not given, the probe ids
+      will be estimated automatically, i.e., to fit the OpenBR matrix.
 
-  ``probe_names`` : [str] or ``None``
-    A list of probe path to be written in the third/fourth column in the four/five column score file.
-    If given, the size must be identical to the number of probe templates in the OpenBR files.
-    If not given, the probe index in the OpenBR file will be used.
+    model_names (Optional[list]): A list of strings with the model path written
+      in the second column of the five column score file. If not given, the
+      model index in the OpenBR file will be used.
 
-  ``score_file_format`` : one of ``('4column', '5column')``
-    The format, in which the ``score_file`` should be written; defaults to ``'4column'``.
+      .. note::
 
-  ``replace_nan`` : float or ``None``:
-    If NaN values are encountered in the OpenBR matrix (which are not ignored due to the mask being non-NULL), this value will be written instead.
-    If ``None``, the values will not be written in the score file at all.
+         This entry is ignored in the four column score file format.
+
+    probe_names (Optional[list]): A list of probe path to be written in the
+      third/fourth column in the four/five column score file. If given, the
+      size must be identical to the number of probe templates in the OpenBR
+      files. If not given, the probe index in the OpenBR file will be used.
+
+    score_file_format (Optional[str]): One of ``('4column', '5column')``. The
+      format, in which the ``score_file`` is; defaults to ``'4column'``
+
+    replace_nan (Optional[float]): If NaN values are encountered in the OpenBR
+      matrix (which are not ignored due to the mask being non-NULL), this value
+      will be written instead. If ``None``, the values will not be written in
+      the score file at all.
+
+
+  Returns:
+
+    None
+
   """
   def _read_matrix(filename):
     py3 = sys.version_info[0] >=3
