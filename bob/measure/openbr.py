@@ -50,7 +50,7 @@ def write_matrix(
       The mask file defines, which values are positives, negatives or to be
       ignored.  Usually, the file name extension is ``.mask``
 
-    model_names (py:py:class:`str`, optional): If given, the matrix will be
+    model_names (:py:class:`str`, optional): If given, the matrix will be
       written in the same order as the given model names.  The model names must
       be identical with the second column in the 5-column ``score_file``.
 
@@ -62,7 +62,7 @@ def write_matrix(
 
       Only the scores of the given models will be considered.
 
-    probe_names (:py:py:class:`list`, optional): A list of strings. If given,
+    probe_names (:py:class:`list`, optional): A list of strings. If given,
       the matrix will be written in the same order as the given probe names
       (the ``path`` of the probe).  The probe names are identical to the third
       column of the 4-column (or the fourth column of the 5-column)
