@@ -15,14 +15,14 @@ def log_values(min_step = -4, counts_per_step = 4):
 
   Parameters:
 
-    min_step (:obj:`int`, optional): The power of 10 that will be the minimum value.
-      E.g., the default ``-4`` will result in the first number to be
-      :math:`10^{-4}` = ``0.00001`` or ``0.01%``
+    min_step (:py:class:`int`, optional): The power of 10 that will be the
+      minimum value.  E.g., the default ``-4`` will result in the first number
+      to be :math:`10^{-4}` = ``0.00001`` or ``0.01%``
 
-    counts_per_step (:obj:`int`, optional): The number of values that will be put
-      between two adjacent powers of 10.  With the default value ``4`` (and
-      default values of ``min_step``), we will get ``log_list[0] == 1e-4``,
-      ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
+    counts_per_step (:py:class:`int`, optional): The number of values that will
+      be put between two adjacent powers of 10.  With the default value ``4``
+      (and default values of ``min_step``), we will get ``log_list[0] ==
+      1e-4``, ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
 
 
   Returns:
@@ -65,15 +65,15 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    npoints (:obj:`int`, optional): The number of points for the plot. See
+    npoints (:py:class:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.roc`)
 
-    CAR (:obj:`bool`, optional): If set to ``True``, it will plot the CAR over FAR in
-      using :py:func:`matplotlib.pyplot.semilogx`, otherwise the FAR over FRR
-      linearly using :py:func:`matplotlib.pyplot.plot`.
+    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
+      over FAR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+      FAR over FRR linearly using :py:func:`matplotlib.pyplot.plot`.
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -123,11 +123,11 @@ def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    far_values (:obj:`list`, optional): The values for the FAR, where the CAR should
-      be plotted; each value should be in range [0,1].
+    far_values (:py:class:`list`, optional): The values for the FAR, where the
+      CAR should be plotted; each value should be in range [0,1].
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -167,16 +167,15 @@ def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
       "negative" (noise, non-class) samples of your classifier. See
       (:py:func:`bob.measure.precision_recall_curve`)
 
-
     positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.precision_recall_curve`)
 
-    npoints (:obj:`int`, optional): The number of points for the plot. See
+    npoints (:py:class:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.precision_recall_curve`)
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -225,7 +224,6 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
       "negative" (noise, non-class) samples of your classifier, from the
       development set. See (:py:func:`bob.measure.epc`)
 
-
     dev_positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier, from the
       development set. See (:py:func:`bob.measure.epc`)
@@ -238,11 +236,11 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
       "positive" (signal, class) samples of your classifier, from the test set.
       See (:py:func:`bob.measure.epc`)
 
-    npoints (:obj:`int`, optional): The number of points for the plot. See
+    npoints (:py:class:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.epc`)
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -327,14 +325,14 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.det`)
 
-    npoints (:obj:`int`, optional): The number of points for the plot. See
+    npoints (:py:class:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.det`)
 
-    axisfontsize (:obj:`str`, optional): The size to be used by x/y-tick-labels to set
-      the font size on the axis
+    axisfontsize (:py:class:`str`, optional): The size to be used by
+      x/y-tick-labels to set the font size on the axis
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -399,14 +397,14 @@ def det_axis(v, **kwargs):
 
   Parameters:
 
-  v (list, tuple): A sequence contaiing the X and Y limits in the order
-    ``(xmin, xmax, ymin, ymax)``. Expected values should be in percentage
-    (between 0 and 100%).  If ``v`` is not a list or tuple that contains 4
-    numbers it is passed without further inspection to
-    :py:func:`matplotlib.pyplot.axis`.
+    v (:py:class:`list`, :py:class:`tuple`): A sequence contaiing the X and Y
+      limits in the order ``(xmin, xmax, ymin, ymax)``. Expected values should
+      be in percentage (between 0 and 100%).  If ``v`` is not a list or tuple
+      that contains 4 numbers it is passed without further inspection to
+      :py:func:`matplotlib.pyplot.axis`.
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.axis`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.axis`.
 
 
   Returns:
@@ -465,12 +463,12 @@ def cmc(cmc_scores, logx = True, **kwargs):
     cmc_scores (array): 1D float array containing the CMC values (See
       :py:func:`bob.measure.cmc`)
 
-    logx (:obj:`bool`, optional): If set (the default), plots the rank axis in
-      logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
-      linear scale using :py:func:`matplotlib.pyplot.plot`
+    logx (:py:class:`bool`, optional): If set (the default), plots the rank
+      axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or
+      in linear scale using :py:func:`matplotlib.pyplot.plot`
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
@@ -515,17 +513,18 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
     cmc_scores (array): 1D float array containing the CMC values (See
       :py:func:`bob.measure.cmc`)
 
-    rank (:obj:`int`, optional): The rank for which the curve should be plotted
+    rank (:py:class:`int`, optional): The rank for which the curve should be
+      plotted
 
-    far_values (:obj:`list`, optional): The values for the FAR, where the CAR should
-      be plotted; each value should be in range [0,1].
+    far_values (:py:class:`list`, optional): The values for the FAR, where the
+      CAR should be plotted; each value should be in range [0,1].
 
-    logx (:obj:`bool`, optional): If set (the default), plots the rank axis in
-      logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
-      linear scale using :py:func:`matplotlib.pyplot.plot`
+    logx (:py:class:`bool`, optional): If set (the default), plots the rank
+      axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or
+      in linear scale using :py:func:`matplotlib.pyplot.plot`
 
-    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
-      directly to :py:func:`matplotlib.pyplot.plot`.
+    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+      passed directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
