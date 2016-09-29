@@ -22,7 +22,7 @@ def open_file(filename, mode='rt'):
 
   Parameters:
 
-    filename (:py:class:`str`, file object): The name of the score file to
+    filename (:py:class:`str`, ``file-like``): The name of the score file to
       open, or a file-like object open for reading. If a file name is given,
       the according file might be a raw text file or a (compressed) tar file
       containing a raw text file.
@@ -31,8 +31,8 @@ def open_file(filename, mode='rt'):
   Returns:
 
 
-    file: A read-only file-like object as it would be returned by
-      :py:func:`open`.
+    ``file-like``: A read-only file-like object as it would be returned by
+    :py:func:`open`.
 
   """
 
@@ -74,17 +74,17 @@ def four_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     str: The claimed identity -- the client name of the model that was used in
-      the comparison
+    the comparison
 
     str: The real identity -- the client name of the probe that was used in the
-      comparison
+    comparison
 
     str: A label of the probe -- usually the probe file name, or the probe id
 
@@ -119,19 +119,19 @@ def split_four_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     negatives (array): 1D float array containing the list of scores, for which
-      the ``claimed_id`` and the ``real_id`` differed (see
-      :py:func:`four_column`)
+    the ``claimed_id`` and the ``real_id`` differed (see
+    :py:func:`four_column`)
 
     positivies (array): 1D float array containing the list of scores, for which
-      the ``claimed_id`` and the ``real_id`` are identical (see
-      :py:func:`four_column`)
+    the ``claimed_id`` and the ``real_id`` are identical (see
+    :py:func:`four_column`)
 
   """
 
@@ -155,16 +155,16 @@ def cmc_four_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     list: A list of tuples, where each tuple contains the ``negative`` and
-      ``positive`` scores for one probe of the database. Both ``negatives`` and
-      ``positives`` can be either an 1D :py:class:`numpy.ndarray` of type
-      ``float``, or ``None``.
+    ``positive`` scores for one probe of the database. Both ``negatives`` and
+    ``positives`` can be either an 1D :py:class:`numpy.ndarray` of type
+    ``float``, or ``None``.
 
   """
 
@@ -201,19 +201,19 @@ def five_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     str: The claimed identity -- the client name of the model that was used in
-      the comparison
+    the comparison
 
     str: A label for the model -- usually the model file name, or the model id
 
     str: The real identity -- the client name of the probe that was used in the
-      comparison
+    comparison
 
     str: A label of the probe -- usually the probe file name, or the probe id
 
@@ -248,19 +248,19 @@ def split_five_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     negatives (array): 1D float array containing the list of scores, for which
-      the ``claimed_id`` and the ``real_id`` differed (see
-      :py:func:`four_column`)
+    the ``claimed_id`` and the ``real_id`` differed (see
+    :py:func:`four_column`)
 
     positivies (array): 1D float array containing the list of scores, for which
-      the ``claimed_id`` and the ``real_id`` are identical (see
-      :py:func:`four_column`)
+    the ``claimed_id`` and the ``real_id`` are identical (see
+    :py:func:`four_column`)
 
   """
 
@@ -284,14 +284,14 @@ def cmc_five_column(filename):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
 
   Returns:
 
     list: A list of tuples, where each tuple contains the ``negative`` and
-      ``positive`` scores for one probe of the database.
+    ``positive`` scores for one probe of the database.
 
   """
   # extract positives and negatives
@@ -317,7 +317,7 @@ def load_score(filename, ncolumns=None):
 
   Parameters:
 
-    filename (:py:class:`str`, :py:class:`File`): The file object that will be
+    filename (:py:class:`str`, ``file-like``): The file object that will be
       opened with :py:func:`open_file` containing the scores.
 
     ncolumns (:py:class:`int`, optional): 4, 5 or None (the default),
@@ -328,7 +328,7 @@ def load_score(filename, ncolumns=None):
   Returns:
 
     array: An array which contains not only the actual scores but also the
-      ``claimed_id``, ``real_id``, ``test_label`` and ``['model_label']``
+    ``claimed_id``, ``real_id``, ``test_label`` and ``['model_label']``
 
   """
 
