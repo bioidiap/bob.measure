@@ -180,13 +180,13 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
       probe item**.  Each pair can contain up to one empty array (or ``None``),
       i.e., in case of open set recognition.
 
-    threshold (Optional[float]): Decision threshold. If not ``None``, **all**
+    threshold (:obj:`float`, optional): Decision threshold. If not ``None``, **all**
       scores will be filtered by the threshold. In an open set recognition
       problem, all open set scores (negatives with no corresponding positive)
       for which all scores are below threshold, will be counted as correctly
       rejected and **removed** from the probe list (i.e., the denominator).
 
-    rank (Optional[int]):
+    rank (:obj:`int`, optional):
       The rank for which the recognition rate should be computed, 1 by default.
 
 
@@ -350,7 +350,7 @@ def detection_identification_rate(cmc_scores, threshold, rank = 1):
 
     threshold (float): The decision threshold :math:`\\tau``.
 
-    rank (Optional[int]): The rank for which the curve should be plotted
+    rank (:obj:`int`, optional): The rank for which the curve should be plotted
 
 
   Returns:

@@ -15,11 +15,11 @@ def log_values(min_step = -4, counts_per_step = 4):
 
   Parameters:
 
-    min_step (Optional[int]): The power of 10 that will be the minimum value.
+    min_step (:obj:`int`, optional): The power of 10 that will be the minimum value.
       E.g., the default ``-4`` will result in the first number to be
       :math:`10^{-4}` = ``0.00001`` or ``0.01%``
 
-    counts_per_step (Optional[int]): The number of values that will be put
+    counts_per_step (:obj:`int`, optional): The number of values that will be put
       between two adjacent powers of 10.  With the default value ``4`` (and
       default values of ``min_step``), we will get ``log_list[0] == 1e-4``,
       ``log_list[4] == 1e-3``, ..., ``log_list[16] == 1``.
@@ -65,22 +65,22 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    npoints (Optional[int]): The number of points for the plot. See
+    npoints (:obj:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.roc`)
 
-    CAR (Optional[bool]): If set to ``True``, it will plot the CAR over FAR in
+    CAR (:obj:`bool`, optional): If set to ``True``, it will plot the CAR over FAR in
       using :py:func:`matplotlib.pyplot.semilogx`, otherwise the FAR over FRR
       linearly using :py:func:`matplotlib.pyplot.plot`.
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.plot` or
-      :py:func:`matplotlib.pyplot.semilogx`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.plot`.
 
   """
 
@@ -123,17 +123,18 @@ def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    far_values (Optional[list]): The values for the FAR, where the CAR should
+    far_values (:obj:`list`, optional): The values for the FAR, where the CAR should
       be plotted; each value should be in range [0,1].
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.semilogx`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.semilogx`.
 
   """
 
@@ -171,17 +172,18 @@ def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.precision_recall_curve`)
 
-    npoints (Optional[int]): The number of points for the plot. See
+    npoints (:obj:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.precision_recall_curve`)
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.plot`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.plot`.
 
   """
 
@@ -236,17 +238,18 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
       "positive" (signal, class) samples of your classifier, from the test set.
       See (:py:func:`bob.measure.epc`)
 
-    npoints (Optional[int]): The number of points for the plot. See
+    npoints (:obj:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.epc`)
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.plot`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.plot`.
 
   """
 
@@ -324,20 +327,21 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.det`)
 
-    npoints (Optional[int]): The number of points for the plot. See
+    npoints (:obj:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.det`)
 
-    axisfontsize (Optional[str]): The size to be used by x/y-tick-labels to set
+    axisfontsize (:obj:`str`, optional): The size to be used by x/y-tick-labels to set
       the font size on the axis
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.plot`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.plot`.
 
   """
 
@@ -401,7 +405,7 @@ def det_axis(v, **kwargs):
     numbers it is passed without further inspection to
     :py:func:`matplotlib.pyplot.axis`.
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.axis`.
 
 
@@ -461,11 +465,11 @@ def cmc(cmc_scores, logx = True, **kwargs):
     cmc_scores (array): 1D float array containing the CMC values (See
       :py:func:`bob.measure.cmc`)
 
-    logx (Optional[bool]): If set (the default), plots the rank axis in
+    logx (:obj:`bool`, optional): If set (the default), plots the rank axis in
       logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
       linear scale using :py:func:`matplotlib.pyplot.plot`
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
@@ -511,23 +515,24 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
     cmc_scores (array): 1D float array containing the CMC values (See
       :py:func:`bob.measure.cmc`)
 
-    rank (Optional[int]): The rank for which the curve should be plotted
+    rank (:obj:`int`, optional): The rank for which the curve should be plotted
 
-    far_values (Optional[list]): The values for the FAR, where the CAR should
+    far_values (:obj:`list`, optional): The values for the FAR, where the CAR should
       be plotted; each value should be in range [0,1].
 
-    logx (Optional[bool]): If set (the default), plots the rank axis in
+    logx (:obj:`bool`, optional): If set (the default), plots the rank axis in
       logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or in
       linear scale using :py:func:`matplotlib.pyplot.plot`
 
-    kwargs (Optional[dict]): Extra plotting parameters, which are passed
+    kwargs (:obj:`dict`, optional): Extra plotting parameters, which are passed
       directly to :py:func:`matplotlib.pyplot.plot`.
 
 
   Returns:
 
-    :py:class:`matplotlib.pyplot.line`: The line that was added as defined by
-      the return value of :py:func:`matplotlib.pyplot.plot`.
+    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+    were added as defined by the return value of
+    :py:func:`matplotlib.pyplot.plot`.
 
   """
 

@@ -215,8 +215,8 @@ Plotting
 --------
 
 An image is worth 1000 words, they say. You can combine the capabilities of
-`Matplotlib`_ with |project| to plot a number of curves. However, you must have that
-package installed though. In this section we describe a few recipes.
+`Matplotlib`_ with |project| to plot a number of curves. However, you must have
+that package installed though. In this section we describe a few recipes.
 
 ROC
 ===
@@ -255,18 +255,18 @@ You should see an image like the following one:
    pyplot.title('ROC')
 
 As can be observed, plotting methods live in the namespace
-:py:mod:`bob.measure.plot`. They work like the :py:func:`matplotlib.pyplot.plot`
-itself, except that instead of receiving the x and y point coordinates as
-parameters, they receive the two :py:class:`numpy.ndarray` arrays with
-negatives and positives, as well as an indication of the number of points the
-curve must contain.
+:py:mod:`bob.measure.plot`. They work like the
+:py:func:`matplotlib.pyplot.plot` itself, except that instead of receiving the
+x and y point coordinates as parameters, they receive the two
+:py:class:`numpy.ndarray` arrays with negatives and positives, as well as an
+indication of the number of points the curve must contain.
 
-As in the :py:func:`matplotlib.pyplot.plot` command, you can pass optional parameters for
-the line as shown in the example to setup its color, shape and even the label.
-For an overview of the keywords accepted, please refer to the `Matplotlib`_'s
-Documentation. Other plot properties such as the plot title, axis labels,
-grids, legends should be controlled directly using the relevant `Matplotlib`_'s
-controls.
+As in the :py:func:`matplotlib.pyplot.plot` command, you can pass optional
+parameters for the line as shown in the example to setup its color, shape and
+even the label.  For an overview of the keywords accepted, please refer to the
+`Matplotlib`_'s Documentation. Other plot properties such as the plot title,
+axis labels, grids, legends should be controlled directly using the relevant
+`Matplotlib`_'s controls.
 
 DET
 ===
@@ -358,9 +358,11 @@ This will produce an image like the following one:
 CMC
 ===
 
-The Cumulative Match Characteristics (CMC) curve estimates the probability that the correct model is in the *N* models with the highest similarity to a given probe.
-A CMC curve can be plotted using the :py:func:`bob.measure.plot.cmc` function.
-The CMC can be calculated from a relatively complex data structure, which defines a pair of positive and negative scores **per probe**:
+The Cumulative Match Characteristics (CMC) curve estimates the probability that
+the correct model is in the *N* models with the highest similarity to a given
+probe.  A CMC curve can be plotted using the :py:func:`bob.measure.plot.cmc`
+function.  The CMC can be calculated from a relatively complex data structure,
+which defines a pair of positive and negative scores **per probe**:
 
 .. plot::
 

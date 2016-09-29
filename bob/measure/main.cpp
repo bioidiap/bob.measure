@@ -102,7 +102,7 @@ static auto det_doc = bob::extension::FunctionDoc(
   "[0]  X axis values in the normal deviate scale for the false-accepts\n\n"
   "[1]  Y axis values in the normal deviate scale for the false-rejections\n\n"
   "You can plot the results using your preferred tool to first create a plot using rows 0 and 1 from the returned value and then replace the X/Y axis annotation using a pre-determined set of tickmarks as recommended by NIST. "
-  "The derivative scales are computed with the :py:func:`ppndf` function."
+  "The derivative scales are computed with the :py:func:`bob.measure.ppndf` function."
 )
 .add_prototype("negatives, positives, n_points", "curve")
 .add_parameter("negatives, positives", "array_like(1D, float)", "The list of negative and positive scores to compute the DET for")
@@ -264,7 +264,7 @@ static auto eer_threshold_doc = bob::extension::FunctionDoc(
 .add_prototype("negatives, positives, [is_sorted]", "threshold")
 .add_parameter("negatives, positives", "array_like(1D, float)", "The set of negative and positive scores to compute the threshold")
 .add_parameter("is_sorted", "bool", "[Default: ``False``] Are both sets of scores already in ascendantly sorted order?")
-.add_return("threshold", "float", "The threshold (i.e., as used in :py:func:`farfrr`) where FAR and FRR are as close as possible")
+.add_return("threshold", "float", "The threshold (i.e., as used in :py:func:`bob.measure.farfrr`) where FAR and FRR are as close as possible")
 ;
 static PyObject* eer_threshold(PyObject*, PyObject* args, PyObject* kwds) {
 BOB_TRY
@@ -344,7 +344,7 @@ BOB_CATCH_FUNCTION("min_weighted_error_rate_threshold", 0)
 
 static auto min_hter_threshold_doc = bob::extension::FunctionDoc(
   "min_hter_threshold",
-  "Calculates the :py:func:`min_weighted_error_rate_threshold` with ``cost=0.5``"
+  "Calculates the :py:func:`bob.measure.min_weighted_error_rate_threshold` with ``cost=0.5``"
 )
 .add_prototype("negatives, positives, [is_sorted]", "threshold")
 .add_parameter("negatives, positives", "array_like(1D, float)", "The set of negative and positive scores to compute the threshold")
@@ -390,7 +390,7 @@ static auto precision_recall_doc = bob::extension::FunctionDoc(
   "where :math:`tp` are the true positives, :math:`fp` are the false positives and :math:`fn` are the false negatives.\n\n"
   "``positives`` holds the score information for samples that are labeled to belong to a certain class (a.k.a., 'signal' or 'client'). "
   "``negatives`` holds the score information for samples that are labeled **not** to belong to the class (a.k.a., 'noise' or 'impostor'). "
-  "For more precise details about how the method considers error rates, see :py:func:`farfrr`."
+  "For more precise details about how the method considers error rates, see :py:func:`bob.measure.farfrr`."
 )
 .add_prototype("negatives, positives, threshold", "precision, recall")
 .add_parameter("negatives, positives", "array_like(1D, float)", "The set of negative and positive scores to compute the measurements")
@@ -429,7 +429,7 @@ BOB_CATCH_FUNCTION("precision_recall", 0)
 static auto f_score_doc = bob::extension::FunctionDoc(
   "f_score",
   "This method computes the F-score of the accuracy of the classification",
-  "The F-score is a weighted mean of precision and recall measurements, see :py:func:`precision_recall`. "
+  "The F-score is a weighted mean of precision and recall measurements, see :py:func:`bob.measure.precision_recall`. "
   "It is computed as:\n\n"
   ".. math::\n\n"
   "    \\mathrm{f-score} = (1 + w^2)\\frac{\\mathrm{precision}\\cdot{}\\mathrm{recall}}{w^2\\cdot{}\\mathrm{precision} + \\mathrm{recall}}\n\n"

@@ -22,10 +22,10 @@ def open_file(filename, mode='rt'):
 
   Parameters:
 
-    filename (str, file): The name of the score file to open, or a file-like
-      object open for reading. If a file name is given, the according file
-      might be a raw text file or a (compressed) tar file containing a raw text
-      file.
+    filename (:obj:`str`, :obj:`file`): The name of the score file to open, or
+      a file-like object open for reading. If a file name is given, the
+      according file might be a raw text file or a (compressed) tar file
+      containing a raw text file.
 
 
   Returns:
@@ -74,8 +74,8 @@ def four_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
-      :py:func:`open_file` containing the scores.
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened
+      with :py:func:`open_file` containing the scores.
 
 
   Returns:
@@ -119,8 +119,8 @@ def split_four_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
-      :py:func:`open_file` containing the scores.
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened
+      with :py:func:`open_file` containing the scores.
 
 
   Returns:
@@ -155,8 +155,8 @@ def cmc_four_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
-      :py:func:`open_file` containing the scores.
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened
+      with :py:func:`open_file` containing the scores.
 
 
   Returns:
@@ -201,7 +201,7 @@ def five_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened with
       :py:func:`open_file` containing the scores.
 
 
@@ -248,7 +248,7 @@ def split_five_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened with
       :py:func:`open_file` containing the scores.
 
 
@@ -284,7 +284,7 @@ def cmc_five_column(filename):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened with
       :py:func:`open_file` containing the scores.
 
 
@@ -317,12 +317,12 @@ def load_score(filename, ncolumns=None):
 
   Parameters:
 
-    filename (str, file): The file object that will be opened with
-      :py:func:`open_file` containing the scores.
+    filename (:obj:`str`, :obj:`file`): The file object that will be opened
+      with :py:func:`open_file` containing the scores.
 
-    ncolumns (Optional[int]): 4, 5 or None (the default), specifying the number
-      of columns in the score file. If None is provided, the number of columns
-      will be guessed.
+    ncolumns (:obj:`int`, optional): 4, 5 or None (the default), specifying the
+      number of columns in the score file. If None is provided, the number of
+      columns will be guessed.
 
 
   Returns:
