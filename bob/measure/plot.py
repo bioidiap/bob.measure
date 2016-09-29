@@ -397,11 +397,11 @@ def det_axis(v, **kwargs):
 
   Parameters:
 
-    v (:py:class:`list`, :py:class:`tuple`): A sequence contaiing the X and Y
-      limits in the order ``(xmin, xmax, ymin, ymax)``. Expected values should
-      be in percentage (between 0 and 100%).  If ``v`` is not a list or tuple
-      that contains 4 numbers it is passed without further inspection to
-      :py:func:`matplotlib.pyplot.axis`.
+    v (``sequence``): A sequence (list, tuple, array or the like) containing
+      the X and Y limits in the order ``(xmin, xmax, ymin, ymax)``. Expected
+      values should be in percentage (between 0 and 100%).  If ``v`` is not a
+      list or tuple that contains 4 numbers it is passed without further
+      inspection to :py:func:`matplotlib.pyplot.axis`.
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.axis`.
