@@ -482,13 +482,13 @@ evaluation and plotting of development and test set data using our combined
 .. code-block:: sh
 
   $ bob_compute_perf.py --devel=development-scores-4col.txt --test=test-scores-4col.txt
-  [Min. criterium: EER] Threshold on Development set: -4.787956e-03
+  [Min. criterion: EER] Threshold on Development set: -4.787956e-03
          | Development     | Test
   -------+-----------------+------------------
     FAR  | 6.731% (35/520) | 2.500% (13/520)
     FRR  | 6.667% (26/390) | 6.154% (24/390)
     HTER | 6.699%          | 4.327%
-  [Min. criterium: Min. HTER] Threshold on Development set: 3.411070e-03
+  [Min. criterion: Min. HTER] Threshold on Development set: 3.411070e-03
          | Development     | Test
   -------+-----------------+------------------
     FAR  | 4.231% (22/520) | 1.923% (10/520)

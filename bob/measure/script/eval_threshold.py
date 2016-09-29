@@ -19,11 +19,11 @@ Options:
   -h, --help                     Shows this help message and exits
   -V, --version                  Prints the version and exits
   -v, --verbose                  Increases the output verbosity level
-  -c <crit>, --criterium=<crit>  The minimization criterium to use (choose
+  -c <crit>, --criterion=<crit>  The minimization criterion to use (choose
                                  between mhter, mwer or eer) [default: eer]
   -w <float>, --cost=<float>     The value w of the cost when minimizing using
                                  the minimum weighter error rate (mwer)
-                                 criterium. This value is ignored for eer or
+                                 criterion. This value is ignored for eer or
                                  mhter criteria. [default: 0.5]
 
 
@@ -31,11 +31,11 @@ Examples:
 
   1. Specify a different criteria (only mhter, mwer or eer accepted):
 
-     $ %(prog)s --criterium=mhter scores.txt
+     $ %(prog)s --criterion=mhter scores.txt
 
   2. Calculate the threshold that minimizes the weither HTER for a cost of 0.4:
 
-    $ %(prog)s --criterium=mwer --cost=0.4 scores.txt
+    $ %(prog)s --criterion=mwer --cost=0.4 scores.txt
 
   3. Parse your input using a 5-column format
 
@@ -46,6 +46,11 @@ Examples:
 
 import os
 import sys
+
+import logging
+__logging_format__='[%(levelname)s] %(message)s'
+logging.basicConfig(format=__logging_format__)
+logger = logging.getLogger('bob')
 
 
 def apthres(neg, pos, thres):
@@ -102,10 +107,14 @@ def main(user_input=None):
       version=completions['version'],
       )
 
-  # validates criterium
+  # Sets-up logging
+  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+
+  # validates criterion
   valid_criteria = ('eer', 'mhter', 'mwer')
-  if args['--criterium'] not in valid_criteria:
-    raise docopt.DocoptExit("--criterium must be one of %s" % \
+  if args['--criterion'] not in valid_criteria:
+    raise docopt.DocoptExit("--criterion must be one of %s" % \
         ', '.join(valid_criteria))
 
   # handles cost validation
@@ -121,7 +130,7 @@ def main(user_input=None):
   from ..load import load_score, get_negatives_positives
   neg, pos = get_negatives_positives(load_score(args['<scores>']))
 
-  t = calculate(neg, pos, args['--criterium'], args['--cost'])
+  t = calculate(neg, pos, args['--criterion'], args['--cost'])
   print("Threshold:", t)
   apthres(neg, pos, t)
 

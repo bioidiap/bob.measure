@@ -58,7 +58,7 @@ logger = logging.getLogger('bob')
 
 
 def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
-  """Prints a single output line that contains all info for a given criterium"""
+  """Prints a single output line that contains all info for a given criterion"""
 
   from .. import eer_threshold, min_hter_threshold, farfrr
 
@@ -73,7 +73,7 @@ def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   test_far, test_frr = farfrr(test_neg, test_pos, thres)
   test_hter = (test_far + test_frr)/2.0
 
-  print("[Min. criterium: %s] Threshold on Development set: %e" % (crit, thres))
+  print("[Min. criterion: %s] Threshold on Development set: %e" % (crit, thres))
 
   dev_ni = dev_neg.shape[0] #number of impostors
   dev_fa = int(round(dev_far*dev_ni)) #number of false accepts

@@ -33,6 +33,11 @@ Examples:
 import os
 import sys
 
+import logging
+__logging_format__='[%(levelname)s] %(message)s'
+logging.basicConfig(format=__logging_format__)
+logger = logging.getLogger('bob')
+
 from .eval_threshold import apthres
 
 
@@ -56,6 +61,10 @@ def main(user_input=None):
       argv=argv,
       version=completions['version'],
       )
+
+  # Sets-up logging
+  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
 
   # handles threshold validation
   try:
