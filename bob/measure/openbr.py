@@ -84,11 +84,6 @@ def write_matrix(
       number is higher than the models, ``NaN`` values will be added, and the
       mask will contain ``0x00`` values.
 
-
-  Returns:
-
-    None
-
   """
 
   def _write_matrix(filename, matrix):
@@ -267,12 +262,8 @@ def write_score_file(
       this value will be written instead. If ``None``, the values will not be
       written in the score file at all.
 
-
-  Returns:
-
-    None
-
   """
+
   def _read_matrix(filename):
     py3 = sys.version_info[0] >=3
     ## Helper function to read a matrix file as written by OpenBR
