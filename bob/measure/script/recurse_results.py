@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Manuel Guenther <manuel.guenther@idiap.ch>
 # Tue Jul 2 14:52:49 CEST 2013
-#
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
 
+"""Collects results of verification experiments recursively, reports results
 
-"""
 This script parses through the given directory, collects all results of
 verification experiments that are stored in file with the given file name.  It
 supports the split into development and test set of the data, as well as
@@ -23,90 +20,62 @@ information are given in columns:
 
 The measure type of the development set can be changed to compute "HTER" or
 "FAR" thresholds instead, using the --criterion option.
+
+Usage: %(prog)s [-v...] [options]
+       %(prog)s --help
+       %(prog)s --version
+
+
+Options:
+  -h, --help                      Shows this help message and exit
+  -V, --version                   Prints the version and exits
+  -v, --verbose                   Increases the output verbosity level
+  -d <path>, --devel-name=<path>  Name of the file containing the development
+                                  scores [default: scores-dev]
+  -e <path>, --eval-name=<path>   Name of the file containing the evaluation
+                                  scores [default: scores-eval]
+  -D <dir>, --directory=<dir>     The directory where the results should be
+                                  collected from [default: .]
+  -n <dir>, --nonorm-dir=<dir>    Directory where the unnormalized scores are
+                                  found [default: nonorm]
+  -z <dir>, --ztnorm-dir=<dir>    Directory where the normalized scores are
+                                  found [default: ztnorm]
+  -s, --sort                      If set, sorts the results
+  -k <key>, --sort-key=<key>      Sorts the results according to the given key.
+                                  May be one of "nonorm_dev", "nonorm_eval",
+                                  "ztnorm_dev", "ztnorm_eval" or "dir"
+                                  [default: dir]
+  -c <crit>, --criterion=<crit>   Report Equal Rates (EER) rather than Half
+                                  Total Error Rate (HTER). Choose between
+                                  "HTER", "EER" or "FAR" [default: HTER]
+  -o <path>, --output=<path>      If set, outputs results to a file named after
+                                  the option. If not set, writes to the console
+
 """
 
 import os
 import sys
-#from apport.hookutils import default
 
-def get_args():
-  """Parse the program options"""
-
-  import argparse
-  from .. import load
-
-  # set up command line parser
-  parser = argparse.ArgumentParser(description=__doc__,
-      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-  parser.add_argument('-d', '--devel-name', dest="dev", default="scores-dev", metavar="FILE",
-                      help = "Name of the file containing the development scores")
-  parser.add_argument('-e', '--eval-name', dest="eval", default="scores-eval", metavar="FILE",
-                      help = "Name of the file containing the evaluation scores")
-  parser.add_argument('-D', '--directory', default=".",
-                      help = "The directory where the results should be collected from.")
-  parser.add_argument('-n', '--nonorm-dir', dest="nonorm", default="nonorm", metavar = "DIR",
-                      help = "Directory where the unnormalized scores are found")
-  parser.add_argument('-z', '--ztnorm-dir', dest="ztnorm", default = "ztnorm", metavar = "DIR",
-                      help = "Directory where the normalized scores are found")
-  parser.add_argument('-s', '--sort', dest="sort", action='store_true',
-                      help = "Sort the results")
-  parser.add_argument('-k', '--sort-key', dest='key', default = 'dir', choices=['nonorm_dev','nonorm_eval','ztnorm_dev','ztnorm_eval','dir'],
-                      help = "Sort the results accordign to the given key")
-  parser.add_argument('-c', '--criterion', dest='criterion', default = 'HTER', choices=['HTER', 'EER', 'FAR'],
-                      help = "Report Equal Rates (EER) rather than Half Total Error Rate (HTER)")
-
-  parser.add_argument('-o', '--output', dest="output",
-      help="Name of the output file that will contain the HTER scores")
-
-  parser.add_argument('--self-test', action='store_true', help=argparse.SUPPRESS)
-
-  parser.add_argument('-p', '--parser', dest="parser", default="4column", metavar="NAME.FUNCTION",
-      help="Name of a known parser or of a python-importable function that can parse your input files and return a tuple (negatives, positives) as blitz 1-D arrays of 64-bit floats. Consult the API of bob.measure.load.split_four_column() for details")
-
-  # parse arguments
-  args = parser.parse_args()
-
-  # parse the score-parser
-  if args.parser.lower() in ('4column', '4col'):
-    args.parser = load.split_four_column
-  elif args.parser.lower() in ('5column', '5col'):
-    args.parser = load.split_five_column
-  else: #try an import
-    if args.parser.find('.') == -1:
-      parser.error("parser module should be either '4column', '5column' or a valid python function identifier in the format 'module.function': '%s' is invalid" % args.parser)
-
-    mod, fct = args.parser.rsplit('.', 2)
-    import imp
-    try:
-      fp, pathname, description = imp.find_module(mod, ['.'] + sys.path)
-    except Exception as e:
-      parser.error("import error for '%s': %s" % (args.parser, e))
-
-    try:
-      pmod = imp.load_module(mod, fp, pathname, description)
-      args.parser = getattr(pmod, fct)
-    except Exception as e:
-      parser.error("loading error for '%s': %s" % (args.parser, e))
-    finally:
-      fp.close()
-
-  return args
+import logging
+__logging_format__='[%(levelname)s] %(message)s'
+logging.basicConfig(format=__logging_format__)
+logger = logging.getLogger('bob')
 
 
 class Result:
   def __init__(self, dir, args):
     self.dir = dir
-    self.m_args = args
+    self.args = args
     self.nonorm_dev = None
     self.nonorm_eval = None
     self.ztnorm_dev = None
     self.ztnorm_eval = None
 
   def __calculate__(self, dev_file, eval_file = None):
+    from ..load import load_score, get_negatives_positives
     from .. import eer_threshold, min_hter_threshold, far_threshold, farfrr
 
-    dev_neg, dev_pos = self.m_args.parser(dev_file)
+    dev_neg, dev_pos = get_negatives_positives(load_score(dev_file))
 
     # switch which threshold function to use;
     # THIS f***ing piece of code really is what python authors propose:
@@ -114,29 +83,31 @@ class Result:
       'EER'  : eer_threshold,
       'HTER' : min_hter_threshold,
       'FAR'  : far_threshold
-    } [self.m_args.criterion](dev_neg, dev_pos)
+    } [self.args['--criterion']](dev_neg, dev_pos)
 
     # compute far and frr for the given threshold
     dev_far, dev_frr = farfrr(dev_neg, dev_pos, threshold)
     dev_hter = (dev_far + dev_frr)/2.0
 
     if eval_file:
-      eval_neg, eval_pos = self.m_args.parser(eval_file)
+      eval_neg, eval_pos = get_negatives_positives(load_score(eval_file))
       eval_far, eval_frr = farfrr(eval_neg, eval_pos, threshold)
       eval_hter = (eval_far + eval_frr)/2.0
     else:
       eval_hter = None
 
-    if self.m_args.criterion == 'FAR':
+    if self.args['--criterion'] == 'FAR':
       return (dev_frr, eval_frr)
     else:
       return (dev_hter, eval_hter)
 
   def nonorm(self, dev_file, eval_file = None):
-    (self.nonorm_dev, self.nonorm_eval) = self.__calculate__(dev_file, eval_file)
+    (self.nonorm_dev, self.nonorm_eval) = \
+        self.__calculate__(dev_file, eval_file)
 
   def ztnorm(self, dev_file, eval_file = None):
-    (self.ztnorm_dev, self.ztnorm_eval) = self.__calculate__(dev_file, eval_file)
+    (self.ztnorm_dev, self.ztnorm_eval) = \
+        self.__calculate__(dev_file, eval_file)
 
   def __str__(self):
     str = ""
@@ -153,12 +124,14 @@ class Result:
 
 results = []
 
+
 def add_results(args, nonorm, ztnorm = None):
+
   r = Result(os.path.dirname(nonorm).replace(os.getcwd()+"/", ""), args)
   print("Adding results from directory", r.dir)
   # check if the results files are there
-  dev_file = os.path.join(nonorm, args.dev)
-  eval_file = os.path.join(nonorm, args.eval)
+  dev_file = os.path.join(nonorm, args['--devel-name'])
+  eval_file = os.path.join(nonorm, args['--eval-name'])
   if os.path.isfile(dev_file):
     if os.path.isfile(eval_file):
       r.nonorm(dev_file, eval_file)
@@ -166,8 +139,8 @@ def add_results(args, nonorm, ztnorm = None):
       r.nonorm(dev_file)
 
   if ztnorm:
-    dev_file = os.path.join(ztnorm, args.dev)
-    eval_file = os.path.join(ztnorm, args.eval)
+    dev_file = os.path.join(ztnorm, args['--devel-name'])
+    eval_file = os.path.join(ztnorm, args['--eval-name'])
     if os.path.isfile(dev_file):
       if os.path.isfile(eval_file):
         r.ztnorm(dev_file, eval_file)
@@ -176,15 +149,17 @@ def add_results(args, nonorm, ztnorm = None):
 
   results.append(r)
 
+
 def recurse(args, path):
   dir_list = os.listdir(path)
 
   # check if the score directories are included in the current path
-  if args.nonorm in dir_list:
-    if args.ztnorm in dir_list:
-      add_results(args, os.path.join(path, args.nonorm), os.path.join(path, args.ztnorm))
+  if args['--nonorm-dir'] in dir_list:
+    if args['--ztnorm-dir'] in dir_list:
+      add_results(args, os.path.join(path, args['--nonorm-dir']),
+          os.path.join(path, args['--ztnorm-dir']))
     else:
-      add_results(args, os.path.join(path, args.nonorm))
+      add_results(args, os.path.join(path, args['--nonorm-dir']))
 
   for e in dir_list:
     real_path = os.path.join(path, e)
@@ -199,19 +174,52 @@ def table():
     A += str(r) + "\n"
   return A
 
-def main():
-  args = get_args()
 
-  recurse(args, args.directory)
+def main(user_input=None):
 
-  if args.sort:
+  if user_input is not None:
+    argv = user_input
+  else:
+    argv = sys.argv[1:]
+
+  import docopt
+  import pkg_resources
+
+  completions = dict(
+      prog=os.path.basename(sys.argv[0]),
+      version=pkg_resources.require('bob.measure')[0].version
+      )
+
+  args = docopt.docopt(
+      __doc__ % completions,
+      argv=argv,
+      version=completions['version'],
+      )
+
+  # Sets-up logging
+  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+
+  # checks sort-key
+  valid_sort_keys = 'nonorm_dev nonorm_eval ztnorm_dev ztnorm_eval dir'.split()
+  if args['--sort-key'] not in valid_sort_keys:
+    raise docopt.DocoptExit('--sort-key must be one of %s' % \
+        ', '.join(valid_sort_keys))
+
+  # checks criterion
+  valid_criterion = 'HTER EER FAR'.split()
+  if args['--criterion'] not in valid_criterion:
+    raise docopt.DocoptExit('--criterion must be one of %s' % \
+        ', '.join(valid_criterion))
+
+  recurse(args, args['--directory'])
+
+  if args['--sort']:
     import operator
-    results.sort(key=operator.attrgetter(args.key))
+    results.sort(key=operator.attrgetter(args['--sort-key']))
 
-  if args.self_test:
-    _ = table()
-  elif args.output:
-    f = open(args.output, "w")
+  if args['--output']:
+    f = open(args['--output'], "w")
     f.writelines(table())
     f.close()
   else:

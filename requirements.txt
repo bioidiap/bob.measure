@@ -4,3 +4,4 @@ bob.core>2.0.4
 bob.math
 bob.io.base
 matplotlib
+docopt

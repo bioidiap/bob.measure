@@ -13,10 +13,9 @@ from . import openbr
 import numpy
 
 def mse (estimation, target):
-  """mse(estimation, target) -> error
+  """Mean square error between a set of outputs and target values
 
-  Calculates the mean square error between a set of outputs and target
-  values using the following formula:
+  Uses the formula:
 
   .. math::
 
@@ -26,14 +25,30 @@ def mse (estimation, target):
   have 2 dimensions. Different examples are organized as rows while different
   features in the estimated values or targets are organized as different
   columns.
+
+
+  Parameters:
+
+    estimation (array): an N-dimensional array that corresponds to the value
+      estimated by your procedure
+
+    target (array): an N-dimensional array that corresponds to the expected
+      value
+
+
+  Returns:
+
+    float: The average of the squared error between the estimated value and the
+    target
+
   """
   return numpy.mean((estimation - target)**2, 0)
 
-def rmse (estimation, target):
-  """rmse(estimation, target) -> error
 
-  Calculates the root mean square error between a set of outputs and target
-  values using the following formula:
+def rmse (estimation, target):
+  """Calculates the root mean square error between a set of outputs and target
+
+  Uses the formula:
 
   .. math::
 
@@ -43,14 +58,30 @@ def rmse (estimation, target):
   have 2 dimensions. Different examples are organized as rows while different
   features in the estimated values or targets are organized as different
   columns.
+
+
+  Parameters:
+
+    estimation (array): an N-dimensional array that corresponds to the value
+      estimated by your procedure
+
+    target (array): an N-dimensional array that corresponds to the expected
+      value
+
+
+  Returns:
+
+    float: The square-root of the average of the squared error between the
+    estimated value and the target
+
   """
   return numpy.sqrt(mse(estimation, target))
 
-def relevance (input, machine):
-  """relevance (input, machine) -> relevances
 
-  Calculates the relevance of every input feature to the estimation process
-  using the following definition from:
+def relevance (input, machine):
+  """Calculates the relevance of every input feature to the estimation process
+
+  Uses the formula:
 
     Neural Triggering System Operating on High Resolution Calorimetry
     Information, Anjos et al, April 2006, Nuclear Instruments and Methods in
@@ -65,6 +96,22 @@ def relevance (input, machine):
   input vectors. For this to work, the `input` parameter has to be a 2D array
   with features arranged column-wise while different examples are arranged
   row-wise.
+
+
+  Parameters:
+
+    input (array): an N-dimensional array that corresponds to the value
+      estimated by your model
+
+    machine (object): A machine that can be called to "process" your input
+
+
+  Returns:
+
+    array: An 1D float array as large as the number of columns (second
+    dimension) of your input array, estimating the "relevance" of each input
+    column (or feature) to the score provided by the machine.
+
   """
 
   o = machine(input)
@@ -80,51 +127,74 @@ def relevance (input, machine):
 
 
 def recognition_rate(cmc_scores, threshold = None, rank = 1):
-  """recognition_rate(cmc_scores, rank, threshold) -> RR
+  """Calculates the recognition rate from the given input
 
-  Calculates the recognition rate from the given input, which is identical
-  to the CMC value for the given ``rank``.
+  It is identical to the CMC value for the given ``rank``.
 
-  The input has a specific format, which is a list of two-element tuples.
-  Each of the tuples contains the negative :math:`\\{S_p^-\\}` and the positive :math:`\\{S_p^+\\}` scores for one probe item :math:`p`, or ``None`` in case of open set recognition.
-  To read the lists from score files in 4 or 5 column format, please use the :py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column` function.
+  The input has a specific format, which is a list of two-element tuples.  Each
+  of the tuples contains the negative :math:`\\{S_p^-\\}` and the positive
+  :math:`\\{S_p^+\\}` scores for one probe item :math:`p`, or ``None`` in case
+  of open set recognition.  To read the lists from score files in 4 or 5 column
+  format, please use the :py:func:`bob.measure.load.cmc_four_column` or
+  :py:func:`bob.measure.load.cmc_five_column` function.
 
-  If **threshold** is set to ``None``, the rank 1 recognition rate is defined as the number of test items, for which the highest positive :math:`\\max\\{S_p^+\\}` score is greater than or equal to all negative scores, divided by the number of all probe items :math:`P`:
+  If ``threshold`` is set to ``None``, the rank 1 recognition rate is defined
+  as the number of test items, for which the highest positive
+  :math:`\\max\\{S_p^+\\}` score is greater than or equal to all negative
+  scores, divided by the number of all probe items :math:`P`:
 
   .. math::
 
     \\mathrm{RR} = \\frac{1}{P} \\sum_{p=1}^{P} \\begin{cases} 1 & \\mathrm{if } \\max\\{S_p^+\\} >= \\max\\{S_p^-\\}\\\\ 0 & \\mathrm{otherwise} \\end{cases}
 
-  For a given rank :math:`r>1`, up to :math:`r` negative scores that are higher than the highest positive score are allowed to still count as correctly classified in the top :math:`r` rank.
+  For a given rank :math:`r>1`, up to :math:`r` negative scores that are higher
+  than the highest positive score are allowed to still count as correctly
+  classified in the top :math:`r` rank.
 
-  If ``threshold`` :math:`\\theta` is given, **all** scores below threshold will be filtered out.
-  Hence, if all positive scores are below threshold :math:`\\max\\{S_p^+\\} < \\theta`, the probe will be misclassified **at any rank**.
+  If ``threshold`` :math:`\\theta` is given, **all** scores below threshold
+  will be filtered out.  Hence, if all positive scores are below threshold
+  :math:`\\max\\{S_p^+\\} < \\theta`, the probe will be misclassified **at any
+  rank**.
 
-  For open set recognition, i.e., when there exist a tuple including negative scores without corresponding positive scores (``None``), and **all** negative scores are below ``threshold`` :math:`\\max\\{S_p^+\\} < \\theta`, the probe item is correctly rejected, **and it does not count into the denominator** :math:`P`.
-  When no ``threshold`` is provided, the open set probes will **always** count as misclassified, regardless of the ``rank``.
+  For open set recognition, i.e., when there exist a tuple including negative
+  scores without corresponding positive scores (``None``), and **all** negative
+  scores are below ``threshold`` :math:`\\max\\{S_p^+\\} < \\theta`, the probe
+  item is correctly rejected, **and it does not count into the denominator**
+  :math:`P`.  When no ``threshold`` is provided, the open set probes will
+  **always** count as misclassified, regardless of the ``rank``.
 
   .. warn:
      For open set tests, this rate does not correspond to a standard rate.
-     Please use :py:func:`detection_identification_rate` and :py:func:`false_alarm_rate` instead.
+     Please use :py:func:`detection_identification_rate` and
+     :py:func:`false_alarm_rate` instead.
 
-  **Parameters:**
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`).
-    Each pair contains the ``negative`` and the ``positive`` scores for **one probe item**.
-    Each pair can contain up to one empty array (or ``None``), i.e., in case of open set recognition.
+  Parameters:
 
-  ``threshold`` : float or ``None``
-    Decision threshold. If not ``None``, **all** scores will be filtered by the threshold.
-    In an open set recognition problem, all open set scores (negatives with no corresponding positive) for which all scores are below threshold, will be counted as correctly rejected and **removed** from the probe list (i.e., the denominator).
+    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
+      containing the CMC scores loaded with one of the functions
+      (:py:func:`bob.measure.load.cmc_four_column` or
+      :py:func:`bob.measure.load.cmc_five_column`).
 
-  ``rank`` : int or ``None``
-    The rank for which the recognition rate should be computed, 1 by default.
+      Each pair contains the ``negative`` and the ``positive`` scores for **one
+      probe item**.  Each pair can contain up to one empty array (or ``None``),
+      i.e., in case of open set recognition.
 
-  **Returns:**
+    threshold (:obj:`float`, optional): Decision threshold. If not ``None``, **all**
+      scores will be filtered by the threshold. In an open set recognition
+      problem, all open set scores (negatives with no corresponding positive)
+      for which all scores are below threshold, will be counted as correctly
+      rejected and **removed** from the probe list (i.e., the denominator).
 
-  ``RR`` : float
-    The (open set) recognition rate for the given rank, a value between 0 and 1.
+    rank (:obj:`int`, optional):
+      The rank for which the recognition rate should be computed, 1 by default.
+
+
+  Returns:
+
+    float: The (open set) recognition rate for the given rank, a value between
+    0 and 1.
+
   """
   # If no scores are given, the recognition rate is exactly 0.
   if not cmc_scores:
@@ -184,9 +254,7 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
 
 
 def cmc(cmc_scores):
-  """cmc(cmc_scores) -> curve
-
-  Calculates the cumulative match characteristic (CMC) from the given input.
+  """Calculates the cumulative match characteristic (CMC) from the given input.
 
   The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one probe
@@ -194,25 +262,38 @@ def cmc(cmc_scores):
   the :py:func:`bob.measure.load.cmc_four_column` or
   :py:func:`bob.measure.load.cmc_five_column` function.
 
-  For each probe item the probability that the rank :math:`r` of the positive score is
-  calculated.  The rank is computed as the number of negative scores that are
-  higher than the positive score.  If several positive scores for one test item
-  exist, the **highest** positive score is taken. The CMC finally computes how
-  many test items have rank r or higher, divided by the total number of test values.
+  For each probe item the probability that the rank :math:`r` of the positive
+  score is calculated.  The rank is computed as the number of negative scores
+  that are higher than the positive score.  If several positive scores for one
+  test item exist, the **highest** positive score is taken. The CMC finally
+  computes how many test items have rank r or higher, divided by the total
+  number of test values.
 
   .. note::
-    The CMC is not available for open set classification.
-    Please use the :py:func:`detection_identification_rate` and :py:func:`false_alarm_rate` instead.
 
-  **Parameters:**
+     The CMC is not available for open set classification.  Please use the
+     :py:func:`detection_identification_rate` and :py:func:`false_alarm_rate`
+     instead.
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    A list of tuples, where each tuple contains the ``negative`` and ``positive`` scores for one probe of the database
 
-  **Returns:**
+  Parameters:
 
-  ``curve`` : array_like(2D, float)
-    The CMC curve, with the Rank in the first column and the number of correctly classified clients (in this rank) in the second column.
+    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
+      containing the CMC scores loaded with one of the functions
+      (:py:func:`bob.measure.load.cmc_four_column` or
+      :py:func:`bob.measure.load.cmc_five_column`).
+
+      Each pair contains the ``negative`` and the ``positive`` scores for **one
+      probe item**.  Each pair can contain up to one empty array (or ``None``),
+      i.e., in case of open set recognition.
+
+
+  Returns:
+
+    array: A 2D float array representing the CMC curve, with the Rank in the
+    first column and the number of correctly classified clients (in this
+    rank) in the second column.
+
   """
 
   # If no scores are given, we cannot plot anything
@@ -243,33 +324,41 @@ def cmc(cmc_scores):
 
 
 def detection_identification_rate(cmc_scores, threshold, rank = 1):
-  """detection_identification_rate(cmc_scores, threshold, rank) -> dir
+  """Computes the `detection and identification rate` for the given threshold.
 
-  Computes the `detection and identification rate` for the given threshold.
-  This value is designed to be used in an open set identification protocol, and defined in Chapter 14.1 of [LiJain2005]_.
+  This value is designed to be used in an open set identification protocol, and
+  defined in Chapter 14.1 of [LiJain2005]_.
 
-  Although the detection and identification rate is designed to be computed on an open set protocol, it uses only the probe elements, for which a corresponding gallery element exists.
-  For closed set identification protocols, this function is identical to :py:func:`recognition_rate`.
-  The only difference is that for this function, a ``threshold`` for the scores need to be defined, while for :py:func:`recognition_rate` it is optional.
+  Although the detection and identification rate is designed to be computed on
+  an open set protocol, it uses only the probe elements, for which a
+  corresponding gallery element exists.  For closed set identification
+  protocols, this function is identical to :py:func:`recognition_rate`.  The
+  only difference is that for this function, a ``threshold`` for the scores
+  need to be defined, while for :py:func:`recognition_rate` it is optional.
 
-  **Parameters:**
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`).
-    Each pair contains the ``negative`` and the ``positive`` scores for **one probe item**.
-    There need to be at least one probe item, for which positive and negative scores exist.
+  Parameters:
 
-  ``threshold`` : float
-    The decision threshold :math:`\\tau``.
+    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
+      containing the CMC scores loaded with one of the functions
+      (:py:func:`bob.measure.load.cmc_four_column` or
+      :py:func:`bob.measure.load.cmc_five_column`).
 
-  ``rank`` : int
-    The rank for which the curve should be plotted, by default 1.
+      Each pair contains the ``negative`` and the ``positive`` scores for **one
+      probe item**.  Each pair can contain up to one empty array (or ``None``),
+      i.e., in case of open set recognition.
 
-  **Returns:**
+    threshold (float): The decision threshold :math:`\\tau``.
 
-  ``dir`` : float
-    The detection and identification rate for the given threshold.
+    rank (:obj:`int`, optional): The rank for which the curve should be plotted
+
+
+  Returns:
+
+    float: The detection and identification rate for the given threshold.
+
   """
+
   # count the correctly classifier probes
   correct = 0
   counter = 0
@@ -299,27 +388,34 @@ def detection_identification_rate(cmc_scores, threshold, rank = 1):
 
 
 def false_alarm_rate(cmc_scores, threshold):
-  """false_alarm_rate(cmc_scores, threshold) -> far
+  """Computes the `false alarm rate` for the given threshold,.
 
-  Computes the `false alarm rate` for the given threshold,.
-  This value is designed to be used in an open set identification protocol, and defined in Chapter 14.1 of [LiJain2005]_.
+  This value is designed to be used in an open set identification protocol, and
+  defined in Chapter 14.1 of [LiJain2005]_.
 
-  The false alarm rate is designed to be computed on an open set protocol, it uses only the probe elements, for which **no** corresponding gallery element exists.
+  The false alarm rate is designed to be computed on an open set protocol, it
+  uses only the probe elements, for which **no** corresponding gallery element
+  exists.
 
-  **Parameters:**
 
-  ``cmc_scores`` : [(array_like(1D, float), array_like(1D, float))]
-    CMC scores loaded with one of the functions (:py:func:`bob.measure.load.cmc_four_column` or :py:func:`bob.measure.load.cmc_five_column`).
-    Each pair contains the ``negative`` and the ``positive`` scores for **one probe item**.
-    There need to be at least one probe item, for which only negative scores exist.
+  Parameters:
 
-  ``threshold`` : float
-    The decision threshold :math:`\\tau``.
+    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
+      containing the CMC scores loaded with one of the functions
+      (:py:func:`bob.measure.load.cmc_four_column` or
+      :py:func:`bob.measure.load.cmc_five_column`).
 
-  **Returns:**
+      Each pair contains the ``negative`` and the ``positive`` scores for **one
+      probe item**.  Each pair can contain up to one empty array (or ``None``),
+      i.e., in case of open set recognition.
 
-  ``far`` : float
-    The false alarm rate.
+    threshold (float): The decision threshold :math:`\\tau``.
+
+
+  Returns:
+
+    float: The false alarm rate.
+
   """
   incorrect = 0
   counter = 0

@@ -1,81 +1,118 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# Manuel Guenther <manuel.guenther@idiap.ch>
-# Tue Jan  8 13:36:12 CET 2013
-#
-# Copyright (C) 2011-2014 Idiap Research Institute, Martigny, Switzerland
+# Wed 28 Sep 2016 21:24:46 CEST
+
+"""Computes and plots a cumulative rank characteristics (CMC) curve
+
+Usage: %(prog)s [-v...] [options] <scores>
+       %(prog)s --help
+       %(prog)s --version
+
+Arguments:
+
+  <scores>  The score file in 4 or 5 column format to test
+
+
+Options:
+
+  -h, --help                  Shows this help message and exits
+  -V, --version               Prints the version and exits
+  -v, --verbose               Increases the output verbosity level
+  -o <path>, --output=<path>  Name of the output file that will contain the
+                              plots [default: cmc.pdf]
+  -x, --no-plot               If set, then I'll execute no plotting
+  -l, --log-x-scale           If set, plots logarithmic rank axis
+  -r <int>, --rank=<int>      Plot detection & identification rate curve for
+                              the given rank instead of the CMC curve.
+
+"""
 
 from __future__ import print_function
-
-"""This script computes and plot a cumulative rank characteristics (CMC) curve
-from a score file in four or five column format.
-
-Note: The score file has to contain the exact probe file names as the 3rd
-(4column) or 4th (5column) column.
-"""
 
 import os
 import sys
 
-def parse_command_line(command_line_options):
-  """Parse the program options"""
 
-  usage = 'usage: %s [arguments]' % os.path.basename(sys.argv[0])
+def main(user_input=None):
 
-  import argparse
-  parser = argparse.ArgumentParser(usage=usage, description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  if user_input is not None:
+    argv = user_input
+  else:
+    argv = sys.argv[1:]
 
-  # This option is not normally shown to the user...
-  parser.add_argument('--self-test', action = 'store_true', help = argparse.SUPPRESS)
-  parser.add_argument('-s', '--score-file', required = True, help = 'The score file in 4 or 5 column format to test.')
-  parser.add_argument('-o', '--output-pdf-file', default = 'cmc.pdf', help = 'The PDF file to write.')
-  parser.add_argument('-l', '--log-x-scale', action='store_true', help = 'Plot logarithmic Rank axis.')
-  parser.add_argument('-r', '--rank', type=int, help = 'Plot Detection & Identification rate curve for the given rank instead of the CMC curve.')
-  parser.add_argument('-x', '--no-plot', action = 'store_true', help = 'Do not print a PDF file, but only report the results.')
-  parser.add_argument('-p', '--parser', default = '4column', choices = ('4column', '5column'), help = 'The type of the score file.')
+  import docopt
+  import pkg_resources
 
-  args = parser.parse_args(command_line_options)
+  completions = dict(
+      prog=os.path.basename(sys.argv[0]),
+      version=pkg_resources.require('bob.measure')[0].version
+      )
 
-  if args.self_test:
-    # then we go into test mode, all input is preset
-    import tempfile
-    temp_dir = tempfile.mkdtemp(prefix="bobtest_")
-    args.output_pdf_file = os.path.join(temp_dir, "cmc.pdf")
-    print("temporary using file", args.output_pdf_file)
+  args = docopt.docopt(
+      __doc__ % completions,
+      argv=argv,
+      version=completions['version'],
+      )
 
-  return args
+  # Sets-up logging
+  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
+  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
 
-def main(command_line_options = None):
-  """Computes and plots the CMC curve."""
+  # Validates rank
+  if args['--rank'] is not None:
+    try:
+      args['--rank'] = int(args['--rank'])
+    except:
+      raise docopt.DocoptExit("cannot convert %s into int for rank" % \
+          args['--rank'])
 
-  from .. import load, plot, recognition_rate
+    if args['--rank'] <= 0:
+      raise docopt.DocoptExit('Rank (--rank) should greater than zero')
 
-  args = parse_command_line(command_line_options)
+  from .. import load
 
-  # read data
-  if not os.path.isfile(args.score_file): raise IOError("The given score file does not exist")
-  # pythonic way: create inline dictionary "{...}", index with desired value "[...]", execute function "(...)"
-  data = {'4column' : load.cmc_four_column, '5column' : load.cmc_five_column}[args.parser](args.score_file)
+  # Loads score file
+  f = load.open_file(args['<scores>'])
+  try:
+    line = f.readline()
+    ncolumns = len(line.split())
+  except Exception:
+    logger.warn('Could not guess the number of columns in file: {}. '
+                'Assuming 4 column format.'.format(args['<scores>']))
+    ncolumns = 4
+  finally:
+    f.close()
+
+  if ncolumns == 4:
+    data = load.cmc_four_column(args['<scores>'])
+  else:
+    data = load.cmc_five_column(args['<scores>'])
 
   # compute recognition rate
-  rr = recognition_rate(data, args.rank)
-  print("Recognition rate for score file", args.score_file, "is %3.2f%%" % (rr * 100))
+  from .. import recognition_rate
+  rr = recognition_rate(data, args['--rank'])
+  print("Recognition rate for score file %s is %3.2f%%" % (args['<scores>'],
+    rr * 100))
 
-  if not args.no_plot:
+  if not args['--no-plot']:
+
+    from .. import plot
+
     # compute CMC
     import matplotlib
     if not hasattr(matplotlib, 'backends'): matplotlib.use('pdf')
     import matplotlib.pyplot as mpl
     from matplotlib.backends.backend_pdf import PdfPages
 
-    pp = PdfPages(args.output_pdf_file)
+    pp = PdfPages(args['--output'])
 
     # CMC
     fig = mpl.figure()
-    if args.rank is None:
-      max_rank = plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+    if args['--rank'] is None:
+      max_rank = plot.cmc(data, color=(0,0,1), linestyle='--', dashes=(6,2),
+          logx = args['--log-x-scale'])
       mpl.title("CMC Curve")
-      if args.log_x_scale:
+      if args['--log-x-scale']:
         mpl.xlabel('Rank (log)')
       else:
         mpl.xlabel('Rank')
@@ -84,10 +121,13 @@ def main(command_line_options = None):
       ticks = [int(t) for t in mpl.xticks()[0]]
       mpl.xticks(ticks, ticks)
       mpl.xlim([1, max_rank])
+
     else:
-      plot.detection_identification_curve(data, rank = args.rank, color=(0,0,1), linestyle='--', dashes=(6,2), logx = args.log_x_scale)
+      plot.detection_identification_curve(data, rank = args['--rank'],
+          color=(0,0,1), linestyle='--', dashes=(6,2),
+          logx = args['--log-x-scale'])
       mpl.title("Detection \& Identification Curve")
-      if args.log_x_scale:
+      if args['--log-x-scale']:
         mpl.xlabel('False Acceptance Rate (log) in %')
       else:
         mpl.xlabel('False Acceptance Rate in %')
@@ -104,11 +144,4 @@ def main(command_line_options = None):
     pp.savefig(fig)
     pp.close()
 
-  if args.self_test: #remove output file + tmp directory
-    import shutil
-    shutil.rmtree(os.path.dirname(args.output_pdf_file))
-
   return 0
-
-if __name__ == '__main__':
-  main(sys.argv[1:])
