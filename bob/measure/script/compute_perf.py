@@ -60,13 +60,14 @@ logger = logging.getLogger('bob')
 def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   """Prints a single output line that contains all info for a given criterion"""
 
-  from .. import eer_threshold, min_hter_threshold, farfrr
-
   if crit == 'EER':
+    from .. import eer_threshold
     thres = eer_threshold(dev_neg, dev_pos)
   else:
+    from .. import min_hter_threshold
     thres = min_hter_threshold(dev_neg, dev_pos)
 
+  from .. import farfrr
   dev_far, dev_frr = farfrr(dev_neg, dev_pos, thres)
   dev_hter = (dev_far + dev_frr)/2.0
 
@@ -107,7 +108,7 @@ def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
     fmt(test_hter_str, -1*test_max_len)))
 
 
-def plots(dev_neg, dev_pos, test_neg, test_pos, points, filename):
+def plots(dev_neg, dev_pos, test_neg, test_pos, crit, points, filename):
   """Saves ROC, DET and EPC curves on the file pointed out by filename."""
 
   from .. import plot
@@ -157,6 +158,46 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, points, filename):
   mpl.grid(True, color=(0.3,0.3,0.3))
   pp.savefig(fig)
 
+  # Distribution for dev and test scores on the same page
+  if crit == 'EER':
+    from .. import eer_threshold
+    thres = eer_threshold(dev_neg, dev_pos)
+  else:
+    from .. import min_hter_threshold
+    thres = min_hter_threshold(dev_neg, dev_pos)
+
+  mpl.subplot(2,1,1)
+  nbins=20
+  all_scores = numpy.hstack((dev_neg, test_neg, dev_pos, test_pos))
+  score_range = all_scores.min(), all_scores.max()
+  mpl.hist(dev_neg, label='Impostors', normed=True, color='red', alpha=0.5,
+      bins=nbins)
+  mpl.hist(dev_pos, label='Genuine', normed=True, color='blue', alpha=0.5,
+      bins=nbins)
+  mpl.xlim(*score_range)
+  _, _, ymax, ymin = mpl.axis()
+  mpl.vlines(thres, ymin, ymax, color='black', label='EER', linestyle='dashed')
+  mpl.ylabel('Dev. Scores (normalized)')
+  ax = mpl.gca()
+  ax.axes.get_xaxis().set_ticklabels([])
+  mpl.legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, -0.01),
+      fontsize=10)
+  mpl.title('Score Distributions')
+  mpl.grid(True, alpha=0.5)
+
+  mpl.subplot(2,1,2)
+  mpl.hist(test_neg, label='Impostors', normed=True, color='red', alpha=0.5,
+      bins=nbins)
+  mpl.hist(test_pos, label='Genuine', normed=True, color='blue', alpha=0.5,
+      bins=nbins)
+  mpl.ylabel('Test Scores (normalized)')
+  mpl.xlabel('Score value')
+  mpl.xlim(*score_range)
+  _, _, ymax, ymin = mpl.axis()
+  mpl.vlines(thres, ymin, ymax, color='black', label='EER', linestyle='dashed')
+  mpl.grid(True, alpha=0.5)
+  pp.savefig(fig)
+
   pp.close()
 
 
@@ -204,7 +245,7 @@ def main(user_input=None):
   print_crit(dev_neg, dev_pos, test_neg, test_pos, 'Min. HTER')
 
   if not args['--no-plot']:
-    plots(dev_neg, dev_pos, test_neg, test_pos, args['--points'],
+    plots(dev_neg, dev_pos, test_neg, test_pos, 'EER', args['--points'],
         args['--output'])
     print("[Plots] Performance curves => '%s'" % args['--output'])
 
