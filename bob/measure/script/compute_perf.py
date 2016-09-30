@@ -5,9 +5,10 @@
 """Runs error analysis on score sets
 
   1. Computes the threshold using either EER or min. HTER criteria on
-     develoment set scores;
+     development set scores
   2. Applies the above threshold on test set scores to compute the HTER
-  3. Plots ROC, EPC and DET curves to a multi-page PDF file
+  3. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
+     file (unless --no-plot is passed)
 
 
 Usage: %(prog)s [-v...] [options] <dev-scores> <test-scores>
