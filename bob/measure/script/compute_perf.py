@@ -7,7 +7,8 @@
   1. Computes the threshold using either EER or min. HTER criteria on
      development set scores
   2. Applies the above threshold on test set scores to compute the HTER
-  3. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
+  3. Reports error rates on the console
+  4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
      file (unless --no-plot is passed)
 
 
