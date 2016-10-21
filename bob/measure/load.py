@@ -6,6 +6,7 @@
 """
 
 import numpy
+import csv
 import tarfile
 import os
 
@@ -135,8 +136,8 @@ def split_four_column(filename):
 
   """
 
-  score_lines = load_score(filename, 4)
-  return get_negatives_positives(score_lines)
+  score_lines = load_score_with_generator(filename, 4)
+  return get_negatives_positives_from_generator(score_lines)
 
 
 def cmc_four_column(filename):
@@ -264,8 +265,8 @@ def split_five_column(filename):
 
   """
 
-  score_lines = load_score(filename, 5)
-  return get_negatives_positives(score_lines)
+  score_lines = load_score_with_generator(filename, 5)
+  return get_negatives_positives_from_generator(score_lines)
 
 
 def cmc_five_column(filename):
@@ -310,6 +311,65 @@ def cmc_five_column(filename):
 
   # convert that into the desired format
   return _convert_cmc_scores(neg_dict, pos_dict)
+
+
+COLUMNS = {
+  4 : ('claimed_id', 'real_id', 'test_label', 'score'),
+  5 : ('claimed_id', 'model_label', 'real_id', 'test_label', 'score')
+}
+
+def load_score_with_generator(filename, ncolumns=None):
+  """Load scores using :py:class:`csv.reader` and yield the scores line by line in a dictionary.
+
+  Parameters:
+
+    filename (:py:class:`str`, ``file-like``): The file object that will be
+      opened with :py:func:`open_file` containing the scores.
+
+    ncolumns (:py:class:`int`, optional): 4, 5 or None (the default),
+      specifying the number of columns in the score file. If None is provided,
+      the number of columns will be guessed.
+
+
+  Yields:
+
+    line: A dictionary which contains not only the actual ``score`` but also the
+    ``claimed_id``, ``real_id``, ``test_label`` (and ``['model_label']``)
+  """
+
+  if ncolumns is None:
+    f = open_file(filename)
+    try:
+      line = f.readline()
+      ncolumns = len(line.split())
+    except Exception:
+      logger.warn('Could not guess the number of columns in file: {}. '
+                  'Assuming 4 column format.'.format(filename))
+      ncolumns = 4
+    finally:
+      f.close()
+  elif ncolumns not in (4,5):
+    raise ValueError("ncolumns of 4 and 5 are supported only.")
+
+  names = COLUMNS[ncolumns]
+  r = csv.reader(open_file(filename, mode='rb'), delimiter=' ')
+  for n, splits in enumerate(r):
+    assert len(splits) == ncolumns, "The line %d: %s of file %s is not compatible" % (n, " ".join(splits), filename)
+    splits[-1] = float(splits[-1])
+    yield {names[i] : splits[i] for i in range(ncolumns)}
+
+
+def get_negatives_positives_from_generator(score_lines):
+  """Take the output of :py:func:`load_score_with_generator` and return negatives and positives.  This
+  function aims to replace split_four_column and split_five_column but takes a
+  different input. It's up to you to use which one.
+  """
+  positives, negatives = [], []
+  for line in score_lines:
+    which = positives if line['claimed_id'] == line['real_id'] else negatives
+    which.append(line['score'])
+
+  return (numpy.array(negatives), numpy.array(positives))
 
 
 def load_score(filename, ncolumns=None):
