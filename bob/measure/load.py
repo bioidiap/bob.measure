@@ -319,7 +319,7 @@ COLUMNS = {
 }
 
 def load_score_with_generator(filename, ncolumns=None):
-  """Load scores using :py:class:`csv.reader` and yield the scores line by line in a dictionary.
+  """Load scores using :py:class:`csv.DictReader` and yield the scores line by line in a dictionary.
 
   Parameters:
 
@@ -351,13 +351,10 @@ def load_score_with_generator(filename, ncolumns=None):
   elif ncolumns not in (4,5):
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
-  names = COLUMNS[ncolumns]
-  r = csv.reader(open_file(filename, mode='rb'), delimiter=' ')
-  for n, splits in enumerate(r):
-    assert len(splits) == ncolumns, "The line %d: %s of file %s is not compatible" % (n, " ".join(splits), filename)
-    splits[-1] = float(splits[-1])
-    yield {names[i] : splits[i] for i in range(ncolumns)}
-
+  reader = csv.DictReader(open_file(filename, mode='rb'), fieldnames=COLUMNS[ncolumns], delimiter=' ')
+  for splits in reader:
+    splits['score'] = float(splits['score'])
+    yield splits
 
 def get_negatives_positives_from_generator(score_lines):
   """Take the output of :py:func:`load_score_with_generator` and return negatives and positives.  This
