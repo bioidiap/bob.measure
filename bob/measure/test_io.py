@@ -60,6 +60,12 @@ def test_load_score():
     for name in normal_scores.dtype.names:
       assert all(normal_scores[name] == compressed_scores[name])
 
+    # test minimal loading
+    minimal_scores = bob.measure.load.load_score(normal_score_file, minimal=True)
+    assert len(minimal_scores) == 910
+    assert len(minimal_scores.dtype) == 3
+    assert minimal_scores.dtype.names == ('claimed_id', 'real_id', 'score')
+
 
 def test_dump_score():
   # This function tests the IO functionality of dumping score files
