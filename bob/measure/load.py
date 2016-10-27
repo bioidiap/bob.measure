@@ -9,6 +9,7 @@ import numpy
 import csv
 import tarfile
 import os
+import sys
 
 import logging
 logger = logging.getLogger('bob.measure')
@@ -93,7 +94,12 @@ def four_column(filename):
 
   """
 
-  reader = csv.reader(open_file(filename, mode='rb'), delimiter=' ')
+  opened = open_file(filename, 'rb')
+  if sys.version_info.major > 2:
+    import io
+    opened = io.TextIOWrapper(opened, newline="")
+
+  reader = csv.reader(opened, delimiter=' ')
   for splits in reader:
     splits[-1] = float(splits[-1])
     yield splits
@@ -214,7 +220,12 @@ def five_column(filename):
 
   """
 
-  reader = csv.reader(open_file(filename, mode='rb'), delimiter=' ')
+  opened = open_file(filename, 'rb')
+  if sys.version_info.major > 2:
+    import io
+    opened = io.TextIOWrapper(opened, newline="")
+
+  reader = csv.reader(opened, delimiter=' ')
   for splits in reader:
     splits[-1] = float(splits[-1])
     yield splits
