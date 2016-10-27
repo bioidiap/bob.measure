@@ -20,7 +20,7 @@ def test_load_scores():
   load_functions = {'4col' : bob.measure.load.four_column, '5col' : bob.measure.load.five_column}
   cols = {'4col' : 4, '5col' : 5}
 
-  for variant in ('4col', '5col'):
+  for variant in cols:
     # read score file in normal way
     normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
     normal_scores = list(load_functions[variant](normal_score_file))
@@ -43,7 +43,7 @@ def test_load_score():
   scores = []
   cols = {'4col' : 4, '5col' : 5}
 
-  for variant in ('4col', '5col'):
+  for variant in cols:
     # read score file in normal way
     normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
     normal_scores = bob.measure.load.load_score(normal_score_file, cols[variant])
@@ -67,7 +67,7 @@ def test_dump_score():
   scores = []
   cols = {'4col' : 4, '5col' : 5}
 
-  for variant in ('4col', '5col'):
+  for variant in cols:
     # read score file
     normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
     normal_scores = bob.measure.load.load_score(normal_score_file, cols[variant])
@@ -177,7 +177,7 @@ def test_from_openbr():
   load_functions = {'4col' : bob.measure.load.four_column, '5col' : bob.measure.load.five_column}
 
   try:
-    for variant in ('4col', '5col'):
+    for variant in load_functions:
       # first, do not define keyword arguments -- let the file get the model and probe ids being created automatically
       bob.measure.openbr.write_score_file(matrix_file, mask_file, score_file, score_file_format="%sumn"%variant)
       assert os.path.exists(score_file)
@@ -211,10 +211,10 @@ def test_from_openbr():
           assert columns[i][j] == reference[i][j], str(columns[i]) + " != " + str(reference[i])
         # check that the score is close (OpenBR write scores in float32 precision only)
         assert abs(columns[i][-1] - numpy.float32(reference[i][-1])) <= 1e-8, str(columns[i][-1]) + " != " + str(reference[i][-1])
-        
+
         #assert numpy.isclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
         assert numpy.allclose(columns[i][-1], reference[i][-1], atol = 1e-3, rtol=1e-8), str(columns[i][-1]) + " != " + str(reference[i][-1])
-        
+
 
   finally:
     shutil.rmtree(temp_dir)
