@@ -159,22 +159,8 @@ def cmc_four_column(filename):
 
   """
 
-  # extract positives and negatives
-  pos_dict = {}
-  neg_dict = {}
-  # read four column list
-  for (client_id, probe_id, probe_name, score) in four_column(filename):
-    # check in which dict we have to put the score
-    correct_dict = pos_dict if client_id == probe_id else neg_dict
-
-    # append score
-    if probe_name in correct_dict:
-      correct_dict[probe_name].append(score)
-    else:
-      correct_dict[probe_name] = [score]
-
-  # convert that into the desired format
-  return _convert_cmc_scores(neg_dict, pos_dict)
+  score_lines = four_column(filename)
+  return _split_cmc_scores(score_lines, 1)
 
 
 def five_column(filename):
@@ -274,22 +260,9 @@ def cmc_five_column(filename):
     ``positive`` scores for one probe of the database.
 
   """
-  # extract positives and negatives
-  pos_dict = {}
-  neg_dict = {}
-  # read four column list
-  for (client_id, _, probe_id, probe_name, score) in five_column(filename):
-    # check in which dict we have to put the score
-    correct_dict = pos_dict if client_id == probe_id else neg_dict
+  score_lines = four_column(filename)
+  return _split_cmc_scores(score_lines, 2)
 
-    # append score
-    if probe_name in correct_dict:
-      correct_dict[probe_name].append(score)
-    else:
-      correct_dict[probe_name] = [score]
-
-  # convert that into the desired format
-  return _convert_cmc_scores(neg_dict, pos_dict)
 
 
 def load_score(filename, ncolumns=None):
@@ -431,12 +404,22 @@ def _split_scores(score_lines, real_id_index, claimed_id_index = 0, score_index 
 
   return (numpy.array(negatives), numpy.array(positives))
 
-
-def _convert_cmc_scores(neg_dict, pos_dict):
-  """Converts the negative and positive scores read with
-  :py:func:`cmc_four_column` or :py:func:`cmc_four_column` into a format that
-  is handled by the :py:func:`bob.measure.cmc` and similar functions.
+def _split_cmc_scores(score_lines, real_id_index, probe_name_index = None, claimed_id_index = 0, score_index = -1):
+  """Takes the output of :py:func:`four_column` or :py:func:`five_column` and return cmc scores.
   """
+  if probe_name_index is None:
+    probe_name_index = real_id_index + 1
+  # extract positives and negatives
+  pos_dict = {}
+  neg_dict = {}
+  # read four column list
+  for line in score_lines:
+    which = pos_dict if line[claimed_id_index] == line[real_id_index] else neg_dict
+    probe_name = line[probe_name_index]
+    # append score
+    if probe_name not in which:
+      which[probe_name] = []
+    which[probe_name].append(line[score_index])
 
   # convert to lists of tuples of ndarrays (or None)
   probe_names = sorted(set(neg_dict.keys()).union(set(pos_dict.keys())))
