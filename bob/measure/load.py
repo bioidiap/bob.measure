@@ -93,16 +93,8 @@ def four_column(filename):
     float: The result of the comparison of the model and the probe
 
   """
+  return _iterate_score_file(filename)
 
-  opened = open_file(filename, 'rb')
-  if sys.version_info.major > 2:
-    import io
-    opened = io.TextIOWrapper(opened, newline="")
-
-  reader = csv.reader(opened, delimiter=' ')
-  for splits in reader:
-    splits[-1] = float(splits[-1])
-    yield splits
 
 
 def split_four_column(filename):
@@ -220,15 +212,7 @@ def five_column(filename):
 
   """
 
-  opened = open_file(filename, 'rb')
-  if sys.version_info.major > 2:
-    import io
-    opened = io.TextIOWrapper(opened, newline="")
-
-  reader = csv.reader(opened, delimiter=' ')
-  for splits in reader:
-    splits[-1] = float(splits[-1])
-    yield splits
+  return _iterate_score_file(filename)
 
 
 def split_five_column(filename):
@@ -419,6 +403,22 @@ def dump_score(filename, score_lines):
   else:
     raise ValueError("Only scores with 4 and 5 columns are supported.")
   numpy.savetxt(filename, score_lines, fmt=fmt)
+
+
+def _iterate_score_file(filename):
+  """Opens the score file for reading and yields the score file line by line in a tuple/list.
+
+  The last element of the line (which is the score) will be transformed to float, the other elements will be str
+  """
+  opened = open_file(filename, 'rb')
+  if sys.version_info.major > 2:
+    import io
+    opened = io.TextIOWrapper(opened, newline="")
+
+  reader = csv.reader(opened, delimiter=' ')
+  for splits in reader:
+    splits[-1] = float(splits[-1])
+    yield splits
 
 
 def _split_scores(score_lines, real_id_index, claimed_id_index = 0, score_index = -1):
