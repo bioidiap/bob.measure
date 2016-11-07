@@ -216,10 +216,10 @@ def test_plots():
   # EPC curve, you need to have a development and a test set. We will split,
   # by the middle, the negatives and positives sample we have, just for the
   # sake of testing
-  dev_negatives = negatives[:(negatives.shape[0]/2)]
-  test_negatives = negatives[(negatives.shape[0]/2):]
-  dev_positives = positives[:(positives.shape[0]/2)]
-  test_positives = positives[(positives.shape[0]/2):]
+  dev_negatives = negatives[:(negatives.shape[0]//2)]
+  test_negatives = negatives[(negatives.shape[0]//2):]
+  dev_positives = positives[:(positives.shape[0]//2)]
+  test_positives = positives[(positives.shape[0]//2):]
   xy = epc(dev_negatives, dev_positives,
       test_negatives, test_positives, 100)
   # uncomment the next line to save a reference value

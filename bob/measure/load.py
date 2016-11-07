@@ -6,8 +6,10 @@
 """
 
 import numpy
+import csv
 import tarfile
 import os
+import sys
 
 import logging
 logger = logging.getLogger('bob.measure')
@@ -78,7 +80,7 @@ def four_column(filename):
       opened with :py:func:`open_file` containing the scores.
 
 
-  Returns:
+  Yields:
 
     str: The claimed identity -- the client name of the model that was used in
     the comparison
@@ -91,19 +93,8 @@ def four_column(filename):
     float: The result of the comparison of the model and the probe
 
   """
+  return _iterate_score_file(filename)
 
-  for i, l in enumerate(open_file(filename)):
-    if isinstance(l, bytes): l = l.decode('utf-8')
-    s = l.strip()
-    if len(s) == 0 or s[0] == '#': continue #empty or comment
-    field = [k.strip() for k in s.split()]
-    if len(field) < 4:
-      raise SyntaxError('Line %d of file "%s" is invalid: %s' % (i, filename, l))
-    try:
-      score = float(field[3])
-    except:
-      raise SyntaxError('Cannot convert score to float at line %d of file "%s": %s' % (i, filename, l))
-    yield (field[0], field[1], field[2], score)
 
 
 def split_four_column(filename):
@@ -135,8 +126,8 @@ def split_four_column(filename):
 
   """
 
-  score_lines = load_score(filename, 4)
-  return get_negatives_positives(score_lines)
+  score_lines = four_column(filename)
+  return _split_scores(score_lines, 1)
 
 
 def cmc_four_column(filename):
@@ -168,22 +159,8 @@ def cmc_four_column(filename):
 
   """
 
-  # extract positives and negatives
-  pos_dict = {}
-  neg_dict = {}
-  # read four column list
-  for (client_id, probe_id, probe_name, score) in four_column(filename):
-    # check in which dict we have to put the score
-    correct_dict = pos_dict if client_id == probe_id else neg_dict
-
-    # append score
-    if probe_name in correct_dict:
-      correct_dict[probe_name].append(score)
-    else:
-      correct_dict[probe_name] = [score]
-
-  # convert that into the desired format
-  return _convert_cmc_scores(neg_dict, pos_dict)
+  score_lines = four_column(filename)
+  return _split_cmc_scores(score_lines, 1)
 
 
 def five_column(filename):
@@ -205,7 +182,7 @@ def five_column(filename):
       opened with :py:func:`open_file` containing the scores.
 
 
-  Returns:
+  Yields:
 
     str: The claimed identity -- the client name of the model that was used in
     the comparison
@@ -221,18 +198,7 @@ def five_column(filename):
 
   """
 
-  for i, l in enumerate(open_file(filename)):
-    if isinstance(l, bytes): l = l.decode('utf-8')
-    s = l.strip()
-    if len(s) == 0 or s[0] == '#': continue #empty or comment
-    field = [k.strip() for k in s.split()]
-    if len(field) < 5:
-      raise SyntaxError('Line %d of file "%s" is invalid: %s' % (i, filename, l))
-    try:
-      score = float(field[4])
-    except:
-      raise SyntaxError('Cannot convert score to float at line %d of file "%s": %s' % (i, filename, l))
-    yield (field[0], field[1], field[2], field[3], score)
+  return _iterate_score_file(filename)
 
 
 def split_five_column(filename):
@@ -264,8 +230,8 @@ def split_five_column(filename):
 
   """
 
-  score_lines = load_score(filename, 5)
-  return get_negatives_positives(score_lines)
+  score_lines = four_column(filename)
+  return _split_scores(score_lines, 2)
 
 
 def cmc_five_column(filename):
@@ -294,22 +260,9 @@ def cmc_five_column(filename):
     ``positive`` scores for one probe of the database.
 
   """
-  # extract positives and negatives
-  pos_dict = {}
-  neg_dict = {}
-  # read four column list
-  for (client_id, _, probe_id, probe_name, score) in five_column(filename):
-    # check in which dict we have to put the score
-    correct_dict = pos_dict if client_id == probe_id else neg_dict
+  score_lines = four_column(filename)
+  return _split_cmc_scores(score_lines, 2)
 
-    # append score
-    if probe_name in correct_dict:
-      correct_dict[probe_name].append(score)
-    else:
-      correct_dict[probe_name] = [score]
-
-  # convert that into the desired format
-  return _convert_cmc_scores(neg_dict, pos_dict)
 
 
 def load_score(filename, ncolumns=None):
@@ -425,11 +378,48 @@ def dump_score(filename, score_lines):
   numpy.savetxt(filename, score_lines, fmt=fmt)
 
 
-def _convert_cmc_scores(neg_dict, pos_dict):
-  """Converts the negative and positive scores read with
-  :py:func:`cmc_four_column` or :py:func:`cmc_four_column` into a format that
-  is handled by the :py:func:`bob.measure.cmc` and similar functions.
+def _iterate_score_file(filename):
+  """Opens the score file for reading and yields the score file line by line in a tuple/list.
+
+  The last element of the line (which is the score) will be transformed to float, the other elements will be str
   """
+  opened = open_file(filename, 'rb')
+  if sys.version_info.major > 2:
+    import io
+    opened = io.TextIOWrapper(opened, newline="")
+
+  reader = csv.reader(opened, delimiter=' ')
+  for splits in reader:
+    splits[-1] = float(splits[-1])
+    yield splits
+
+
+def _split_scores(score_lines, real_id_index, claimed_id_index = 0, score_index = -1):
+  """Take the output of :py:func:`four_column` or :py:func:`five_column` and return negatives and positives.
+  """
+  positives, negatives = [], []
+  for line in score_lines:
+    which = positives if line[claimed_id_index] == line[real_id_index] else negatives
+    which.append(line[score_index])
+
+  return (numpy.array(negatives), numpy.array(positives))
+
+def _split_cmc_scores(score_lines, real_id_index, probe_name_index = None, claimed_id_index = 0, score_index = -1):
+  """Takes the output of :py:func:`four_column` or :py:func:`five_column` and return cmc scores.
+  """
+  if probe_name_index is None:
+    probe_name_index = real_id_index + 1
+  # extract positives and negatives
+  pos_dict = {}
+  neg_dict = {}
+  # read four column list
+  for line in score_lines:
+    which = pos_dict if line[claimed_id_index] == line[real_id_index] else neg_dict
+    probe_name = line[probe_name_index]
+    # append score
+    if probe_name not in which:
+      which[probe_name] = []
+    which[probe_name].append(line[score_index])
 
   # convert to lists of tuples of ndarrays (or None)
   probe_names = sorted(set(neg_dict.keys()).union(set(pos_dict.keys())))
