@@ -56,10 +56,8 @@ Options:
 import os
 import sys
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger('bob')
+import bob.core
+logger = bob.core.log.setup("bob.measure")
 
 
 class Result:
@@ -197,8 +195,8 @@ def main(user_input=None):
       )
 
   # Sets-up logging
-  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+  verbosity = int(args['--verbose'])
+  bob.core.log.set_verbosity_level(logger, verbosity)
 
   # checks sort-key
   valid_sort_keys = 'nonorm_dev nonorm_eval ztnorm_dev ztnorm_eval dir'.split()

@@ -542,6 +542,7 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
   # for each probe, for which no positives exists, get the highest negative score; and sort them to compute the FAR thresholds
   negatives = sorted(max(neg) for neg,pos in cmc_scores if (pos is None or not numpy.array(pos).size) and neg is not None)
   if not negatives:
+    import ipdb; ipdb.set_trace()
     raise ValueError("There need to be at least one pair with only negative scores")
 
   # compute thresholds based on FAR values
