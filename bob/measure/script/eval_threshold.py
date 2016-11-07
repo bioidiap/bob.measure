@@ -47,10 +47,8 @@ Examples:
 import os
 import sys
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger('bob')
+import bob.core
+logger = bob.core.log.setup("bob.measure")
 
 
 def apthres(neg, pos, thres):
@@ -108,8 +106,8 @@ def main(user_input=None):
       )
 
   # Sets-up logging
-  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+  verbosity = int(args['--verbose'])
+  bob.core.log.set_verbosity_level(logger, verbosity)
 
   # validates criterion
   valid_criteria = ('eer', 'mhter', 'mwer')

@@ -32,6 +32,9 @@ from __future__ import print_function
 import os
 import sys
 
+import bob.core
+logger = bob.core.log.setup("bob.measure")
+
 
 def main(user_input=None):
 
@@ -55,8 +58,8 @@ def main(user_input=None):
       )
 
   # Sets-up logging
-  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+  verbosity = int(args['--verbose'])
+  bob.core.log.set_verbosity_level(logger, verbosity)
 
   # Validates rank
   if args['--rank'] is not None:
@@ -90,7 +93,11 @@ def main(user_input=None):
 
   # compute recognition rate
   from .. import recognition_rate
-  rr = recognition_rate(data, args['--rank'])
+  if args['--rank'] is not None:
+    rr = recognition_rate(data, rank=args['--rank'])
+  else:
+    rr = recognition_rate(data)
+
   print("Recognition rate for score file %s is %3.2f%%" % (args['<scores>'],
     rr * 100))
 
