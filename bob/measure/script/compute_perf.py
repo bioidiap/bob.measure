@@ -6,20 +6,21 @@
 
   1. Computes the threshold using either EER or min. HTER criteria on
      development set scores
-  2. Applies the above threshold on test set scores to compute the HTER
+  2. Applies the above threshold on test set scores to compute the HTER, if a
+     test-score set is provided
   3. Reports error rates on the console
   4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
      file (unless --no-plot is passed)
 
 
-Usage: %(prog)s [-v...] [options] <dev-scores> <test-scores>
+Usage: %(prog)s [-v...] [options] <dev-scores> [<test-scores>]
        %(prog)s --help
        %(prog)s --version
 
 
 Arguments:
   <dev-scores>   Path to the file containing the development scores
-  <test-scores>  Path to the file containing the test scores
+  <test-scores>  (optional) Path to the file containing the test scores.
 
 
 Options:
@@ -53,14 +54,14 @@ import os
 import sys
 import numpy
 
-import logging
-__logging_format__='[%(levelname)s] %(message)s'
-logging.basicConfig(format=__logging_format__)
-logger = logging.getLogger('bob')
+import bob.core
+logger = bob.core.log.setup("bob.measure")
 
 
-def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
+def print_crit(crit, dev_scores, test_scores=None):
   """Prints a single output line that contains all info for a given criterion"""
+
+  dev_neg, dev_pos = dev_scores
 
   if crit == 'EER':
     from .. import eer_threshold
@@ -73,45 +74,70 @@ def print_crit(dev_neg, dev_pos, test_neg, test_pos, crit):
   dev_far, dev_frr = farfrr(dev_neg, dev_pos, thres)
   dev_hter = (dev_far + dev_frr)/2.0
 
-  test_far, test_frr = farfrr(test_neg, test_pos, thres)
-  test_hter = (test_far + test_frr)/2.0
-
   print("[Min. criterion: %s] Threshold on Development set: %e" % (crit, thres))
 
   dev_ni = dev_neg.shape[0] #number of impostors
   dev_fa = int(round(dev_far*dev_ni)) #number of false accepts
   dev_nc = dev_pos.shape[0] #number of clients
   dev_fr = int(round(dev_frr*dev_nc)) #number of false rejects
-  test_ni = test_neg.shape[0] #number of impostors
-  test_fa = int(round(test_far*test_ni)) #number of false accepts
-  test_nc = test_pos.shape[0] #number of clients
-  test_fr = int(round(test_frr*test_nc)) #number of false rejects
 
   dev_far_str = "%.3f%% (%d/%d)" % (100*dev_far, dev_fa, dev_ni)
-  test_far_str = "%.3f%% (%d/%d)" % (100*test_far, test_fa, test_ni)
   dev_frr_str = "%.3f%% (%d/%d)" % (100*dev_frr, dev_fr, dev_nc)
-  test_frr_str = "%.3f%% (%d/%d)" % (100*test_frr, test_fr, test_nc)
   dev_max_len = max(len(dev_far_str), len(dev_frr_str))
-  test_max_len = max(len(test_far_str), len(test_frr_str))
 
   def fmt(s, space):
     return ('%' + ('%d' % space) + 's') % s
 
-  print("       | %s | %s" % (fmt("Development", -1*dev_max_len),
-    fmt("Test", -1*test_max_len)))
-  print("-------+-%s-+-%s" % (dev_max_len*"-", (2+test_max_len)*"-"))
-  print("  FAR  | %s | %s" % (fmt(dev_far_str, dev_max_len), fmt(test_far_str,
-    test_max_len)))
-  print("  FRR  | %s | %s" % (fmt(dev_frr_str, dev_max_len), fmt(test_frr_str,
-    test_max_len)))
-  dev_hter_str = "%.3f%%" % (100*dev_hter)
-  test_hter_str = "%.3f%%" % (100*test_hter)
-  print("  HTER | %s | %s" % (fmt(dev_hter_str, -1*dev_max_len),
-    fmt(test_hter_str, -1*test_max_len)))
+  if test_scores is None:
+
+    # prints only dev performance rates
+    print("       | %s" % fmt("Development", -1*dev_max_len))
+    print("-------+-%s" % (dev_max_len*"-"))
+    print("  FAR  | %s" % fmt(dev_far_str, dev_max_len))
+    print("  FRR  | %s" % fmt(dev_frr_str, dev_max_len))
+    dev_hter_str = "%.3f%%" % (100*dev_hter)
+    print("  HTER | %s" % fmt(dev_hter_str, -1*dev_max_len))
+
+  else:
+
+    # computes statistics for the test set based on the threshold a priori
+    test_neg, test_pos = test_scores
+
+    test_far, test_frr = farfrr(test_neg, test_pos, thres)
+    test_hter = (test_far + test_frr)/2.0
+
+    test_ni = test_neg.shape[0] #number of impostors
+    test_fa = int(round(test_far*test_ni)) #number of false accepts
+    test_nc = test_pos.shape[0] #number of clients
+    test_fr = int(round(test_frr*test_nc)) #number of false rejects
+
+    test_far_str = "%.3f%% (%d/%d)" % (100*test_far, test_fa, test_ni)
+    test_frr_str = "%.3f%% (%d/%d)" % (100*test_frr, test_fr, test_nc)
+    test_max_len = max(len(test_far_str), len(test_frr_str))
+
+    # prints both dev and test performance rates
+    print("       | %s | %s" % (fmt("Development", -1*dev_max_len),
+      fmt("Test", -1*test_max_len)))
+    print("-------+-%s-+-%s" % (dev_max_len*"-", (2+test_max_len)*"-"))
+    print("  FAR  | %s | %s" % (fmt(dev_far_str, dev_max_len),
+      fmt(test_far_str, test_max_len)))
+    print("  FRR  | %s | %s" % (fmt(dev_frr_str, dev_max_len),
+      fmt(test_frr_str, test_max_len)))
+    dev_hter_str = "%.3f%%" % (100*dev_hter)
+    test_hter_str = "%.3f%%" % (100*test_hter)
+    print("  HTER | %s | %s" % (fmt(dev_hter_str, -1*dev_max_len),
+      fmt(test_hter_str, -1*test_max_len)))
 
 
-def plots(dev_neg, dev_pos, test_neg, test_pos, crit, points, filename):
+def plots(crit, points, filename, dev_scores, test_scores=None):
   """Saves ROC, DET and EPC curves on the file pointed out by filename."""
+
+  dev_neg, dev_pos = dev_scores
+
+  if test_scores is not None:
+    test_neg, test_pos = test_scores
+  else:
+    test_neg, test_pos = None, None
 
   from .. import plot
 
@@ -124,41 +150,54 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, crit, points, filename):
 
   # ROC
   fig = mpl.figure()
-  plot.roc(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
-      linestyle='--', dashes=(6,2), label='development')
-  plot.roc(test_neg, test_pos, points, color=(0,0,0),
-      linestyle='-', label='test')
+
+  if test_scores is not None:
+    plot.roc(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
+        linestyle='--', dashes=(6,2), label='development')
+    plot.roc(test_neg, test_pos, points, color=(0,0,0),
+        linestyle='-', label='test')
+  else:
+    plot.roc(dev_neg, dev_pos, points, color=(0,0,0),
+        linestyle='-', label='development')
+
   mpl.axis([0,40,0,40])
   mpl.title("ROC Curve")
   mpl.xlabel('FAR (%)')
   mpl.ylabel('FRR (%)')
   mpl.grid(True, color=(0.3,0.3,0.3))
-  mpl.legend()
+  if test_scores is not None: mpl.legend()
   pp.savefig(fig)
 
   # DET
   fig = mpl.figure()
-  plot.det(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
-      linestyle='--', dashes=(6,2), label='development')
-  plot.det(test_neg, test_pos, points, color=(0,0,0),
-      linestyle='-', label='test')
+
+  if test_scores is not None:
+    plot.det(dev_neg, dev_pos, points, color=(0.3,0.3,0.3),
+        linestyle='--', dashes=(6,2), label='development')
+    plot.det(test_neg, test_pos, points, color=(0,0,0),
+        linestyle='-', label='test')
+  else:
+    plot.det(dev_neg, dev_pos, points, color=(0,0,0),
+        linestyle='-', label='development')
+
   plot.det_axis([0.01, 40, 0.01, 40])
   mpl.title("DET Curve")
   mpl.xlabel('FAR (%)')
   mpl.ylabel('FRR (%)')
   mpl.grid(True, color=(0.3,0.3,0.3))
-  mpl.legend()
+  if test_scores is not None: mpl.legend()
   pp.savefig(fig)
 
-  # EPC
-  fig = mpl.figure()
-  plot.epc(dev_neg, dev_pos, test_neg, test_pos, points,
-      color=(0,0,0), linestyle='-')
-  mpl.title('EPC Curve')
-  mpl.xlabel('Cost')
-  mpl.ylabel('Min. HTER (%)')
-  mpl.grid(True, color=(0.3,0.3,0.3))
-  pp.savefig(fig)
+  # EPC - requires test set
+  if test_scores is not None:
+    fig = mpl.figure()
+    plot.epc(dev_neg, dev_pos, test_neg, test_pos, points,
+        color=(0,0,0), linestyle='-')
+    mpl.title('EPC Curve')
+    mpl.xlabel('Cost')
+    mpl.ylabel('Min. HTER (%)')
+    mpl.grid(True, color=(0.3,0.3,0.3))
+    pp.savefig(fig)
 
   # Distribution for dev and test scores on the same page
   if crit == 'EER':
@@ -168,9 +207,15 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, crit, points, filename):
     from .. import min_hter_threshold
     thres = min_hter_threshold(dev_neg, dev_pos)
 
-  mpl.subplot(2,1,1)
+  fig = mpl.figure()
+
+  if test_scores is not None:
+    mpl.subplot(2,1,1)
+    all_scores = numpy.hstack((dev_neg, test_neg, dev_pos, test_pos))
+  else:
+    all_scores = numpy.hstack((dev_neg, dev_pos))
+
   nbins=20
-  all_scores = numpy.hstack((dev_neg, test_neg, dev_pos, test_pos))
   score_range = all_scores.min(), all_scores.max()
   mpl.hist(dev_neg, label='Impostors', normed=True, color='red', alpha=0.5,
       bins=nbins)
@@ -179,25 +224,33 @@ def plots(dev_neg, dev_pos, test_neg, test_pos, crit, points, filename):
   mpl.xlim(*score_range)
   _, _, ymax, ymin = mpl.axis()
   mpl.vlines(thres, ymin, ymax, color='black', label='EER', linestyle='dashed')
-  mpl.ylabel('Dev. Scores (normalized)')
-  ax = mpl.gca()
-  ax.axes.get_xaxis().set_ticklabels([])
-  mpl.legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, -0.01),
-      fontsize=10)
+
+  if test_scores is not None:
+    ax = mpl.gca()
+    ax.axes.get_xaxis().set_ticklabels([])
+    mpl.legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, -0.01),
+        fontsize=10)
+    mpl.ylabel('Dev. Scores (normalized)')
+  else:
+    mpl.ylabel('Normalized Count')
+    mpl.legend(loc='best', fancybox=True, framealpha=0.5)
   mpl.title('Score Distributions')
   mpl.grid(True, alpha=0.5)
 
-  mpl.subplot(2,1,2)
-  mpl.hist(test_neg, label='Impostors', normed=True, color='red', alpha=0.5,
-      bins=nbins)
-  mpl.hist(test_pos, label='Genuine', normed=True, color='blue', alpha=0.5,
-      bins=nbins)
-  mpl.ylabel('Test Scores (normalized)')
-  mpl.xlabel('Score value')
-  mpl.xlim(*score_range)
-  _, _, ymax, ymin = mpl.axis()
-  mpl.vlines(thres, ymin, ymax, color='black', label='EER', linestyle='dashed')
-  mpl.grid(True, alpha=0.5)
+  if test_scores is not None:
+    mpl.subplot(2,1,2)
+    mpl.hist(test_neg, label='Impostors', normed=True, color='red', alpha=0.5,
+        bins=nbins)
+    mpl.hist(test_pos, label='Genuine', normed=True, color='blue', alpha=0.5,
+        bins=nbins)
+    mpl.ylabel('Test Scores (normalized)')
+    mpl.xlabel('Score value')
+    mpl.xlim(*score_range)
+    _, _, ymax, ymin = mpl.axis()
+    mpl.vlines(thres, ymin, ymax, color='black', label='EER',
+        linestyle='dashed')
+    mpl.grid(True, alpha=0.5)
+
   pp.savefig(fig)
 
   pp.close()
@@ -225,8 +278,8 @@ def main(user_input=None):
       )
 
   # Sets-up logging
-  if args['--verbose'] == 1: logging.getLogger().setLevel(logging.INFO)
-  elif args['--verbose'] >= 2: logging.getLogger().setLevel(logging.DEBUG)
+  verbosity = int(args['--verbose'])
+  bob.core.log.set_verbosity_level(logger, verbosity)
 
   # Checks number of points option
   try:
@@ -240,15 +293,18 @@ def main(user_input=None):
         'than zero')
 
   from ..load import load_score, get_negatives_positives
-  dev_neg, dev_pos = get_negatives_positives(load_score(args['<dev-scores>']))
-  test_neg, test_pos = get_negatives_positives(load_score(args['<test-scores>']))
+  dev_scores = get_negatives_positives(load_score(args['<dev-scores>']))
 
-  print_crit(dev_neg, dev_pos, test_neg, test_pos, 'EER')
-  print_crit(dev_neg, dev_pos, test_neg, test_pos, 'Min. HTER')
+  if args['<test-scores>'] is not None:
+    test_scores = get_negatives_positives(load_score(args['<test-scores>']))
+  else:
+    test_scores = None
+
+  print_crit('EER', dev_scores, test_scores)
+  print_crit('Min. HTER', dev_scores, test_scores)
 
   if not args['--no-plot']:
-    plots(dev_neg, dev_pos, test_neg, test_pos, 'EER', args['--points'],
-        args['--output'])
+    plots('EER', args['--points'], args['--output'], dev_scores, test_scores)
     print("[Plots] Performance curves => '%s'" % args['--output'])
 
   return 0
