@@ -46,6 +46,22 @@ def test_compute_perf():
   nose.tools.eq_(main(cmdline), 0)
 
 
+def test_compute_perf_only_dev():
+
+  # sanity checks
+  assert os.path.exists(DEV_SCORES)
+
+  tmp_output = tempfile.NamedTemporaryFile(prefix=__name__, suffix='.pdf')
+
+  cmdline = [
+      DEV_SCORES,
+      '--output=' + tmp_output.name,
+      ]
+
+  from .script.compute_perf import main
+  nose.tools.eq_(main(cmdline), 0)
+
+
 def test_eval_threshold():
 
   # sanity checks
