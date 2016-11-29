@@ -192,9 +192,9 @@ def test_plots():
 
   # This example will test the ROC for FAR plot calculation functionality.
   far = [0.01, 0.1, 1]
-  ref = [0.48, 0.22, 0]
+  ref = [0.42, 0.12, 0]
   xy = roc_for_far(negatives, positives, far)
-  # uncomment the next line to save a reference value
+
   assert numpy.array_equal(xy[0], far)
   assert numpy.array_equal(xy[1], ref)
 
