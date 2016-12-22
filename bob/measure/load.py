@@ -96,7 +96,6 @@ def four_column(filename):
   return _iterate_score_file(filename)
 
 
-
 def split_four_column(filename):
   """Loads a score set from a single file and splits the scores
 
@@ -116,13 +115,13 @@ def split_four_column(filename):
 
   Returns:
 
-    negatives (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` differed (see
-    :py:func:`four_column`)
+    array: negatives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are different
+      (see :py:func:`four_column`)
 
-    positivies (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` are identical (see
-    :py:func:`four_column`)
+    array: positives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are identical
+      (see :py:func:`four_column`)
 
   """
 
@@ -220,13 +219,13 @@ def split_five_column(filename):
 
   Returns:
 
-    negatives (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` differed (see
-    :py:func:`four_column`)
+    array: negatives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are different
+      (see :py:func:`four_column`)
 
-    positivies (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` are identical (see
-    :py:func:`four_column`)
+    array: positives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are identical
+      (see :py:func:`four_column`)
 
   """
 
