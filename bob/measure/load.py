@@ -96,7 +96,6 @@ def four_column(filename):
   return _iterate_score_file(filename)
 
 
-
 def split_four_column(filename):
   """Loads a score set from a single file and splits the scores
 
@@ -116,13 +115,13 @@ def split_four_column(filename):
 
   Returns:
 
-    negatives (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` differed (see
-    :py:func:`four_column`)
+    array: negatives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are different
+      (see :py:func:`four_column`)
 
-    positivies (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` are identical (see
-    :py:func:`four_column`)
+    array: positives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are identical
+      (see :py:func:`four_column`)
 
   """
 
@@ -220,13 +219,13 @@ def split_five_column(filename):
 
   Returns:
 
-    negatives (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` differed (see
-    :py:func:`four_column`)
+    array: negatives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are different
+      (see :py:func:`four_column`)
 
-    positivies (array): 1D float array containing the list of scores, for which
-    the ``claimed_id`` and the ``real_id`` are identical (see
-    :py:func:`four_column`)
+    array: positives, 1D float array containing the list of scores, for which
+      the ``claimed_id`` and the ``real_id`` are identical
+      (see :py:func:`four_column`)
 
   """
 
@@ -264,8 +263,7 @@ def cmc_five_column(filename):
   return _split_cmc_scores(score_lines, 2)
 
 
-
-def load_score(filename, ncolumns=None):
+def load_score(filename, ncolumns=None, minimal=False, **kwargs):
   """Load scores using numpy.loadtxt and return the data as a numpy array.
 
   Parameters:
@@ -276,6 +274,11 @@ def load_score(filename, ncolumns=None):
     ncolumns (:py:class:`int`, optional): 4, 5 or None (the default),
       specifying the number of columns in the score file. If None is provided,
       the number of columns will be guessed.
+
+    minimal (:py:class:`bool`, optional): If True, only loads ``claimed_id``, ``real_id``,
+      and ``scores``.
+
+    **kwargs: Keyword arguments passed to :py:func:`numpy.genfromtxt`
 
 
   Returns:
@@ -300,6 +303,7 @@ def load_score(filename, ncolumns=None):
     finally:
       f.close()
 
+  usecols = kwargs.pop('usecols', None)
   if ncolumns == 4:
     names = ('claimed_id', 'real_id', 'test_label', 'score')
     converters = {
@@ -307,6 +311,8 @@ def load_score(filename, ncolumns=None):
       1: convertfunc,
       2: convertfunc,
       3: float}
+    if minimal:
+      usecols = (0, 1, 3)
 
   elif ncolumns == 5:
     names = ('claimed_id', 'model_label', 'real_id', 'test_label', 'score')
@@ -316,12 +322,14 @@ def load_score(filename, ncolumns=None):
       2: convertfunc,
       3: convertfunc,
       4: float}
+    if minimal:
+      usecols = (0, 2, 4)
   else:
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
   score_lines = numpy.genfromtxt(
     open_file(filename, mode='rb'), dtype=None, names=names,
-    converters=converters, invalid_raise=True)
+    converters=converters, invalid_raise=True, usecols=usecols, **kwargs)
   new_dtype = []
   for name in score_lines.dtype.names[:-1]:
     new_dtype.append((name, str(score_lines.dtype[name]).replace('S', 'U')))
@@ -340,6 +348,13 @@ def get_negatives_positives(score_lines):
   positives = score_lines['score'][pos_mask]
   negatives = score_lines['score'][numpy.logical_not(pos_mask)]
   return (negatives, positives)
+
+
+def get_negatives_positives_from_file(filename, **kwargs):
+  """Loads the scores first efficiently and then calls
+  get_negatives_positives"""
+  score_lines = load_score(filename, minimal=True, **kwargs)
+  return get_negatives_positives(score_lines)
 
 
 def get_negatives_positives_all(score_lines_list):
