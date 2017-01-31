@@ -135,6 +135,8 @@ namespace bob { namespace measure {
    */
   template <typename T>
   double minimizingThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, T& predicate){
+    if (!negatives.size() || !positives.size()) throw std::runtime_error("Cannot compute threshold when no positives or no negatives are given");
+
     // iterate over the whole set of points
     auto pos_it = positives.begin(), neg_it = negatives.begin();
 
