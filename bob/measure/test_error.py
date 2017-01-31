@@ -176,9 +176,9 @@ def test_thresholding():
 
 def test_empty_raises():
   # tests that
-  from bob.measure import farfrr, precision_recall, f_score, eer_threshold, min_hter_threshold
+  from bob.measure import farfrr, precision_recall, f_score, eer_threshold, min_hter_threshold, min_weighted_error_rate_threshold
 
-  for func in (farfrr, precision_recall, f_score):
+  for func in (farfrr, precision_recall, f_score, min_weighted_error_rate_threshold):
     nose.tools.assert_raises(RuntimeError, func, [], [1.], 0)
     nose.tools.assert_raises(RuntimeError, func, [1.], [], 0)
     nose.tools.assert_raises(RuntimeError, func, [], [], 0)
