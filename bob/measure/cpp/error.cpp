@@ -34,18 +34,19 @@ static void sort(const blitz::Array<T,1>& a, blitz::Array<T,1>& b, bool isSorted
 
 std::pair<double, double> bob::measure::farfrr(const blitz::Array<double,1>& negatives,
     const blitz::Array<double,1>& positives, double threshold) {
+  if (!negatives.size()) throw std::runtime_error("Cannot compute FAR when no negatives are given");
+  if (!positives.size()) throw std::runtime_error("Cannot compute FRR when no positives are given");
   blitz::sizeType total_negatives = negatives.extent(blitz::firstDim);
   blitz::sizeType total_positives = positives.extent(blitz::firstDim);
   blitz::sizeType false_accepts = blitz::count(negatives >= threshold);
   blitz::sizeType false_rejects = blitz::count(positives < threshold);
-  if (!total_negatives) total_negatives = 1; //avoids division by zero
-  if (!total_positives) total_positives = 1; //avoids division by zero
   return std::make_pair(false_accepts/(double)total_negatives,
       false_rejects/(double)total_positives);
 }
 
 std::pair<double, double> bob::measure::precision_recall(const blitz::Array<double,1>& negatives,
     const blitz::Array<double,1>& positives, double threshold) {
+  if (!negatives.size() || !positives.size()) throw std::runtime_error("Cannot compute precision or recall when no positives or no negatives are given");
   blitz::sizeType total_positives = positives.extent(blitz::firstDim);
   blitz::sizeType false_positives = blitz::count(negatives >= threshold);
   blitz::sizeType true_positives = blitz::count(positives >= threshold);
@@ -143,7 +144,7 @@ double bob::measure::frrThreshold(const blitz::Array<double,1>&, const blitz::Ar
   int index = std::min((int)std::ceil(frr_index), pos.extent(0)-1);
 
   // correct index if we have multiple score values at the requested position
-  while (index < pos.extent(0) && pos(index) == pos(index+1)) ++index;
+  while (index < pos.extent(0)-1 && pos(index) == pos(index+1)) ++index;
 
   // we compute a correction term to assure that we are in the middle of two cases
   double correction;

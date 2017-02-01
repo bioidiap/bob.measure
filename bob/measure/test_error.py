@@ -174,6 +174,21 @@ def test_thresholding():
   nose.tools.eq_(ccp, ccn)
 
 
+def test_empty_raises():
+  # tests that
+  from bob.measure import farfrr, precision_recall, f_score, eer_threshold, min_hter_threshold, min_weighted_error_rate_threshold
+
+  for func in (farfrr, precision_recall, f_score, min_weighted_error_rate_threshold):
+    nose.tools.assert_raises(RuntimeError, func, [], [1.], 0)
+    nose.tools.assert_raises(RuntimeError, func, [1.], [], 0)
+    nose.tools.assert_raises(RuntimeError, func, [], [], 0)
+
+  for func in (eer_threshold, min_hter_threshold):
+    nose.tools.assert_raises(RuntimeError, func, [], [1.])
+    nose.tools.assert_raises(RuntimeError, func, [1.], [])
+    nose.tools.assert_raises(RuntimeError, func, [], [])
+
+
 def test_plots():
 
   from . import eer_threshold, roc, roc_for_far, precision_recall_curve, det, epc
