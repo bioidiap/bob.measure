@@ -277,7 +277,7 @@ def plots(crit, points, filename, dev_scores, test_scores=None):
 
 
 def remove_nan(scores):
-  'removes the NaNs from the scores'
+  """removes the NaNs from the scores"""
   nans = numpy.isnan(scores)
   sum_nans = sum(nans)
   total = len(scores)
@@ -287,7 +287,7 @@ def remove_nan(scores):
 
 
 def get_fta(scores):
-  'calculates the Failure To Acquire (FtA)'
+  """calculates the Failure To Acquire (FtA) rate"""
   fta_sum, fta_total = 0, 0
   neg, sum_nans, total = remove_nan(scores[0])
   fta_sum += sum_nans
