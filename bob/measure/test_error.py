@@ -241,6 +241,9 @@ def test_plots():
   # save('nonsep-epc.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-epc.hdf5'))
   assert numpy.allclose(xy, xyref, atol=1e-15)
+  xy = epc(dev_negatives, dev_positives,
+      test_negatives, test_positives, 100, False, True)
+  assert numpy.allclose(xy[:2], xyref, atol=1e-15)
 
 
 def test_rocch():

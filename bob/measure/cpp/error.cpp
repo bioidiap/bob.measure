@@ -514,14 +514,16 @@ blitz::Array<double,2> bob::measure::epc
 (const blitz::Array<double,1>& dev_negatives,
  const blitz::Array<double,1>& dev_positives,
  const blitz::Array<double,1>& test_negatives,
- const blitz::Array<double,1>& test_positives, size_t points, bool isSorted) {
+ const blitz::Array<double,1>& test_positives, size_t points, bool isSorted,
+ bool thresholds) {
 
   blitz::Array<double,1> dev_neg, dev_pos;
   sort(dev_negatives, dev_neg, isSorted);
   sort(dev_positives, dev_pos, isSorted);
 
   double step = 1.0/((double)points-1.0);
-  blitz::Array<double,2> retval(2, points);
+  auto retval_shape0 = (thresholds) ? 3 : 2;
+  blitz::Array<double,2> retval(retval_shape0, points);
   for (int i=0; i<(int)points; ++i) {
     double alpha = (double)i*step;
     retval(0,i) = alpha;
@@ -530,6 +532,9 @@ blitz::Array<double,2> bob::measure::epc
     std::pair<double, double> ratios =
       bob::measure::farfrr(test_negatives, test_positives, threshold);
     retval(1,i) = (ratios.first + ratios.second) / 2;
+    if (thresholds) {
+      retval(2,i) = threshold;
+    }
   }
   return retval;
 }

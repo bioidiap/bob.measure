@@ -41,7 +41,9 @@ static auto epc_doc = bob::extension::FunctionDoc(
   "epc",
   "Calculates points of an Expected Performance Curve (EPC)",
   "Calculates the EPC curve given a set of positive and negative scores and a desired number of points. "
-  "Returns a two-dimensional :py:class:`numpy.ndarray` of type float that express the X (cost) and Y (weighted error rare on the test set given the min. threshold on the development set) coordinates in this order. "
+  "Returns a two-dimensional :py:class:`numpy.ndarray` of type float with the "
+  "shape of ``(2, points)`` or ``(3, points)`` depending on the ``thresholds`` argument. "
+  "The rows correspond to the X (cost), Y (weighted error rate on the test set given the min. threshold on the development set), and the thresholds which were used to calculate the error (if the ``thresholds`` argument was set to ``True``), respectively. "
   "Please note that, in order to calculate the EPC curve, one needs two sets of data comprising a development set and a test set. "
   "The minimum weighted error is calculated on the development set and then applied to the test set to evaluate the weighted error rate at that position.\n\n"
   "The EPC curve plots the HTER on the test set for various values of 'cost'. "
@@ -50,11 +52,12 @@ static auto epc_doc = bob::extension::FunctionDoc(
   "The cost points in which the EPC curve are calculated are distributed uniformly in the range :math:`[0.0, 1.0]`.\n\n"
   ".. note:: It is more memory efficient, when sorted arrays of scores are provided and the ``is_sorted`` parameter is set to ``True``."
 )
-.add_prototype("dev_negatives, dev_positives, test_negatives, test_positives, n_points, is_sorted", "curve")
+.add_prototype("dev_negatives, dev_positives, test_negatives, test_positives, n_points, [is_sorted], [thresholds]", "curve")
 .add_parameter("dev_negatives, dev_positives, test_negatives, test_positives", "array_like(1D, float)", "The scores for negatives and positives of the development and test set")
 .add_parameter("n_points", "int", "The number of weights for which the EPC curve should be computed")
 .add_parameter("is_sorted", "bool", "[Default: ``False``] Set this to ``True`` if the scores are already sorted. If ``False``, scores will be sorted internally, which will require more memory")
-.add_return("curve", "array_like(2D, float)", "The EPC curve, with the first row containing the weights, and the second row containing the weighted thresholds on the test set")
+.add_parameter("thresholds", "bool", "[Default: ``False``] If ``True`` the function returns an array with the shape of ``(3, points)`` where the third row contains the thresholds that were calculated on the development set.")
+.add_return("curve", "array_like(2D, float)", "The EPC curve, with the first row containing the weights and the second row containing the weighted errors on the test set. If ``thresholds`` is ``True``, there is also a third row which contains the thresholds that were calculated on the development set.")
 ;
 static PyObject* epc(PyObject*, PyObject* args, PyObject* kwds) {
 BOB_TRY
@@ -67,15 +70,17 @@ BOB_TRY
   PyBlitzArrayObject* test_pos;
   Py_ssize_t n_points;
   PyObject* is_sorted = Py_False;
+  PyObject* thresholds = Py_False;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&O&O&n|O",
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&O&O&n|OO",
         kwlist,
         &double1d_converter, &dev_neg,
         &double1d_converter, &dev_pos,
         &double1d_converter, &test_neg,
         &double1d_converter, &test_pos,
         &n_points,
-        &is_sorted
+        &is_sorted,
+        &thresholds
         )) return 0;
 
   //protects acquired resources through this scope
@@ -89,7 +94,7 @@ BOB_TRY
       *PyBlitzArrayCxx_AsBlitz<double,1>(dev_pos),
       *PyBlitzArrayCxx_AsBlitz<double,1>(test_neg),
       *PyBlitzArrayCxx_AsBlitz<double,1>(test_pos),
-      n_points, PyObject_IsTrue(is_sorted));
+      n_points, PyObject_IsTrue(is_sorted), PyObject_IsTrue(thresholds));
 
   return PyBlitzArrayCxx_AsNumpy(result);
 BOB_CATCH_FUNCTION("epc", 0)

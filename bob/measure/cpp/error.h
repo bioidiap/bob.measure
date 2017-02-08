@@ -365,12 +365,14 @@ namespace bob { namespace measure {
   /**
    * Calculates the EPC curve given a set of positive and negative scores and a
    * number of desired points. Returns a two-dimensional blitz::Array of
-   * doubles that express the X (cost) and Y (HTER on the test set given the
-   * min. HTER threshold on the development set) coordinates in this order.
-   * Please note that, in order to calculate the EPC curve, one needs two sets
-   * of data comprising a development set and a test set. The minimum weighted
-   * error is calculated on the development set and then applied to the test
-   * set to evaluate the half-total error rate at that position.
+   * doubles that express the X (cost), Y (HTER on the test set given the min.
+   * HTER threshold on the development set) coordinates, and the thresholds
+   * which were used during calculations (dependig on the `thresholds`
+   * argument) in this order. Please note that, in order to calculate the EPC
+   * curve, one needs two sets of data comprising a development set and a test
+   * set. The minimum weighted error is calculated on the development set and
+   * then applied to the test set to evaluate the half-total error rate at that
+   * position.
    *
    * The EPC curve plots the HTER on the test set for various values of 'cost'.
    * For each value of 'cost', a threshold is found that provides the minimum
@@ -387,7 +389,8 @@ namespace bob { namespace measure {
      const blitz::Array<double,1>& test_negatives,
      const blitz::Array<double,1>& test_positives,
      size_t points,
-     bool isSorted = false);
+     bool isSorted = false,
+     bool thresholds = false);
 
 }}
 
