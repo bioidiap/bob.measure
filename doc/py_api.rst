@@ -69,6 +69,9 @@ Loading data
 
 .. autosummary::
    bob.measure.load.open_file
+   bob.measure.load.scores
+   bob.measure.load.split
+   bob.measure.load.cmc
    bob.measure.load.four_column
    bob.measure.load.split_four_column
    bob.measure.load.cmc_four_column

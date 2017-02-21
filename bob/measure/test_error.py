@@ -308,6 +308,13 @@ def test_cmc():
   cmc_ = cmc(data)
   assert (cmc_ == desired_cmc).all()
 
+  data = load.cmc(F('scores-cmc-5col.txt'))
+  rr = recognition_rate(data)
+  nose.tools.eq_(rr, desired_rr)
+  cmc_ = cmc(data)
+  assert (cmc_ == desired_cmc).all()
+
+
 
 def test_calibration():
 
@@ -342,7 +349,7 @@ def test_calibration():
 def test_open_set_rates():
 
   # No error files
-  cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set.txt"))
+  cmc_scores = bob.measure.load.cmc(F("scores-cmc-4col-open-set.txt"))
   assert abs(bob.measure.detection_identification_rate(cmc_scores, threshold=0.5) - 1.0) < 1e-8
   assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
 
@@ -350,7 +357,7 @@ def test_open_set_rates():
   assert abs(bob.measure.recognition_rate(cmc_scores, threshold=0.5) - 1.0) < 1e-8
 
   # One error
-  cmc_scores = bob.measure.load.cmc_four_column(F("scores-cmc-4col-open-set-one-error.txt"))
+  cmc_scores = bob.measure.load.cmc(F("scores-cmc-4col-open-set-one-error.txt"))
   assert abs(bob.measure.detection_identification_rate(cmc_scores, threshold=0.5) - 6./7.) < 1e-8
   assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
 

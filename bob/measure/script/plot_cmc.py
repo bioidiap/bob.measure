@@ -75,21 +75,7 @@ def main(user_input=None):
   from .. import load
 
   # Loads score file
-  f = load.open_file(args['<scores>'])
-  try:
-    line = f.readline()
-    ncolumns = len(line.split())
-  except Exception:
-    logger.warn('Could not guess the number of columns in file: {}. '
-                'Assuming 4 column format.'.format(args['<scores>']))
-    ncolumns = 4
-  finally:
-    f.close()
-
-  if ncolumns == 4:
-    data = load.cmc_four_column(args['<scores>'])
-  else:
-    data = load.cmc_five_column(args['<scores>'])
+  data = load.cmc(args['<scores>'])
 
   # compute recognition rate
   from .. import recognition_rate
