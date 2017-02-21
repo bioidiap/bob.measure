@@ -16,7 +16,6 @@ import bob.io.base.test_utils
 def test_load_scores():
   # This function tests the IO functionality of loading score files in different ways
 
-  scores = []
   load_functions = {'4col' : bob.measure.load.four_column, '5col' : bob.measure.load.five_column}
   cols = {'4col' : 4, '5col' : 5}
 
@@ -35,6 +34,55 @@ def test_load_scores():
     assert len(compressed_scores) == len(normal_scores)
     assert all(len(c) == cols[variant] for c in compressed_scores)
     assert all(c[i] == s[i] for c,s in zip(compressed_scores, normal_scores) for i in range(cols[variant]))
+
+    ### Use auto-estimated score file contents
+    # read score file in normal way
+    normal_scores = list(bob.measure.load.scores(normal_score_file))
+
+    assert len(normal_scores) == 910
+    assert all(len(s) == cols[variant] for s in normal_scores)
+
+    # read the compressed score file
+    compressed_scores = list(bob.measure.load.scores(compressed_score_file))
+
+    assert len(compressed_scores) == len(normal_scores)
+    assert all(len(c) == cols[variant] for c in compressed_scores)
+    assert all(c[i] == s[i] for c,s in zip(compressed_scores, normal_scores) for i in range(cols[variant]))
+
+
+def test_split_scores():
+  # This function tests the IO functionality of loading score files in different ways
+
+  split_functions = {'4col' : bob.measure.load.split_four_column, '5col' : bob.measure.load.split_five_column}
+  cols = {'4col' : 4, '5col' : 5}
+
+  for variant in cols:
+    # read score file in normal way
+    normal_score_file = bob.io.base.test_utils.datafile('dev-%s.txt' % variant, 'bob.measure')
+    negatives, positives = split_functions[variant](normal_score_file)
+
+    assert len(negatives) == 520, len(negatives)
+    assert len(positives) == 390, len(positives)
+
+    # read the compressed score file
+    compressed_score_file = bob.io.base.test_utils.datafile('dev-%s.tar.gz' % variant, 'bob.measure')
+    negatives, positives = split_functions[variant](compressed_score_file)
+
+    assert len(negatives) == 520, len(negatives)
+    assert len(positives) == 390, len(positives)
+
+    ### Use auto-estimated score file contents
+    # read score file in normal way
+    negatives, positives = bob.measure.load.split(normal_score_file)
+
+    assert len(negatives) == 520, len(negatives)
+    assert len(positives) == 390, len(positives)
+
+    # read the compressed score file
+    negatives, positives = bob.measure.load.split(compressed_score_file)
+
+    assert len(negatives) == 520, len(negatives)
+    assert len(positives) == 390, len(positives)
 
 
 def test_load_score():

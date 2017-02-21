@@ -390,8 +390,7 @@ Usually, there is only a single positive score per probe, but this is not a fixe
 .. note::
 
    The complex data structure can be read from our default 4 or 5 column score
-   files using the :py:func:`bob.measure.load.cmc_four_column` or
-   :py:func:`bob.measure.load.cmc_five_column` function.
+   files using the :py:func:`bob.measure.load.cmc` function.
 
 
 Detection & Identification Curve

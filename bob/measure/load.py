@@ -263,6 +263,92 @@ def cmc_five_column(filename):
   return _split_cmc_scores(score_lines, 2)
 
 
+def scores(filename, ncolumns=None):
+  """scores(filename, ncolumns=None) -> tuple
+
+  Loads the scores from the given score file and yield its lines.
+  Depending on the score file format, four or five elements are yielded, see :py:func:`bob.measure.load.four_column` and :py:func:`bob.measure.load.five_column` for details.
+
+  Parameters:
+
+  filename:  :py:class:`str`, ``file-like``:
+    The file object that will be opened with :py:func:`open_file` containing the scores.
+
+  ncolumns: any
+    ignored
+
+  Yields:
+
+  tuple:
+    see :py:func:`bob.measure.load.four_column` or :py:func:`bob.measure.load.five_column`
+  """
+  return _iterate_score_file(filename)
+
+
+def split(filename, ncolumns=None):
+  """split(filename, ncolumns=None) -> negatives, positives
+
+  Loads the scores from the given score file and splits them into positives and negatives.
+
+  Depending on the score file format, it calls see :py:func:`bob.measure.load.split_four_column` and `:py:func:`bob.measure.load.split_five_column` for details.
+
+  Parameters:
+
+  filename:  :py:class:`str`, ``file-like``:
+    The file object that will be opened with :py:func:`open_file` containing the scores.
+
+  ncolumns: int or ``None``
+    If specified to be ``4`` or ``5``, the score file will be assumed to be in the given format.
+    If not specified, the score file format will be estimated automatically
+
+  Returns:
+
+  negatives: 1D :py:class:`numpy.ndarray` of type float
+    This array contains the list of scores, for which the ``claimed_id`` and the ``real_id`` are different (see :py:func:`four_column`)
+
+  positives: 1D :py:class:`numpy.ndarray` of type float
+    This array contains the list of scores, for which the ``claimed_id`` and the ``real_id`` are identical (see :py:func:`four_column`)
+
+  """
+  ncolumns = _estimate_score_file_format(filename, ncolumns)
+  if ncolumns == 4:
+    return split_four_column(filename)
+  else:
+    assert ncolumns == 5
+    return split_five_column(filename)
+
+
+def cmc(filename, ncolumns=None):
+  """cmc(filename, ncolumns=None) -> list
+
+  Loads scores to compute CMC curves.
+
+  Depending on the score file format, it calls see :py:func:`bob.measure.load.cmc_four_column` and `:py:func:`bob.measure.load.cmc_five_column` for details.
+
+  Parameters:
+
+  filename:  :py:class:`str`, ``file-like``:
+    The file object that will be opened with :py:func:`open_file` containing the scores.
+
+  ncolumns: int or ``None``
+    If specified to be ``4`` or ``5``, the score file will be assumed to be in the given format.
+    If not specified, the score file format will be estimated automatically
+
+  Returns:
+
+  list: [(neg,pos)]
+    A list of tuples, where each tuple contains the ``negative`` and
+    ``positive`` scores for one probe of the database.
+  """
+  ncolumns = _estimate_score_file_format(filename, ncolumns)
+  if ncolumns == 4:
+    return cmc_four_column(filename)
+  else:
+    assert ncolumns == 5
+    return cmc_five_column(filename)
+
+
+
 def load_score(filename, ncolumns=None, minimal=False, **kwargs):
   """Load scores using numpy.loadtxt and return the data as a numpy array.
 
@@ -291,17 +377,7 @@ def load_score(filename, ncolumns=None, minimal=False, **kwargs):
   def convertfunc(x):
     return x
 
-  if ncolumns not in (4, 5):
-    f = open_file(filename)
-    try:
-      line = f.readline()
-      ncolumns = len(line.split())
-    except Exception:
-      logger.warn('Could not guess the number of columns in file: {}. '
-                  'Assuming 4 column format.'.format(filename))
-      ncolumns = 4
-    finally:
-      f.close()
+  ncolumns = _estimate_score_file_format(filename, ncolumns)
 
   usecols = kwargs.pop('usecols', None)
   if ncolumns == 4:
@@ -391,6 +467,26 @@ def dump_score(filename, score_lines):
   else:
     raise ValueError("Only scores with 4 and 5 columns are supported.")
   numpy.savetxt(filename, score_lines, fmt=fmt)
+
+
+def _estimate_score_file_format(filename, ncolumns=None):
+  """Estimates the score file format from the given score file.
+  If ``ncolumns`` is in ``(4,5)``, then ``ncolumns`` is returned instead.
+  """
+  if ncolumns in (4, 5):
+    return ncolumns
+
+  f = open_file(filename, 'rb')
+  try:
+    line = f.readline()
+    ncolumns = len(line.split())
+  except Exception:
+    logger.warn('Could not guess the number of columns in file: {}. '
+                'Assuming 4 column format.'.format(filename))
+    ncolumns = 4
+  finally:
+    f.close()
+  return ncolumns
 
 
 def _iterate_score_file(filename):
