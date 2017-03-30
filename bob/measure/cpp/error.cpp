@@ -102,24 +102,22 @@ double bob::measure::farThreshold(const blitz::Array<double,1>& negatives, const
 
   // compute position of the threshold
   double crr = 1.-far_value; // (Correct Rejection Rate; = 1 - FAR)
-  double crr_index = crr * neg.extent(0);
+  double crr_index = crr * neg.extent(0) - 1.;
   // compute the index above the current CRR value
-  int index = std::min((int)std::floor(crr_index), neg.extent(0)-1);
+  int index = std::min((int)std::ceil(crr_index), neg.extent(0)-1);
 
-  // correct index if we have multiple score values at the requested position
-  while (index && neg(index) == neg(index-1)) --index;
+  // increase the threshold when we have several negatives with the same score
+  while (index < neg.extent(0)-1 && neg(index) == neg(index+1)) ++index;
 
   // we compute a correction term to assure that we are in the middle of two cases
-  double correction;
-  if (index){
+  if (index < neg.extent(0)-1){
     // assure that we are in the middle of two cases
-    correction = 0.5 * (neg(index) - neg(index-1));
+    double correction = 0.5 * (neg(index+1) - neg(index));
+    return neg(index) + correction;
   } else {
-    // add an overall correction term
-    correction = 0.5 * (neg(neg.extent(0)-1) - neg(0)) / neg.extent(0);
+    // We cannot reach the desired threshold, as we have too many identical lowest scores, or the number of scores is too low
+    return std::numeric_limits<double>::quiet_NaN();
   }
-
-  return neg(index) - correction;
 }
 
 double bob::measure::frrThreshold(const blitz::Array<double,1>&, const blitz::Array<double,1>& positives, double frr_value, bool isSorted) {
@@ -139,24 +137,22 @@ double bob::measure::frrThreshold(const blitz::Array<double,1>&, const blitz::Ar
   sort(positives, pos, isSorted);
 
   // compute position of the threshold
-  double frr_index = frr_value * pos.extent(0);
+  double frr_index = frr_value * pos.extent(0) - 1.;
   // compute the index above the current CAR value
   int index = std::min((int)std::ceil(frr_index), pos.extent(0)-1);
 
-  // correct index if we have multiple score values at the requested position
-  while (index < pos.extent(0)-1 && pos(index) == pos(index+1)) ++index;
+  // lower the threshold when several positives have the same score
+  while (index && pos(index) == pos(index-1)) --index;
 
   // we compute a correction term to assure that we are in the middle of two cases
-  double correction;
-  if (index < pos.extent(0)-1){
+  if (index){
     // assure that we are in the middle of two cases
-    correction = 0.5 * (pos(index+1) - pos(index));
+    double correction = 0.5 * (pos(index) - pos(index-1));
+    return pos(index) - correction;
   } else {
-    // add an overall correction term
-    correction = 0.5 * (pos(pos.extent(0)-1) - pos(0)) / pos.extent(0);
+    // We cannot reach the desired threshold, as we have too many identical highest scores
+    return std::numeric_limits<double>::quiet_NaN();
   }
-
-  return pos(index) + correction;
 }
 
 /**
