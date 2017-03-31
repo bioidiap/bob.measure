@@ -102,7 +102,7 @@ double bob::measure::farThreshold(const blitz::Array<double,1>& negatives, const
 
   // compute position of the threshold
   double crr = 1.-far_value; // (Correct Rejection Rate; = 1 - FAR)
-  double crr_index = crr * neg.extent(0) - 1.;
+  double crr_index = std::max(crr * neg.extent(0) - 1., 0.);
   // compute the index above the current CRR value
   int index = std::min((int)std::ceil(crr_index), neg.extent(0)-1);
 
