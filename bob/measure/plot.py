@@ -536,6 +536,7 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
   """
 
   import numpy
+  import math
   from matplotlib import pyplot
   from . import far_threshold, detection_identification_rate
 
@@ -548,7 +549,7 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
   thresholds = [far_threshold(negatives, [], v, True) for v in far_values]
 
   # compute detection and identification rate based on the thresholds for the given rank
-  rates = [100.*detection_identification_rate(cmc_scores, t, rank) for t in thresholds]
+  rates = [100.*detection_identification_rate(cmc_scores, t, rank) if not math.isnan(t) else numpy.nan for t in thresholds]
 
   # plot curve
   if logx:
