@@ -537,6 +537,7 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
   """
 
   import numpy
+  import math
   from matplotlib import pyplot
   from . import far_threshold, detection_identification_rate
 
