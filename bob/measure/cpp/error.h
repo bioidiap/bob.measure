@@ -212,7 +212,7 @@ namespace bob { namespace measure {
    * where the FAR equals the FRR. Graphically, this would be equivalent to the
    * intersection between the R.O.C. (or D.E.T.) curves and the identity.
    */
-  double eerThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, bool isSorted = false);
+  double eerThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, bool is_sorted = false);
 
   /**
    * Calculates the equal-error-rate (EER) given the input data, on the ROC
@@ -234,13 +234,13 @@ namespace bob { namespace measure {
    * The higher the cost, the higher the importance given to *not* making
    * mistakes classifying negatives/noise/impostors.
    */
-  double minWeightedErrorRateThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, double cost, bool isSorted = false);
+  double minWeightedErrorRateThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, double cost, bool is_sorted = false);
 
   /**
    * Calculates the minWeightedErrorRateThreshold() when the cost is 0.5.
    */
-  inline double minHterThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, bool isSorted = false) {
-    return minWeightedErrorRateThreshold(negatives, positives, 0.5, isSorted);
+  inline double minHterThreshold(const blitz::Array<double,1>& negatives, const blitz::Array<double,1>& positives, bool is_sorted = false) {
+    return minWeightedErrorRateThreshold(negatives, positives, 0.5, is_sorted);
   }
 
   /**
@@ -254,7 +254,7 @@ namespace bob { namespace measure {
    * @return The computed threshold
    */
   double farThreshold(const blitz::Array<double,1>& negatives,
-      const blitz::Array<double,1>& positives, double far_value, bool isSorted = false);
+      const blitz::Array<double,1>& positives, double far_value, bool is_sorted = false);
 
   /**
    * Computes the threshold such that the real FRR is as close as possible
@@ -267,7 +267,7 @@ namespace bob { namespace measure {
    * @return The computed threshold
    */
   double frrThreshold(const blitz::Array<double,1>& negatives,
-      const blitz::Array<double,1>& positives, double frr_value, bool isSorted = false);
+      const blitz::Array<double,1>& positives, double frr_value, bool is_sorted = false);
 
   /**
    * Calculates the ROC curve given a set of positive and negative scores and a
@@ -326,7 +326,7 @@ namespace bob { namespace measure {
       const blitz::Array<double,1>& negatives,
       const blitz::Array<double,1>& positives,
       const blitz::Array<double,1>& far_list,
-      bool isSorted = false);
+      bool is_sorted = false);
 
   /**
    * Returns the Deviate Scale equivalent of a false rejection/acceptance
@@ -389,7 +389,7 @@ namespace bob { namespace measure {
      const blitz::Array<double,1>& test_negatives,
      const blitz::Array<double,1>& test_positives,
      size_t points,
-     bool isSorted = false,
+     bool is_sorted = false,
      bool thresholds = false);
 
 }}
