@@ -33,10 +33,9 @@ Examples:
 import os
 import sys
 
+from .eval_threshold import apthres
 import bob.core
 logger = bob.core.log.setup("bob.measure")
-
-from .eval_threshold import apthres
 
 
 def main(user_input=None):
@@ -51,14 +50,12 @@ def main(user_input=None):
 
   completions = dict(
       prog=os.path.basename(sys.argv[0]),
-      version=pkg_resources.require('bob.measure')[0].version
-      )
+      version=pkg_resources.require('bob.measure')[0].version)
 
   args = docopt.docopt(
       __doc__ % completions,
       argv=argv,
-      version=completions['version'],
-      )
+      version=completions['version'],)
 
   # Sets-up logging
   verbosity = int(args['--verbose'])
@@ -67,9 +64,9 @@ def main(user_input=None):
   # handles threshold validation
   try:
     args['<threshold>'] = float(args['<threshold>'])
-  except:
-    raise docopt.DocoptExit("cannot convert %s into float for threshold" % \
-        args['<threshold>'])
+  except Exception:
+    raise docopt.DocoptExit("cannot convert %s into float for threshold" %
+                            args['<threshold>'])
 
   from ..load import load_score, get_negatives_positives
   neg, pos = get_negatives_positives(load_score(args['<scores>']))

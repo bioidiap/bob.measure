@@ -40,7 +40,7 @@ def test_compute_perf():
       DEV_SCORES,
       TEST_SCORES,
       '--output=' + tmp_output.name,
-      ]
+  ]
 
   from .script.compute_perf import main
   nose.tools.eq_(main(cmdline), 0)
@@ -56,7 +56,7 @@ def test_compute_perf_only_dev():
   cmdline = [
       DEV_SCORES,
       '--output=' + tmp_output.name,
-      ]
+  ]
 
   from .script.compute_perf import main
   nose.tools.eq_(main(cmdline), 0)
@@ -81,7 +81,7 @@ def test_apply_threshold():
   cmdline = [
       '0.5',
       TEST_SCORES,
-      ]
+  ]
 
   from .script.apply_threshold import main
   nose.tools.eq_(main(cmdline), 0)
@@ -99,7 +99,7 @@ def test_compute_perf_5col():
       DEV_SCORES_5COL,
       TEST_SCORES_5COL,
       '--output=' + tmp_output.name,
-      ]
+  ]
 
   from .script.compute_perf import main
   nose.tools.eq_(main(cmdline), 0)
@@ -117,22 +117,22 @@ def test_compute_cmc():
   tmp_output = tempfile.NamedTemporaryFile(prefix=__name__, suffix='.pdf')
 
   nose.tools.eq_(main([
-    SCORES_4COL_CMC,
-    '--log-x-scale',
-    '--output=%s' % tmp_output.name,
-    ]), 0)
+      SCORES_4COL_CMC,
+      '--log-x-scale',
+      '--output=%s' % tmp_output.name,
+  ]), 0)
 
   tmp_output = tempfile.NamedTemporaryFile(prefix=__name__, suffix='.pdf')
 
   nose.tools.eq_(main([
-    SCORES_5COL_CMC,
-    '--output=%s' % tmp_output.name,
-    ]), 0)
+      SCORES_5COL_CMC,
+      '--output=%s' % tmp_output.name,
+  ]), 0)
 
   tmp_output = tempfile.NamedTemporaryFile(prefix=__name__, suffix='.pdf')
 
   nose.tools.eq_(main([
-    SCORES_4COL_CMC_OS,
-    '--rank=1',
-    '--output=%s' % tmp_output.name,
-    ]), 0)
+      SCORES_4COL_CMC_OS,
+      '--rank=1',
+      '--output=%s' % tmp_output.name,
+  ]), 0)

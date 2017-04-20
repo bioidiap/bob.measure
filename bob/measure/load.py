@@ -55,7 +55,8 @@ def open_file(filename, mode='rt'):
     tar_info = tar.next()
   # check that one file was found in the archive
   if tar_info is None:
-    raise IOError("The given file is a .tar file, but it does not contain any file.")
+    raise IOError(
+        "The given file is a .tar file, but it does not contain any file.")
 
   # open the file for reading
   return tar.extractfile(tar_info)
@@ -348,7 +349,6 @@ def cmc(filename, ncolumns=None):
     return cmc_five_column(filename)
 
 
-
 def load_score(filename, ncolumns=None, minimal=False, **kwargs):
   """Load scores using numpy.loadtxt and return the data as a numpy array.
 
@@ -383,29 +383,29 @@ def load_score(filename, ncolumns=None, minimal=False, **kwargs):
   if ncolumns == 4:
     names = ('claimed_id', 'real_id', 'test_label', 'score')
     converters = {
-      0: convertfunc,
-      1: convertfunc,
-      2: convertfunc,
-      3: float}
+        0: convertfunc,
+        1: convertfunc,
+        2: convertfunc,
+        3: float}
     if minimal:
       usecols = (0, 1, 3)
 
   elif ncolumns == 5:
     names = ('claimed_id', 'model_label', 'real_id', 'test_label', 'score')
     converters = {
-      0: convertfunc,
-      1: convertfunc,
-      2: convertfunc,
-      3: convertfunc,
-      4: float}
+        0: convertfunc,
+        1: convertfunc,
+        2: convertfunc,
+        3: convertfunc,
+        4: float}
     if minimal:
       usecols = (0, 2, 4)
   else:
     raise ValueError("ncolumns of 4 and 5 are supported only.")
 
   score_lines = numpy.genfromtxt(
-    open_file(filename, mode='rb'), dtype=None, names=names,
-    converters=converters, invalid_raise=True, usecols=usecols, **kwargs)
+      open_file(filename, mode='rb'), dtype=None, names=names,
+      converters=converters, invalid_raise=True, usecols=usecols, **kwargs)
   new_dtype = []
   for name in score_lines.dtype.names[:-1]:
     new_dtype.append((name, str(score_lines.dtype[name]).replace('S', 'U')))
@@ -506,17 +506,19 @@ def _iterate_score_file(filename):
     yield splits
 
 
-def _split_scores(score_lines, real_id_index, claimed_id_index = 0, score_index = -1):
+def _split_scores(score_lines, real_id_index, claimed_id_index=0, score_index=-1):
   """Take the output of :py:func:`four_column` or :py:func:`five_column` and return negatives and positives.
   """
   positives, negatives = [], []
   for line in score_lines:
-    which = positives if line[claimed_id_index] == line[real_id_index] else negatives
+    which = positives if line[claimed_id_index] == line[
+        real_id_index] else negatives
     which.append(line[score_index])
 
   return (numpy.array(negatives), numpy.array(positives))
 
-def _split_cmc_scores(score_lines, real_id_index, probe_name_index = None, claimed_id_index = 0, score_index = -1):
+
+def _split_cmc_scores(score_lines, real_id_index, probe_name_index=None, claimed_id_index=0, score_index=-1):
   """Takes the output of :py:func:`four_column` or :py:func:`five_column` and return cmc scores.
   """
   if probe_name_index is None:
@@ -526,7 +528,8 @@ def _split_cmc_scores(score_lines, real_id_index, probe_name_index = None, claim
   neg_dict = {}
   # read four column list
   for line in score_lines:
-    which = pos_dict if line[claimed_id_index] == line[real_id_index] else neg_dict
+    which = pos_dict if line[claimed_id_index] == line[
+        real_id_index] else neg_dict
     probe_name = line[probe_name_index]
     # append score
     if probe_name not in which:
@@ -537,6 +540,8 @@ def _split_cmc_scores(score_lines, real_id_index, probe_name_index = None, claim
   probe_names = sorted(set(neg_dict.keys()).union(set(pos_dict.keys())))
   # get all scores in the desired format
   return [(
-    numpy.array(neg_dict[probe_name], numpy.float64) if probe_name in neg_dict else None,
-    numpy.array(pos_dict[probe_name], numpy.float64) if probe_name in pos_dict else None
+      numpy.array(neg_dict[probe_name],
+                  numpy.float64) if probe_name in neg_dict else None,
+      numpy.array(pos_dict[probe_name],
+                  numpy.float64) if probe_name in pos_dict else None
   ) for probe_name in probe_names]
