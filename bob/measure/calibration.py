@@ -66,12 +66,13 @@ def min_cllr(negatives, positives):
   pos = sorted(positives)
   N = len(neg)
   P = len(pos)
-  I = N+P
-  # now, iterate through both score sets and add a 0 for negative and 1 for positive scores
-  n, p = 0,0
+  I = N + P
+  # now, iterate through both score sets and add a 0 for negative and 1 for
+  # positive scores
+  n, p = 0, 0
   ideal = numpy.zeros(I)
-  neg_indices = [0]*N
-  pos_indices = [0]*P
+  neg_indices = [0] * N
+  pos_indices = [0] * P
   for i in range(I):
     if p < P and (n == N or neg[n] > pos[p]):
       pos_indices[p] = i
@@ -88,12 +89,12 @@ def min_cllr(negatives, positives):
   # disable runtime warnings for a short time since log(0) will raise a warning
   old_warn_setup = numpy.seterr(divide='ignore')
   # ... compute logs
-  posterior_log_odds = numpy.log(popt)-numpy.log(1.-popt);
-  log_prior_odds = math.log(float(P)/float(N));
+  posterior_log_odds = numpy.log(popt) - numpy.log(1. - popt)
+  log_prior_odds = math.log(float(P) / float(N))
   # ... activate old warnings
   numpy.seterr(**old_warn_setup)
 
-  llrs = posterior_log_odds - log_prior_odds;
+  llrs = posterior_log_odds - log_prior_odds
 
   # some weired addition
   #  for i in range(I):

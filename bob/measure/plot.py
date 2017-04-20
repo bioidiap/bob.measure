@@ -3,7 +3,7 @@
 # Mon 23 May 2011 14:36:14 CEST
 
 
-def log_values(min_step = -4, counts_per_step = 4):
+def log_values(min_step=-4, counts_per_step=4):
   """Computes log-scaled values between :math:`10^{M}` and 1
 
   This function computes log-scaled values between :math:`10^{M}` and 1
@@ -32,7 +32,7 @@ def log_values(min_step = -4, counts_per_step = 4):
   """
 
   import math
-  return [math.pow(10., i * 1./counts_per_step) for i in range(min_step*counts_per_step,0)] + [1.]
+  return [math.pow(10., i * 1. / counts_per_step) for i in range(min_step * counts_per_step, 0)] + [1.]
 
 
 def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
@@ -88,12 +88,12 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   from . import roc as calc
   out = calc(negatives, positives, npoints)
   if not CAR:
-    return pyplot.plot(100.0*out[0,:], 100.0*out[1,:], **kwargs)
+    return pyplot.plot(100.0 * out[0, :], 100.0 * out[1, :], **kwargs)
   else:
-    return pyplot.semilogx(100.0*out[0,:], 100.0*(1-out[1,:]), **kwargs)
+    return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
 
 
-def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
+def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
   """Plots the ROC curve for the given list of False Acceptance Rates (FAR).
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
@@ -141,7 +141,7 @@ def roc_for_far(negatives, positives, far_values = log_values(), **kwargs):
   from matplotlib import pyplot
   from . import roc_for_far as calc
   out = calc(negatives, positives, far_values)
-  return pyplot.semilogx(100.0*out[0,:], 100.0*(1-out[1,:]), **kwargs)
+  return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
@@ -189,11 +189,11 @@ def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
   from matplotlib import pyplot
   from . import precision_recall_curve as calc
   out = calc(negatives, positives, npoints)
-  return pyplot.plot(100.0*out[0,:], 100.0*out[1,:], **kwargs)
+  return pyplot.plot(100.0 * out[0, :], 100.0 * out[1, :], **kwargs)
 
 
 def epc(dev_negatives, dev_positives, test_negatives, test_positives,
-    npoints=100, **kwargs):
+        npoints=100, **kwargs):
   """Plots Expected Performance Curve (EPC) as defined in the paper:
 
   Bengio, S., Keller, M., Mariéthoz, J. (2004). The Expected Performance Curve.
@@ -255,8 +255,8 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   from . import epc as calc
 
   out = calc(dev_negatives, dev_positives, test_negatives, test_positives,
-      npoints)
-  return pyplot.plot(out[0,:], 100.0*out[1,:], **kwargs)
+             npoints)
+  return pyplot.plot(out[0, :], 100.0 * out[1, :], **kwargs)
 
 
 def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
@@ -354,7 +354,7 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       "0.995", "0.998", "0.999",
       "0.9995", "0.9998", "0.9999",
       "0.99995", "0.99998", "0.99999"
-      ]
+  ]
 
   desiredLabels = [
       "0.001", "0.002", "0.005",
@@ -366,7 +366,7 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
       "99.5", "99.8", "99.9",
       "99.95", "99.98", "99.99",
       "99.995", "99.998", "99.999"
-      ]
+  ]
 
   # this will actually do the plotting
   from matplotlib import pyplot
@@ -374,11 +374,11 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
   from . import ppndf
 
   out = calc(negatives, positives, npoints)
-  retval = pyplot.plot(out[0,:], out[1,:], **kwargs)
+  retval = pyplot.plot(out[0, :], out[1, :], **kwargs)
 
   # now the trick: we must plot the tick marks by hand using the PPNDF method
   pticks = [ppndf(float(v)) for v in desiredTicks]
-  ax = pyplot.gca() #and finally we set our own tick marks
+  ax = pyplot.gca()  # and finally we set our own tick marks
   ax.set_xticks(pticks)
   ax.set_xticklabels(desiredLabels, size=axisfontsize)
   ax.set_yticks(pticks)
@@ -421,9 +421,10 @@ def det_axis(v, **kwargs):
 
   # treat input
   try:
-    tv = list(v) #normal input
-    if len(tv) != 4: raise IndexError
-    tv = [ppndf(float(k)/100) for k in tv]
+    tv = list(v)  # normal input
+    if len(tv) != 4:
+      raise IndexError
+    tv = [ppndf(float(k) / 100) for k in tv]
     cur = pyplot.axis()
 
     # limits must be within bounds
@@ -446,7 +447,7 @@ def det_axis(v, **kwargs):
   return pyplot.axis(tv, **kwargs)
 
 
-def cmc(cmc_scores, logx = True, **kwargs):
+def cmc(cmc_scores, logx=True, **kwargs):
   """Plots the (cumulative) match characteristics and returns the maximum rank.
 
   This function plots a CMC curve using the given CMC scores, which can be read
@@ -483,15 +484,14 @@ def cmc(cmc_scores, logx = True, **kwargs):
   out = calc(cmc_scores)
 
   if logx:
-    pyplot.semilogx(range(1, len(out)+1), out * 100, **kwargs)
+    pyplot.semilogx(range(1, len(out) + 1), out * 100, **kwargs)
   else:
-    pyplot.plot(range(1, len(out)+1), out * 100, **kwargs)
+    pyplot.plot(range(1, len(out) + 1), out * 100, **kwargs)
 
   return len(out)
 
 
-def detection_identification_curve(cmc_scores, far_values = log_values(), rank
-    = 1, logx = True, **kwargs):
+def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, logx=True, **kwargs):
   """Plots the Detection & Identification curve over the FAR
 
   This curve is designed to be used in an open set identification protocol, and
@@ -539,16 +539,21 @@ def detection_identification_curve(cmc_scores, far_values = log_values(), rank
   from matplotlib import pyplot
   from . import far_threshold, detection_identification_rate
 
-  # for each probe, for which no positives exists, get the highest negative score; and sort them to compute the FAR thresholds
-  negatives = sorted(max(neg) for neg,pos in cmc_scores if (pos is None or not numpy.array(pos).size) and neg is not None)
+  # for each probe, for which no positives exists, get the highest negative
+  # score; and sort them to compute the FAR thresholds
+  negatives = sorted(max(neg) for neg, pos in cmc_scores if (
+      pos is None or not numpy.array(pos).size) and neg is not None)
   if not negatives:
-    raise ValueError("There need to be at least one pair with only negative scores")
+    raise ValueError(
+        "There need to be at least one pair with only negative scores")
 
   # compute thresholds based on FAR values
   thresholds = [far_threshold(negatives, [], v, True) for v in far_values]
 
-  # compute detection and identification rate based on the thresholds for the given rank
-  rates = [100.*detection_identification_rate(cmc_scores, t, rank) for t in thresholds]
+  # compute detection and identification rate based on the thresholds for
+  # the given rank
+  rates = [
+      100. * detection_identification_rate(cmc_scores, t, rank) for t in thresholds]
 
   # plot curve
   if logx:
