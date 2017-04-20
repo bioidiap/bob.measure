@@ -21,7 +21,7 @@ def F(f):
 
 def save(fname, data):
   """Saves a single array into a file in the 'data' directory."""
-  bob.io.base.Array(data).save(os.path.join('data', fname))
+  bob.io.base.save(data, os.path.join('bob/measure/data', fname))
 
 
 def test_basic_ratios():
@@ -237,13 +237,13 @@ def test_plots():
   test_positives = positives[(positives.shape[0]//2):]
   xy = epc(dev_negatives, dev_positives,
       test_negatives, test_positives, 100)
-  # uncomment the next line to save a reference value
-  # save('nonsep-epc.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-epc.hdf5'))
-  assert numpy.allclose(xy, xyref, atol=1e-15)
+  assert numpy.allclose(xy, xyref[:2], atol=1e-15)
   xy = epc(dev_negatives, dev_positives,
       test_negatives, test_positives, 100, False, True)
-  assert numpy.allclose(xy[:2], xyref, atol=1e-15)
+  # uncomment the next line to save a reference value
+  # save('nonsep-epc.hdf5', xy)
+  assert numpy.allclose(xy, xyref, atol=1e-15)
 
 
 def test_rocch():
