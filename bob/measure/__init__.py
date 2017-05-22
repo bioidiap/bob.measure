@@ -171,9 +171,9 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
 
   Parameters:
 
-    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
-      containing the CMC scores loaded with one of the functions
-      (:py:func:`bob.measure.load.cmc_four_column` or
+    cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
+      positives), ...]`` containing the CMC scores loaded with one of the
+      functions (:py:func:`bob.measure.load.cmc_four_column` or
       :py:func:`bob.measure.load.cmc_five_column`).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
@@ -278,9 +278,9 @@ def cmc(cmc_scores):
 
   Parameters:
 
-    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
-      containing the CMC scores loaded with one of the functions
-      (:py:func:`bob.measure.load.cmc_four_column` or
+    cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
+      positives), ...]`` containing the CMC scores loaded with one of the
+      functions (:py:func:`bob.measure.load.cmc_four_column` or
       :py:func:`bob.measure.load.cmc_five_column`).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
@@ -339,9 +339,9 @@ def detection_identification_rate(cmc_scores, threshold, rank = 1):
 
   Parameters:
 
-    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
-      containing the CMC scores loaded with one of the functions
-      (:py:func:`bob.measure.load.cmc_four_column` or
+    cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
+      positives), ...]`` containing the CMC scores loaded with one of the
+      functions (:py:func:`bob.measure.load.cmc_four_column` or
       :py:func:`bob.measure.load.cmc_five_column`).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
@@ -400,9 +400,9 @@ def false_alarm_rate(cmc_scores, threshold):
 
   Parameters:
 
-    cmc_scores (list): A list in the format ``[(negatives, positives), ...]``
-      containing the CMC scores loaded with one of the functions
-      (:py:func:`bob.measure.load.cmc_four_column` or
+    cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
+      positives), ...]`` containing the CMC scores loaded with one of the
+      functions (:py:func:`bob.measure.load.cmc_four_column` or
       :py:func:`bob.measure.load.cmc_five_column`).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one

@@ -152,10 +152,10 @@ def cmc_four_column(filename):
 
   Returns:
 
-    list: A list of tuples, where each tuple contains the ``negative`` and
-    ``positive`` scores for one probe of the database. Both ``negatives`` and
-    ``positives`` can be either an 1D :py:class:`numpy.ndarray` of type
-    ``float``, or ``None``.
+    :py:class:`list`: A list of tuples, where each tuple contains the
+    ``negative`` and ``positive`` scores for one probe of the database. Both
+    ``negatives`` and ``positives`` can be either an 1D
+    :py:class:`numpy.ndarray` of type ``float``, or ``None``.
 
   """
 
@@ -256,8 +256,8 @@ def cmc_five_column(filename):
 
   Returns:
 
-    list: A list of tuples, where each tuple contains the ``negative`` and
-    ``positive`` scores for one probe of the database.
+    :py:class:`list`: A list of tuples, where each tuple contains the
+    ``negative`` and ``positive`` scores for one probe of the database.
 
   """
   score_lines = four_column(filename)
@@ -328,18 +328,18 @@ def cmc(filename, ncolumns=None):
 
   Parameters:
 
-  filename:  :py:class:`str`, ``file-like``:
-    The file object that will be opened with :py:func:`open_file` containing the scores.
+    filename (:py:class:`str` or ``file-like``): The file object that will be
+      opened with :py:func:`open_file` containing the scores.
 
-  ncolumns: int or ``None``
-    If specified to be ``4`` or ``5``, the score file will be assumed to be in the given format.
-    If not specified, the score file format will be estimated automatically
+    ncolumns: (:py:class:`int`, Optional): If specified to be ``4`` or ``5``,
+      the score file will be assumed to be in the given format.  If not
+      specified, the score file format will be estimated automatically
 
   Returns:
 
-  list: [(neg,pos)]
-    A list of tuples, where each tuple contains the ``negative`` and
-    ``positive`` scores for one probe of the database.
+  :py:class:`list`: [(neg,pos)] A list of tuples, where each tuple contains the
+  ``negative`` and ``positive`` scores for one probe of the database.
+
   """
   ncolumns = _estimate_score_file_format(filename, ncolumns)
   if ncolumns == 4:
