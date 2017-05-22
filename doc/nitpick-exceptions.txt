@@ -1,0 +1,2 @@
+# ignores stuff that does not exist in Python 2.7 manual
+py:class list

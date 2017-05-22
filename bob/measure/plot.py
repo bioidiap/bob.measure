@@ -27,7 +27,8 @@ def log_values(min_step=-4, counts_per_step=4):
 
   Returns:
 
-    list: A list of logarithmically scaled values between :math:`10^{M}` and 1.
+    :py:class:`list`: A list of logarithmically scaled values between
+    :math:`10^{M}` and 1.
 
   """
 
