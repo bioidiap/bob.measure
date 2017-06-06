@@ -362,7 +362,7 @@ double bob::measure::rocch2eer(const blitz::Array<double, 2> &pfa_pmiss) {
       eerseg = 0.;
     else {
       // Find line coefficients seg s.t. XY.seg = 1,
-      bob::math::linsolve_(XY, seg, one);
+      bob::math::linsolve(XY, one, seg);
       // Candidate for the EER (to be compared to current value)
       eerseg = 1. / blitz::sum(seg);
     }
