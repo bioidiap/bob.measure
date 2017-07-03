@@ -254,7 +254,9 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
 
 
 def cmc(cmc_scores):
-  """Calculates the cumulative match characteristic (CMC) from the given input.
+  """cmc(cmc_scores) -> array
+
+  Calculates the cumulative match characteristic (CMC) from the given input.
 
   The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one probe
@@ -290,9 +292,11 @@ def cmc(cmc_scores):
 
   Returns:
 
-    array: A 2D float array representing the CMC curve, with the Rank in the
-    first column and the number of correctly classified clients (in this
-    rank) in the second column.
+    array:
+      A 1D float array representing the CMC curve.
+      The rank 1 recognition rate can be found in ``array[0]``, rank 2 rate in
+      ``array[1]``, and so on. The number of ranks (``array.shape[0]``) is the
+      number of gallery items. Values are in range ``[0,1]``.
 
   """
 
