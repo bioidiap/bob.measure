@@ -1,7 +1,7 @@
 bob.extension
 bob.blitz
 bob.core > 2.0.4
-bob.math >= 3.0.0
+bob.math > 2
 bob.io.base
 matplotlib
 docopt
