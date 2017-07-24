@@ -254,9 +254,7 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
 
 
 def cmc(cmc_scores):
-  """cmc(cmc_scores) -> array
-
-  Calculates the cumulative match characteristic (CMC) from the given input.
+  """Calculates the cumulative match characteristic (CMC) from the given input.
 
   The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one probe
@@ -273,31 +271,34 @@ def cmc(cmc_scores):
 
   .. note::
 
-     The CMC is not available for open set classification.  Please use the
+     The CMC is not available for open set classification. Please use the
      :py:func:`detection_identification_rate` and :py:func:`false_alarm_rate`
      instead.
 
 
-  Parameters:
+  Parameters
+  ----------
 
-    cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores loaded with one of the
-      functions (:py:func:`bob.measure.load.cmc_four_column` or
-      :py:func:`bob.measure.load.cmc_five_column`).
+  cmc_scores : :py:class:`list`
+    A list in the format ``[(negatives, positives), ...]`` containing the CMC
+    scores loaded with one of the functions
+    :py:func:`bob.measure.load.cmc_four_column`,
+    :py:func:`bob.measure.load.cmc_five_column`, or
+    :py:func:`bob.measure.load.cmc`.
 
-      Each pair contains the ``negative`` and the ``positive`` scores for **one
-      probe item**.  Each pair can contain up to one empty array (or ``None``),
-      i.e., in case of open set recognition.
+    Each pair contains the ``negative`` and the ``positive`` scores for **one
+    probe item**.  Each pair can contain up to one empty array (or ``None``),
+    i.e., in case of open set recognition.
 
 
-  Returns:
+  Returns
+  -------
 
-    array:
-      A 1D float array representing the CMC curve.
-      The rank 1 recognition rate can be found in ``array[0]``, rank 2 rate in
-      ``array[1]``, and so on. The number of ranks (``array.shape[0]``) is the
-      number of gallery items. Values are in range ``[0,1]``.
-
+  1D :py:class:`numpy.ndarray` of `float`
+    A 1D float array representing the CMC curve.
+    The rank 1 recognition rate can be found in ``array[0]``, rank 2 rate in
+    ``array[1]``, and so on. The number of ranks (``array.shape[0]``) is the
+    number of gallery items. Values are in range ``[0,1]``.
   """
 
   # If no scores are given, we cannot plot anything
