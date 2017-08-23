@@ -511,7 +511,8 @@ def _split_scores(score_lines, real_id_index, claimed_id_index=0, score_index=-1
   """
   positives, negatives = [], []
   for line in score_lines:
-    which = positives if line[claimed_id_index] == line[
+    #print('%s VS %s'% (line[claimed_id_index][0:len(line[real_id_index])], line[real_id_index]))
+    which = positives if line[claimed_id_index][0:len(line[real_id_index])] == line[
         real_id_index] else negatives
     which.append(line[score_index])
 
