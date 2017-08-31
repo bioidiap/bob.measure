@@ -108,6 +108,30 @@ def test_nan_for_uncomputable_thresholds():
   assert math.isnan(frr_threshold(negatives, positives, 0.09))
 
 
+def test_nan_for_uncomputable_thresholds():
+  # in some cases, we cannot compute an FAR or FRR threshold, e.g., when we have too little data or too many equal scores
+  # in these cases, the methods should return NaN
+  from . import far_threshold, frr_threshold
+
+  # case 1: several scores are identical
+  positives = [0., 0., 0., 0., 0.1, 0.2, 0.3, 0.4, 0.5]
+  negatives = [0.5, 0.6, 0.7, 0.8, 0.9, 1., 1., 1., 1.]
+
+  # test that reasonable thresholds for reachable data points are provided
+  assert far_threshold(negatives, positives, 0.5) == 0.95, far_threshold(negatives, positives, 0.5)
+  assert frr_threshold(negatives, positives, 0.5) == 0.05, frr_threshold(negatives, positives, 0.5)
+
+  assert math.isnan(far_threshold(negatives, positives, 0.4))
+  assert math.isnan(frr_threshold(negatives, positives, 0.4))
+
+  # case 2: too few scores for the desired threshold
+  positives = numpy.arange(10.)
+  negatives = numpy.arange(10.)
+
+  assert math.isnan(far_threshold(negatives, positives, 0.09))
+  assert math.isnan(frr_threshold(negatives, positives, 0.09))
+
+
 def test_indexing():
 
   from . import correctly_classified_positives, correctly_classified_negatives
