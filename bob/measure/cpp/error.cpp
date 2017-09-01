@@ -16,6 +16,7 @@
 #include <bob.core/array_sort.h>
 #include <bob.core/assert.h>
 #include <bob.core/cast.h>
+#include <bob.core/logging.h>
 
 #include <bob.math/linsolve.h>
 #include <bob.math/pavx.h>
@@ -37,6 +38,10 @@ std::pair<double, double>
 bob::measure::farfrr(const blitz::Array<double, 1> &negatives,
                      const blitz::Array<double, 1> &positives,
                      double threshold) {
+  if (std::isnan(threshold)){
+    bob::core::error << "Cannot compute FAR or FRR with threshold NaN";
+    return std::make_pair(1.,1.);
+  }
   if (!negatives.size())
     throw std::runtime_error("Cannot compute FAR when no negatives are given");
   if (!positives.size())
@@ -120,19 +125,17 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
 
   // compute position of the threshold
   double crr = 1. - far_value; // (Correct Rejection Rate; = 1 - FAR)
-  double crr_index = std::max(crr * neg.extent(0) - 1., 0.);
+  double crr_index = crr * neg.extent(0) - 1.;
   // compute the index above the current CRR value
-  int index = std::min((int)std::ceil(crr_index), neg.extent(0)-1);
+  int index = (int)std::ceil(crr_index);
 
   // increase the threshold when we have several negatives with the same score
-  while (index < neg.extent(0)-1 && neg(index) == neg(index+1)) ++index;
-    --index;
+  while (index < neg.extent(0)-1 && neg(index) == neg(index+1))
+    ++index;
 
-  // we compute a correction term to assure that we are in the middle of two
   if (index < neg.extent(0)-1){
-    // assure that we are in the middle of two cases
-    double correction = 0.5 * (neg(index+1) - neg(index));
-    return neg(index) + correction;
+    // return the threshold that is just above the desired FAR
+    return neg(index);
   } else {
     // We cannot reach the desired threshold, as we have too many identical lowest scores, or the number of scores is too low
     return std::numeric_limits<double>::quiet_NaN();
@@ -161,18 +164,17 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
 
   // compute position of the threshold
   double frr_index = frr_value * pos.extent(0) - 1.;
-  // compute the index above the current CAR value
-  int index = std::min((int)std::ceil(frr_index), pos.extent(0) - 1);
+  // compute the index below the current FAR value
+  int index = (int)std::ceil(frr_index);
 
   // lower the threshold when several positives have the same score
-  while (index && pos(index) == pos(index-1)) --index;
-    ++index;
+  while (index && pos(index) == pos(index-1))
+    --index;
 
-  // we compute a correction term to assure that we are in the middle of two
   if (index){
-    // assure that we are in the middle of two cases
-    double correction = 0.5 * (pos(index) - pos(index-1));
-    return pos(index) - correction;
+    // return the FRR threshold that is just above the desired FRR
+    // We have to add a little noise to since the FRR calculation excludes the threshold
+    return pos(index) + 1e-8 * pos(index);
   } else {
     // We cannot reach the desired threshold, as we have too many identical highest scores
     return std::numeric_limits<double>::quiet_NaN();
