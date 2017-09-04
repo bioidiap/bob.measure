@@ -713,7 +713,11 @@ static PyObject *precision_recall_curve(PyObject *, PyObject *args,
 static auto far_threshold_doc =
     bob::extension::FunctionDoc(
         "far_threshold", "Computes the threshold such that the real FAR is "
-                         "**at least** the requested ``far_value``",
+                         "**at least** the requested ``far_value`` if possible",
+        "If no such threshold can be computed, ``NaN`` is returned. It is "
+        "impossible to compute the threshold, when too few non-identical "
+        "highest scores exist, so that the desired ``far_value`` cannot be "
+        "reached by any threshold.\n\n"
         ".. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
         "copied.\n"
@@ -769,7 +773,11 @@ static PyObject *far_threshold(PyObject *, PyObject *args, PyObject *kwds) {
 static auto frr_threshold_doc =
     bob::extension::FunctionDoc(
         "frr_threshold", "Computes the threshold such that the real FRR is "
-                         "**at least** the requested ``frr_value``",
+                         "**at least** the requested ``frr_value`` if possible",
+        "If no such threshold can be computed, ``NaN`` is returned. It is "
+        "impossible to compute the threshold, when too few non-identical "
+        "lowest scores exist, so that the desired ``frr_value`` cannot be "
+        "reached by any threshold.\n\n"
         ".. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
         "copied.\n"
