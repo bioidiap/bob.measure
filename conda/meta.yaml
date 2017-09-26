@@ -1,0 +1,76 @@
+{% set name = 'bob.measure' %}
+{% set project_dir = environ.get('RECIPE_DIR') + '/..' %}
+
+package:
+  name: {{ name }}
+  version: {{ environ.get('BOB_PACKAGE_VERSION', '0.0.1') }}
+
+build:
+  entry_points:
+    - bob_compute_perf.py = bob.measure.script.compute_perf:main
+    - bob_eval_threshold.py = bob.measure.script.eval_threshold:main
+    - bob_apply_threshold.py = bob.measure.script.apply_threshold:main
+    - bob_plot_cmc.py = bob.measure.script.plot_cmc:main
+  number: {{ environ.get('BOB_BUILD_NUMBER', 0) }}
+  script:
+    - cd {{ project_dir }}
+    {% if environ.get('BUILD_EGG') %}
+    - python setup.py sdist --formats=zip
+    {% endif %}
+    - pip install --verbose .
+
+requirements:
+  build:
+    - python {{ python }}
+    - setuptools {{ setuptools }}
+    - toolchain {{ toolchain }}
+    - bob.extension
+    - bob.blitz
+    - bob.core >2.0.4
+    - bob.math
+    - bob.io.base
+    - matplotlib {{ matplotlib }}
+    - pkg-config {{ pkg_config }}
+    - libblitz {{ libblitz }}
+    - boost {{ boost }}
+    - numpy {{ numpy }}
+    - docopt {{ docopt }}
+    - gcc {{ gcc }}  # [linux]
+    - libgcc {{ libgcc }}  # [linux]
+  run:
+    - python
+    - setuptools
+    - bob.extension
+    - bob.blitz
+    - bob.core >2.0.4
+    - bob.math
+    - bob.io.base
+    - matplotlib
+    - libblitz
+    - boost
+    - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
+    - docopt
+    - libgcc  # [linux]
+
+test:
+  imports:
+    - {{ name }}
+  commands:
+    - bob_compute_perf.py --help
+    - bob_eval_threshold.py --help
+    - bob_apply_threshold.py --help
+    - bob_plot_cmc.py --help
+    - nosetests --with-coverage --cover-package={{ name }} -sv {{ name }}
+    - sphinx-build -aEW {{ project_dir }}/doc {{ project_dir }}/sphinx
+    - sphinx-build -aEb doctest {{ project_dir }}/doc sphinx
+  requires:
+    - nose {{ nose }}.*
+    - coverage {{ coverage }}.*
+    - sphinx {{ sphinx }}.*
+    - sphinx_rtd_theme {{ sphinx_rtd_theme }}.*
+
+about:
+  home: https://www.idiap.ch/software/bob/
+  license: BSD 3-Clause
+  summary: Bob's evalution metrics
+  license_family: BSD
