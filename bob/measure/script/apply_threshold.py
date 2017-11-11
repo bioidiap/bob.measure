@@ -5,7 +5,7 @@
 
 """Applies a threshold to score file and reports error rates
 
-Usage: %(prog)s [-v...] [options] <threshold> <scores>
+Usage: %(prog)s [-v...] [options] [--] <threshold> <scores>
        %(prog)s --help
        %(prog)s --version
 
