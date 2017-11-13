@@ -86,6 +86,13 @@ def test_apply_threshold():
   from .script.apply_threshold import main
   nose.tools.eq_(main(cmdline), 0)
 
+  cmdline = [
+      '--',
+      '-0.5',
+      TEST_SCORES,
+  ]
+  nose.tools.eq_(main(cmdline), 0)
+
 
 def test_compute_perf_5col():
 
