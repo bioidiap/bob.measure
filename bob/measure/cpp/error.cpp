@@ -138,6 +138,7 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
     return neg(index);
   } else {
     // We cannot reach the desired threshold, as we have too many identical lowest scores, or the number of scores is too low
+    bob::core::warn << "The threshold cannot be computed for an FAR value of " << far_value;
     return std::numeric_limits<double>::quiet_NaN();
   }
 }
@@ -177,6 +178,7 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
     return pos(index) + 1e-8 * pos(index);
   } else {
     // We cannot reach the desired threshold, as we have too many identical highest scores
+    bob::core::warn << "The threshold cannot be computed for an FRR value of " << frr_value;
     return std::numeric_limits<double>::quiet_NaN();
   }
 }
