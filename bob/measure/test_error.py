@@ -174,12 +174,10 @@ def test_obvious_thresholds():
     far, expected_far = round(far, 2), math.floor(far*10)/10
     frr, expected_frr = round(frr, 2), math.floor(frr*10)/10
     calculated_far_threshold = far_threshold(neg, pos, far)
-    predicted_far, _ = farfrr(
-        neg, pos, calculated_far_threshold)
+    predicted_far, _ = farfrr(neg, pos, calculated_far_threshold)
 
     calculated_frr_threshold = frr_threshold(neg, pos, frr)
-    _, predicted_frr = farfrr(
-        neg, pos, calculated_frr_threshold)
+    _, predicted_frr = farfrr(neg, pos, calculated_frr_threshold)
     assert predicted_far <= far, (predicted_far, far, calculated_far_threshold)
     assert predicted_far == expected_far
     assert predicted_frr <= frr, (predicted_frr, frr, calculated_frr_threshold)
