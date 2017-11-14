@@ -127,9 +127,9 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   // is done by counting the number of repeated samples at the end of
   // negatives.
   double counter = 1.;
-  int check_index = neg.extent(0)-1;
-  while (check_index >= 1 &&  neg(check_index) == neg(check_index-1)) {
-    --check_index;
+  int index = neg.extent(0)-1;
+  while (index >= 1 &&  neg(index) == neg(index-1)) {
+    --index;
     ++counter;
   }
   // if requested FAR is less than the least possible value. We cannot reach
@@ -143,7 +143,7 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  int index = neg.extent(0)-1;
+  index = neg.extent(0)-1;
 
   // far == 0 is a corner case
   if (far_value <= 1e-12)
@@ -193,9 +193,9 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
   // is done by counting the number of repeated samples at the beginning of
   // positives.
   double counter = 1.;
-  int check_index = 0;
-  while (check_index < pos.extent(0)-1  &&  pos(check_index) == pos(check_index+1)) {
-    ++check_index;
+  int index = 0;
+  while (index < pos.extent(0)-1  &&  pos(index) == pos(index+1)) {
+    ++index;
     ++counter;
   }
   // if requested FRR is less than the least possible value. We cannot reach
@@ -209,7 +209,7 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  int index = 0;
+  index = 0;
 
   // frr == 0 is a corner case
   if (frr_value <= 1e-12)
