@@ -39,7 +39,7 @@ bob::measure::farfrr(const blitz::Array<double, 1> &negatives,
                      const blitz::Array<double, 1> &positives,
                      double threshold) {
   if (std::isnan(threshold)){
-    bob::core::error << "Cannot compute FAR or FRR with threshold NaN";
+    bob::core::error << "Cannot compute FAR or FRR with threshold NaN.\n";
     return std::make_pair(1.,1.);
   }
   if (!negatives.size())
@@ -123,24 +123,50 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   blitz::Array<double, 1> neg;
   sort(negatives, neg, is_sorted);
 
-  // compute position of the threshold
-  double crr = 1. - far_value; // (Correct Rejection Rate; = 1 - FAR)
-  double crr_index = std::max(crr * neg.extent(0) - 1., 0.);
-  // compute the index above the current CRR value
-  int index = (int)std::ceil(crr_index);
-
-  // increase the threshold when we have several negatives with the same score
-  while (index < neg.extent(0)-1 && neg(index) == neg(index+1))
-    ++index;
-
-  if (index < neg.extent(0)-1){
-    // return the threshold that is just above the desired FAR
-    return neg(index);
-  } else {
-    // We cannot reach the desired threshold, as we have too many identical lowest scores, or the number of scores is too low
-    bob::core::warn << "The threshold cannot be computed for an FAR value of " << far_value;
+  // Calculate the minimum possible FAR that can be requested besides 0. This
+  // is done by counting the number of repeated samples at the end of
+  // negatives.
+  double counter = 1.;
+  int check_index = neg.extent(0)-1;
+  while (check_index >= 1 &&  neg(check_index) == neg(check_index-1)) {
+    --check_index;
+    ++counter;
+  }
+  // if requested FAR is less than the least possible value. We cannot reach
+  // the desired threshold, as we have too many identical lowest scores, or the
+  // number of scores is too low
+  if (far_value >= 1e-12 && far_value < counter / (double)neg.extent(0)) {
+    bob::core::error << "The threshold cannot be computed for an FAR value of "
+    << far_value << ". There are either too many repeated largest scores or "
+    "the number of scores is too low. The minimum possible FAR value is "
+    << counter / (double)neg.extent(0) << "\n";
     return std::numeric_limits<double>::quiet_NaN();
   }
+
+  int index = neg.extent(0)-1;
+
+  // far == 0 is a corner case
+  if (far_value <= 1e-12)
+    return neg(index) + 1e-12;
+
+  // far == 1 is a corner case
+  if (far_value >= 1 - 1e-12)
+    return neg(0) - 1e-12;
+
+  // move to the left of array changing the threshold until we pass the desired
+  // FAR value.
+  double threshold;
+  double future_far;
+  while (index >= 0) {
+    threshold = neg(index);
+    if (index == 0)
+      break;
+    future_far = blitz::count(neg >= neg(index-1)) / (double)neg.extent(0);
+    if (future_far > far_value)
+      break;
+    --index;
+  }
+  return threshold;
 }
 
 double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
@@ -163,24 +189,50 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
   blitz::Array<double, 1> pos;
   sort(positives, pos, is_sorted);
 
-  // compute position of the threshold
-  double frr_index = std::max(frr_value * pos.extent(0) - 1., 0.);
-  // compute the index below the current FAR value
-  int index = (int)std::ceil(frr_index);
-
-  // lower the threshold when several positives have the same score
-  while (index && pos(index) == pos(index-1))
-    --index;
-
-  if (index){
-    // return the FRR threshold that is just above the desired FRR
-    // We have to add a little noise to since the FRR calculation excludes the threshold
-    return pos(index) + 1e-8 * pos(index);
-  } else {
-    // We cannot reach the desired threshold, as we have too many identical highest scores
-    bob::core::warn << "The threshold cannot be computed for an FRR value of " << frr_value;
+  // Calculate the minimum possible FRR that can be requested besides 0. This
+  // is done by counting the number of repeated samples at the beginning of
+  // positives.
+  double counter = 1.;
+  int check_index = 0;
+  while (check_index < pos.extent(0)-1  &&  pos(check_index) == pos(check_index+1)) {
+    ++check_index;
+    ++counter;
+  }
+  // if requested FRR is less than the least possible value. We cannot reach
+  // the desired threshold, as we have too many identical lowest scores, or the
+  // number of scores is too low
+  if (frr_value >= 1e-12 && frr_value < counter / (double)pos.extent(0)) {
+    bob::core::error << "The threshold cannot be computed for an FRR value of "
+    << frr_value << ". There are either too many repeated lowest scores or "
+    "the number of scores is too low. The minimum possible FRR value is "
+    << counter / (double)pos.extent(0) << "\n";
     return std::numeric_limits<double>::quiet_NaN();
   }
+
+  int index = 0;
+
+  // frr == 0 is a corner case
+  if (frr_value <= 1e-12)
+    return pos(0) - 1e-12;
+
+  // frr == 1 is a corner case
+  if (frr_value >= 1 - 1e-12)
+    return pos(pos.extent(0)-1) + 1e-12;
+
+  // move to the right of array changing the threshold until we pass the
+  // desired FRR value.
+  double threshold;
+  double future_frr;
+  while (index < pos.extent(0)) {
+    threshold = pos(index);
+    if (index == pos.extent(0)-1)
+      break;
+    future_frr = blitz::count(pos < pos(index+1)) / (double)pos.extent(0);
+    if (future_frr > frr_value)
+      break;
+    ++index;
+  }
+  return threshold;
 }
 
 /**

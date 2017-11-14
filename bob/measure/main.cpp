@@ -713,7 +713,7 @@ static PyObject *precision_recall_curve(PyObject *, PyObject *args,
 static auto far_threshold_doc =
     bob::extension::FunctionDoc(
         "far_threshold", "Computes the threshold such that the real FAR is "
-                         "**at least** the requested ``far_value`` if possible",
+                         "**at most** the requested ``far_value`` if possible",
         "If no such threshold can be computed, ``NaN`` is returned. It is "
         "impossible to compute the threshold, when too few non-identical "
         "highest scores exist, so that the desired ``far_value`` cannot be "
@@ -742,7 +742,7 @@ static auto far_threshold_doc =
                        "will require more memory")
         .add_return(
             "threshold", "float",
-            "The threshold such that the real FAR is at least ``far_value``");
+            "The threshold such that the real FAR is at most ``far_value``");
 static PyObject *far_threshold(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   static char **kwlist = far_threshold_doc.kwlist();
@@ -773,7 +773,7 @@ static PyObject *far_threshold(PyObject *, PyObject *args, PyObject *kwds) {
 static auto frr_threshold_doc =
     bob::extension::FunctionDoc(
         "frr_threshold", "Computes the threshold such that the real FRR is "
-                         "**at least** the requested ``frr_value`` if possible",
+                         "**at most** the requested ``frr_value`` if possible",
         "If no such threshold can be computed, ``NaN`` is returned. It is "
         "impossible to compute the threshold, when too few non-identical "
         "lowest scores exist, so that the desired ``frr_value`` cannot be "
@@ -802,7 +802,7 @@ static auto frr_threshold_doc =
                        "will require more memory")
         .add_return(
             "threshold", "float",
-            "The threshold such that the real FRR is at least ``frr_value``");
+            "The threshold such that the real FRR is at most ``frr_value``");
 static PyObject *frr_threshold(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   char **kwlist = frr_threshold_doc.kwlist();

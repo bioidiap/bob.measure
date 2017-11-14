@@ -85,8 +85,9 @@ def test_basic_ratios():
 
 
 def test_nan_for_uncomputable_thresholds():
-  # in some cases, we cannot compute an FAR or FRR threshold, e.g., when we have too little data or too many equal scores
-  # in these cases, the methods should return NaN
+  # in some cases, we cannot compute an FAR or FRR threshold, e.g., when we
+  # have too little data or too many equal scores in these cases, the methods
+  # should return NaN
   from . import far_threshold, frr_threshold
 
   # case 1: several scores are identical
@@ -95,7 +96,7 @@ def test_nan_for_uncomputable_thresholds():
 
   # test that reasonable thresholds for reachable data points are provided
   threshold = far_threshold(negatives, positives, 0.5)
-  assert threshold == 0.9, threshold
+  assert threshold == 1.0, threshold
   threshold = frr_threshold(negatives, positives, 0.5)
   assert numpy.isclose(threshold, 0.1), threshold
 
@@ -108,10 +109,11 @@ def test_nan_for_uncomputable_thresholds():
   positives = [0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
   negatives = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0]
 
-  assert far_threshold(negatives, positives, 0.5) == 0.9
+  threshold = far_threshold(negatives, positives, 0.5)
+  assert threshold == 1.0, threshold
   assert numpy.isclose(frr_threshold(negatives, positives, 0.51), 0.1)
   assert math.isnan(far_threshold(negatives, positives, 0.49))
-  assert math.isnan(frr_threshold(negatives, positives, 0.5))
+  assert math.isnan(frr_threshold(negatives, positives, 0.49))
 
   # case 2: too few scores for the desired threshold
   positives = numpy.arange(10.)
@@ -121,9 +123,14 @@ def test_nan_for_uncomputable_thresholds():
   assert math.isnan(threshold), threshold
   threshold = frr_threshold(negatives, positives, 0.09)
   assert math.isnan(threshold), threshold
-  # there is no limit above; the threshold will just be the largest possible value
-  assert far_threshold(negatives, positives, 0.11) == 8.
-  assert far_threshold(negatives, positives, 0.91) == 0.
+  # there is no limit above; the threshold will just be the largest possible
+  # value
+  threshold = far_threshold(negatives, positives, 0.11)
+  assert threshold == 9., threshold
+  threshold = far_threshold(negatives, positives, 0.91)
+  assert threshold == 1., threshold
+  threshold = far_threshold(negatives, positives, 1)
+  assert threshold <= 0., threshold
   assert numpy.isclose(frr_threshold(negatives, positives, 0.11), 1.)
   assert numpy.isclose(frr_threshold(negatives, positives, 0.91), 9.)
 
@@ -212,12 +219,12 @@ def test_thresholding():
     far = farfrr(negatives, positives, threshold_far)[0]
     frr = farfrr(negatives, positives, threshold_frr)[1]
     if not math.isnan(threshold_far):
-      assert far + 1e-7 > t, (far,t)
-      assert far - t <= 0.1
+      assert far <= t, (far, t)
+      assert t - far <= 0.1, (far, t)
     if not math.isnan(threshold_frr):
-      assert frr + 1e-7 > t, (frr,t)
+      assert frr <= t, (frr, t)
       # test that the values are at least somewhere in the range
-      assert frr - t <= 0.1
+      assert t - frr <= 0.1, (frr, t)
 
   # If the set is separable, the calculation of the threshold is a little bit
   # trickier, as you have no points in the middle of the range to compare
