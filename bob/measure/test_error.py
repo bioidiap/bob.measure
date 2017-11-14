@@ -169,10 +169,10 @@ def test_obvious_thresholds():
   neg = numpy.array(range(M), dtype=float)
   pos = numpy.array(range(M, 2 * M), dtype=float)
 
-  for far, frr in zip(numpy.array(range(0, M + 1), dtype=float) / neg.size,
-                      numpy.array(range(0, M + 1), dtype=float) / pos.size):
-    far = round(far, int(M / 10))
-    frr = round(frr, int(M / 10))
+  for far, frr in zip(numpy.array(range(0, 2*M + 1), dtype=float) / neg.size/2,
+                      numpy.array(range(0, 2*M + 1), dtype=float) / pos.size/2):
+    far, expected_far = round(far, 2), math.floor(far*10)/10
+    frr, expected_frr = round(frr, 2), math.floor(frr*10)/10
     calculated_far_threshold = far_threshold(neg, pos, far)
     predicted_far, _ = farfrr(
         neg, pos, calculated_far_threshold)
@@ -180,8 +180,10 @@ def test_obvious_thresholds():
     calculated_frr_threshold = frr_threshold(neg, pos, frr)
     _, predicted_frr = farfrr(
         neg, pos, calculated_frr_threshold)
-    assert predicted_far <= far, (far, calculated_far_threshold, predicted_far)
-    assert predicted_frr <= frr, (frr, calculated_frr_threshold, predicted_frr)
+    assert predicted_far <= far, (predicted_far, far, calculated_far_threshold)
+    assert predicted_far == expected_far
+    assert predicted_frr <= frr, (predicted_frr, frr, calculated_frr_threshold)
+    assert predicted_frr == expected_frr
 
 
 def test_thresholding():
@@ -220,11 +222,11 @@ def test_thresholding():
     frr = farfrr(negatives, positives, threshold_frr)[1]
     if not math.isnan(threshold_far):
       assert far <= t, (far, t)
-      assert t - far <= 0.1, (far, t)
+      assert far - t <= 0.1
     if not math.isnan(threshold_frr):
       assert frr <= t, (frr, t)
       # test that the values are at least somewhere in the range
-      assert t - frr <= 0.1, (frr, t)
+      assert frr - t <= 0.1
 
   # If the set is separable, the calculation of the threshold is a little bit
   # trickier, as you have no points in the middle of the range to compare

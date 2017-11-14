@@ -105,7 +105,7 @@ double bob::measure::eerRocch(const blitz::Array<double, 1> &negatives,
 }
 
 double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
-                                  const blitz::Array<double, 1> &,
+                                  const blitz::Array<double, 1> &positives,
                                   double far_value, bool is_sorted) {
   // check the parameters are valid
   if (far_value < 0. || far_value > 1.) {
@@ -155,21 +155,18 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
 
   // move to the left of array changing the threshold until we pass the desired
   // FAR value.
-  double threshold;
+  double threshold = neg(index);
   double future_far;
-  while (index >= 0) {
-    threshold = neg(index);
-    if (index == 0)
-      break;
+  while (index > 0) {
     future_far = blitz::count(neg >= neg(index-1)) / (double)neg.extent(0);
     if (future_far > far_value)
       break;
-    --index;
+    threshold = neg(--index);
   }
   return threshold;
 }
 
-double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
+double bob::measure::frrThreshold(const blitz::Array<double, 1> &negatives,
                                   const blitz::Array<double, 1> &positives,
                                   double frr_value, bool is_sorted) {
 
@@ -221,16 +218,13 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
 
   // move to the right of array changing the threshold until we pass the
   // desired FRR value.
-  double threshold;
+  double threshold = pos(index);
   double future_frr;
-  while (index < pos.extent(0)) {
-    threshold = pos(index);
-    if (index == pos.extent(0)-1)
-      break;
+  while (index < pos.extent(0)-1) {
     future_frr = blitz::count(pos < pos(index+1)) / (double)pos.extent(0);
     if (future_frr > frr_value)
       break;
-    ++index;
+    threshold = pos(++index);
   }
   return threshold;
 }
