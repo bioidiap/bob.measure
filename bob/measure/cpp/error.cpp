@@ -133,8 +133,8 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
     ++counter;
   }
   // if requested FAR is less than the least possible value. We cannot reach
-  // the desired threshold, as we have too many identical lowest scores, or the
-  // number of scores is too low
+  // the desired threshold, as we have too many identical largest scores, or
+  // the number of scores is too low.
   if (far_value >= 1e-12 && far_value < counter / (double)neg.extent(0)) {
     bob::core::error << "The threshold cannot be computed for an FAR value of "
     << far_value << ". There are either too many repeated largest scores or "
@@ -200,7 +200,7 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &,
   }
   // if requested FRR is less than the least possible value. We cannot reach
   // the desired threshold, as we have too many identical lowest scores, or the
-  // number of scores is too low
+  // number of scores is too low.
   if (frr_value >= 1e-12 && frr_value < counter / (double)pos.extent(0)) {
     bob::core::error << "The threshold cannot be computed for an FRR value of "
     << frr_value << ". There are either too many repeated lowest scores or "
