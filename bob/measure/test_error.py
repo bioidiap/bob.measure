@@ -7,7 +7,7 @@
 
 """Basic tests for the error measuring system of bob
 """
-
+from __future__ import division
 import os
 import numpy
 import nose.tools
@@ -166,22 +166,34 @@ def test_indexing():
 def test_obvious_thresholds():
   from . import far_threshold, frr_threshold, farfrr
   M = 10
-  neg = numpy.array(range(M), dtype=float)
-  pos = numpy.array(range(M, 2 * M), dtype=float)
+  neg = numpy.arange(M, dtype=float)
+  pos = numpy.arange(M, 2 * M, dtype=float)
 
-  for far, frr in zip(numpy.array(range(0, 2*M + 1), dtype=float) / neg.size/2,
-                      numpy.array(range(0, 2*M + 1), dtype=float) / pos.size/2):
-    far, expected_far = round(far, 2), math.floor(far*10)/10
-    frr, expected_frr = round(frr, 2), math.floor(frr*10)/10
+  for far, frr in zip(numpy.arange(0, 2 * M + 1, dtype=float) / M / 2,
+                      numpy.arange(0, 2 * M + 1, dtype=float) / M / 2):
+    far, expected_far = round(far, 2), math.floor(far * 10) / 10
+    frr, expected_frr = round(frr, 2), math.floor(frr * 10) / 10
     calculated_far_threshold = far_threshold(neg, pos, far)
     predicted_far, _ = farfrr(neg, pos, calculated_far_threshold)
 
     calculated_frr_threshold = frr_threshold(neg, pos, frr)
     _, predicted_frr = farfrr(neg, pos, calculated_frr_threshold)
-    assert predicted_far <= far, (predicted_far, far, calculated_far_threshold)
-    assert predicted_far == expected_far
-    assert predicted_frr <= frr, (predicted_frr, frr, calculated_frr_threshold)
-    assert predicted_frr == expected_frr
+    if far < 1. / M and far != 0:
+      assert math.isnan(calculated_far_threshold), (predicted_far,
+                                                    far,
+                                                    calculated_far_threshold)
+      assert math.isnan(calculated_frr_threshold), (predicted_frr,
+                                                    frr,
+                                                    calculated_frr_threshold)
+    else:
+      assert predicted_far <= far, (predicted_far,
+                                    far, calculated_far_threshold)
+      assert predicted_far == expected_far, (predicted_far,
+                                             far, calculated_far_threshold)
+      assert predicted_frr <= frr, (predicted_frr,
+                                    frr, calculated_frr_threshold)
+      assert predicted_frr == expected_frr, (predicted_frr,
+                                             frr, calculated_frr_threshold)
 
 
 def test_thresholding():
@@ -220,11 +232,11 @@ def test_thresholding():
     frr = farfrr(negatives, positives, threshold_frr)[1]
     if not math.isnan(threshold_far):
       assert far <= t, (far, t)
-      assert far - t <= 0.1
+      assert t - far <= 0.1
     if not math.isnan(threshold_frr):
       assert frr <= t, (frr, t)
       # test that the values are at least somewhere in the range
-      assert frr - t <= 0.1
+      assert t - frr <= 0.1
 
   # If the set is separable, the calculation of the threshold is a little bit
   # trickier, as you have no points in the middle of the range to compare
