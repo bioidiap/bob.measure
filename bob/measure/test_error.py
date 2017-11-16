@@ -84,55 +84,59 @@ def test_basic_ratios():
   nose.tools.eq_(f_score_, 1.0)
 
 
-def test_nan_for_uncomputable_thresholds():
+def test_for_uncomputable_thresholds():
   # in some cases, we cannot compute an FAR or FRR threshold, e.g., when we
   # have too little data or too many equal scores in these cases, the methods
-  # should return NaN
+  # should return a threshold which a supports a lower value.
   from . import far_threshold, frr_threshold
 
   # case 1: several scores are identical
-  positives = [0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-  negatives = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0]
+  pos = [0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+  neg = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0]
 
   # test that reasonable thresholds for reachable data points are provided
-  threshold = far_threshold(negatives, positives, 0.5)
+  threshold = far_threshold(neg, pos, 0.5)
   assert threshold == 1.0, threshold
-  threshold = frr_threshold(negatives, positives, 0.5)
+  threshold = frr_threshold(neg, pos, 0.5)
   assert numpy.isclose(threshold, 0.1), threshold
 
-  threshold = far_threshold(negatives, positives, 0.4)
-  assert math.isnan(threshold), threshold
-  threshold = frr_threshold(negatives, positives, 0.4)
-  assert math.isnan(threshold), threshold
+  threshold = far_threshold(neg, pos, 0.4)
+  assert threshold > neg[-1], threshold
+  threshold = frr_threshold(neg, pos, 0.4)
+  assert threshold >= pos[0], threshold
 
   # test the same with even number of scores
-  positives = [0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-  negatives = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0]
+  pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+  neg = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0]
 
-  threshold = far_threshold(negatives, positives, 0.5)
+  threshold = far_threshold(neg, pos, 0.5)
   assert threshold == 1.0, threshold
-  assert numpy.isclose(frr_threshold(negatives, positives, 0.51), 0.1)
-  assert math.isnan(far_threshold(negatives, positives, 0.49))
-  assert math.isnan(frr_threshold(negatives, positives, 0.49))
+  assert numpy.isclose(frr_threshold(neg, pos, 0.51), 0.1)
+  threshold = far_threshold(neg, pos, 0.49)
+  assert threshold > neg[-1], threshold
+  threshold = frr_threshold(neg, pos, 0.49)
+  assert threshold >= pos[0], threshold
 
   # case 2: too few scores for the desired threshold
-  positives = numpy.arange(10.)
-  negatives = numpy.arange(10.)
+  pos = numpy.array(range(10), dtype=float)
+  neg = numpy.array(range(10), dtype=float)
 
-  threshold = far_threshold(negatives, positives, 0.09)
-  assert math.isnan(threshold), threshold
-  threshold = frr_threshold(negatives, positives, 0.09)
-  assert math.isnan(threshold), threshold
+  threshold = far_threshold(neg, pos, 0.09)
+  assert threshold > neg[-1], threshold
+  threshold = frr_threshold(neg, pos, 0.09)
+  assert threshold >= pos[0], threshold
   # there is no limit above; the threshold will just be the largest possible
   # value
-  threshold = far_threshold(negatives, positives, 0.11)
+  threshold = far_threshold(neg, pos, 0.11)
   assert threshold == 9., threshold
-  threshold = far_threshold(negatives, positives, 0.91)
+  threshold = far_threshold(neg, pos, 0.91)
   assert threshold == 1., threshold
-  threshold = far_threshold(negatives, positives, 1)
+  threshold = far_threshold(neg, pos, 1)
   assert threshold <= 0., threshold
-  assert numpy.isclose(frr_threshold(negatives, positives, 0.11), 1.)
-  assert numpy.isclose(frr_threshold(negatives, positives, 0.91), 9.)
+  threshold = frr_threshold(neg, pos, 0.11)
+  assert numpy.isclose(threshold, 1.), threshold
+  threshold = frr_threshold(neg, pos, 0.91)
+  assert numpy.isclose(threshold, 9.), threshold
 
 
 def test_indexing():
@@ -174,26 +178,14 @@ def test_obvious_thresholds():
     far, expected_far = round(far, 2), math.floor(far * 10) / 10
     frr, expected_frr = round(frr, 2), math.floor(frr * 10) / 10
     calculated_far_threshold = far_threshold(neg, pos, far)
-    predicted_far, _ = farfrr(neg, pos, calculated_far_threshold)
+    pred_far, _ = farfrr(neg, pos, calculated_far_threshold)
 
     calculated_frr_threshold = frr_threshold(neg, pos, frr)
-    _, predicted_frr = farfrr(neg, pos, calculated_frr_threshold)
-    if far < 1. / M and far != 0:
-      assert math.isnan(calculated_far_threshold), (predicted_far,
-                                                    far,
-                                                    calculated_far_threshold)
-      assert math.isnan(calculated_frr_threshold), (predicted_frr,
-                                                    frr,
-                                                    calculated_frr_threshold)
-    else:
-      assert predicted_far <= far, (predicted_far,
-                                    far, calculated_far_threshold)
-      assert predicted_far == expected_far, (predicted_far,
-                                             far, calculated_far_threshold)
-      assert predicted_frr <= frr, (predicted_frr,
-                                    frr, calculated_frr_threshold)
-      assert predicted_frr == expected_frr, (predicted_frr,
-                                             frr, calculated_frr_threshold)
+    _, pred_frr = farfrr(neg, pos, calculated_frr_threshold)
+    assert pred_far <= far, (pred_far, far, calculated_far_threshold)
+    assert pred_far == expected_far, (pred_far, far, calculated_far_threshold)
+    assert pred_frr <= frr, (pred_frr, frr, calculated_frr_threshold)
+    assert pred_frr == expected_frr, (pred_frr, frr, calculated_frr_threshold)
 
 
 def test_thresholding():

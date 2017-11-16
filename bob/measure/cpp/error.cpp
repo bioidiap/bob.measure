@@ -123,45 +123,22 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   blitz::Array<double, 1> neg;
   sort(negatives, neg, is_sorted);
 
-  // Calculate the minimum possible FAR that can be requested besides 0. This
-  // is done by counting the number of repeated samples at the end of
-  // negatives.
-  double counter = 1.;
-  int index = neg.extent(0)-1;
-  while (index >= 1 &&  neg(index) == neg(index-1)) {
-    --index;
-    ++counter;
-  }
-  // if requested FAR is less than the least possible value. We cannot reach
-  // the desired threshold, as we have too many identical largest scores, or
-  // the number of scores is too low.
-  if (far_value >= 1e-12 && far_value < counter / (double)neg.extent(0)) {
-    bob::core::error << "The threshold cannot be computed for an FAR value of "
-    << far_value << ". There are either too many repeated largest scores or "
-    "the number of scores is too low. The minimum possible FAR value is "
-    << counter / (double)neg.extent(0) << "\n";
-    return std::numeric_limits<double>::quiet_NaN();
-  }
-
-  index = neg.extent(0)-1;
-
-  // far == 0 is a corner case
-  if (far_value <= 1e-12)
-    return neg(index) + 1e-12;
-
   // far == 1 is a corner case
   if (far_value >= 1 - 1e-12)
     return neg(0) - 1e-12;
 
-  // move to the left of array changing the threshold until we pass the desired
-  // FAR value.
-  double threshold = neg(index);
+  // Move towards the beginning of array changing the threshold until we pass
+  // the desired FAR value. Start with a threshold that corresponds to FAR ==
+  // 0.
+  int index = neg.extent(0) - 1;
+  double threshold = neg(index) + 1e-12;
   double future_far;
-  while (index > 0) {
-    future_far = blitz::count(neg >= neg(index-1)) / (double)neg.extent(0);
+  while (index >= 0) {
+    future_far = blitz::count(neg >= neg(index)) / (double)neg.extent(0);
     if (future_far > far_value)
       break;
-    threshold = neg(--index);
+    threshold = neg(index);
+    --index;
   }
   return threshold;
 }
@@ -186,45 +163,22 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &negatives,
   blitz::Array<double, 1> pos;
   sort(positives, pos, is_sorted);
 
-  // Calculate the minimum possible FRR that can be requested besides 0. This
-  // is done by counting the number of repeated samples at the beginning of
-  // positives.
-  double counter = 1.;
-  int index = 0;
-  while (index < pos.extent(0)-1  &&  pos(index) == pos(index+1)) {
-    ++index;
-    ++counter;
-  }
-  // if requested FRR is less than the least possible value. We cannot reach
-  // the desired threshold, as we have too many identical lowest scores, or the
-  // number of scores is too low.
-  if (frr_value >= 1e-12 && frr_value < counter / (double)pos.extent(0)) {
-    bob::core::error << "The threshold cannot be computed for an FRR value of "
-    << frr_value << ". There are either too many repeated lowest scores or "
-    "the number of scores is too low. The minimum possible FRR value is "
-    << counter / (double)pos.extent(0) << "\n";
-    return std::numeric_limits<double>::quiet_NaN();
-  }
-
-  index = 0;
-
-  // frr == 0 is a corner case
-  if (frr_value <= 1e-12)
-    return pos(0) - 1e-12;
-
   // frr == 1 is a corner case
   if (frr_value >= 1 - 1e-12)
     return pos(pos.extent(0)-1) + 1e-12;
 
-  // move to the right of array changing the threshold until we pass the
-  // desired FRR value.
-  double threshold = pos(index);
+  // Move towards the end of array changing the threshold until we pass
+  // the desired FRR value. Start with a threshold that corresponds to FRR ==
+  // 0.
+  int index = 0;
+  double threshold = pos(index) - 1e-12;
   double future_frr;
-  while (index < pos.extent(0)-1) {
-    future_frr = blitz::count(pos < pos(index+1)) / (double)pos.extent(0);
+  while (index < pos.extent(0)) {
+    future_frr = blitz::count(pos < pos(index)) / (double)pos.extent(0);
     if (future_frr > frr_value)
       break;
-    threshold = pos(++index);
+    threshold = pos(index);
+    ++index;
   }
   return threshold;
 }
