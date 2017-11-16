@@ -214,18 +214,15 @@ double bob::measure::minWeightedErrorRateThreshold(
 blitz::Array<double, 2>
 bob::measure::roc(const blitz::Array<double, 1> &negatives,
                   const blitz::Array<double, 1> &positives, size_t points) {
-  double min = std::min(blitz::min(negatives), blitz::min(positives));
-  double max = std::max(blitz::max(negatives), blitz::max(positives));
-  double step = (max - min) / ((double)points - 1.0);
-  blitz::Array<double, 2> retval(2, points);
-  for (int i = 0; i < (int)points; ++i) {
-    std::pair<double, double> ratios =
-        bob::measure::farfrr(negatives, positives, min + i * step);
-    // preserve X x Y ordering (FAR x FRR)
-    retval(0, i) = ratios.first;
-    retval(1, i) = ratios.second;
+  // Uses roc_for_far internally
+  // Create an far_list
+  blitz::Array<double, 1> far_list((int)points);
+  int min_far = -8;  // minimum FAR in terms of 10^(min_far)
+  double counts_per_step = points / (-min_far) ;
+  for (int i = 1-(int)points; i <= 0; ++i) {
+    far_list(i+(int)points-1) = std::pow(10., (double)i/counts_per_step);
   }
-  return retval;
+  return bob::measure::roc_for_far(negatives, positives, far_list, false);
 }
 
 blitz::Array<double, 2>
@@ -445,9 +442,9 @@ bob::measure::roc_for_far(const blitz::Array<double, 1> &negatives,
   if (far_index >= 0) {
     // walk to the end of both lists; at least one of both lists should already
     // have reached its limit.
-    while (pos_it++ != pos.end())
+    while (pos_it != pos.end() && pos_it++ != pos.end())
       ++pos_index;
-    while (neg_it++ != neg.end())
+    while (neg_it != neg.end() && neg_it++ != neg.end())
       ++neg_index;
     // fill in the remaining elements of the CAR list
     do {
