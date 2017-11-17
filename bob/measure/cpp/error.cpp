@@ -119,28 +119,42 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
         "the number of negative scores must be at least 2");
   }
 
-  // sort the array, if necessary
-  blitz::Array<double, 1> neg;
-  sort(negatives, neg, is_sorted);
+  // sort the negatives array, if necessary, and keep it in the scores variable
+  blitz::Array<double, 1> scores;
+  sort(negatives, scores, is_sorted);
 
-  // far == 1 is a corner case
+  // handle special case of far == 1 without any iterating
   if (far_value >= 1 - 1e-12)
-    return neg(0) - 1e-12;
+    return scores(0) - 1e-12;
 
-  // Move towards the beginning of array changing the threshold until we pass
-  // the desired FAR value. Start with a threshold that corresponds to FAR ==
-  // 0.
-  int index = neg.extent(0) - 1;
-  double threshold = neg(index) + 1e-12;
+  // Reverse negatives so the end is the start. This way the code below will be
+  // very similar to the implementation in the frrThreshold function. The
+  // implementations are not exactly the same though.
+  scores.reverseSelf(0);
+  // Move towards the end of array changing the threshold until we pass the
+  // desired FAR value. Starting with a threshold that corresponds to FAR == 0.
+  int total_count = scores.extent(0);
+  int current_position = 0;
+  // since the comparison is `if score >= threshold then accept as genuine`, we
+  // can choose the largest score value + eps as the threshold so that we can
+  // get for 0% FAR.
+  double valid_threshold = scores(current_position) + 1e-12;
+  double current_threshold;
   double future_far;
-  while (index >= 0) {
-    future_far = blitz::count(neg >= neg(index)) / (double)neg.extent(0);
+  while (current_position < total_count) {
+    current_threshold = scores(current_position);
+    // keep iterating if values are repeated
+    while (current_position < total_count-1 && scores(current_position+1) == current_threshold)
+      current_position++;
+    // All the scores up to the current position and including the current
+    // position will be accepted falsely.
+    future_far = (double)(current_position+1) / (double)total_count;
     if (future_far > far_value)
       break;
-    threshold = neg(index);
-    --index;
+    valid_threshold = current_threshold;
+    current_position++;
   }
-  return threshold;
+  return valid_threshold;
 }
 
 double bob::measure::frrThreshold(const blitz::Array<double, 1> &negatives,
@@ -159,28 +173,37 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &negatives,
         "the number of positive scores must be at least 2");
   }
 
-  // sort positive scores descendantly, if necessary
-  blitz::Array<double, 1> pos;
-  sort(positives, pos, is_sorted);
+  // sort the positives array, if necessary, and keep it in the scores variable
+  blitz::Array<double, 1> scores;
+  sort(positives, scores, is_sorted);
 
-  // frr == 1 is a corner case
+  // handle special case of frr == 1 without any iterating
   if (frr_value >= 1 - 1e-12)
-    return pos(pos.extent(0)-1) + 1e-12;
+    return scores(scores.extent(0)-1) + 1e-12;
 
-  // Move towards the end of array changing the threshold until we pass
-  // the desired FRR value. Start with a threshold that corresponds to FRR ==
-  // 0.
-  int index = 0;
-  double threshold = pos(index) - 1e-12;
+  // Move towards the end of array changing the threshold until we pass the
+  // desired FRR value. Starting with a threshold that corresponds to FRR == 0.
+  int total_count = scores.extent(0);
+  int current_position = 0;
+  // since the comparison is `if score >= threshold then accept as genuine`, we
+  // can use the smallest positive score as the threshold for 0% FRR.
+  double valid_threshold = scores(current_position);
+  double current_threshold;
   double future_frr;
-  while (index < pos.extent(0)) {
-    future_frr = blitz::count(pos < pos(index)) / (double)pos.extent(0);
+  while (current_position < total_count) {
+    current_threshold = scores(current_position);
+    // keep iterating if values are repeated
+    while (current_position < total_count-1 && scores(current_position+1) == current_threshold)
+      current_position++;
+    // All the scores up to the current_position but not including
+    // current_position will be rejected falsely.
+    future_frr = (double)current_position / (double)total_count;
     if (future_frr > frr_value)
       break;
-    threshold = pos(index);
-    ++index;
+    valid_threshold = current_threshold;
+    current_position++;
   }
-  return threshold;
+  return valid_threshold;
 }
 
 /**
