@@ -123,9 +123,10 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   blitz::Array<double, 1> scores;
   sort(negatives, scores, is_sorted);
 
+  double epsilon = std::numeric_limits<double>::epsilon();
   // handle special case of far == 1 without any iterating
-  if (far_value >= 1 - 1e-12)
-    return scores(0) - 1e-12;
+  if (far_value >= 1 - epsilon)
+    return scores(0) - epsilon;
 
   // Reverse negatives so the end is the start. This way the code below will be
   // very similar to the implementation in the frrThreshold function. The
@@ -138,7 +139,7 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   // since the comparison is `if score >= threshold then accept as genuine`, we
   // can choose the largest score value + eps as the threshold so that we can
   // get for 0% FAR.
-  double valid_threshold = scores(current_position) + 1e-12;
+  double valid_threshold = scores(current_position) + epsilon;
   double current_threshold;
   double future_far;
   while (current_position < total_count) {
@@ -177,9 +178,10 @@ double bob::measure::frrThreshold(const blitz::Array<double, 1> &negatives,
   blitz::Array<double, 1> scores;
   sort(positives, scores, is_sorted);
 
+  double epsilon = std::numeric_limits<double>::epsilon();
   // handle special case of frr == 1 without any iterating
-  if (frr_value >= 1 - 1e-12)
-    return scores(scores.extent(0)-1) + 1e-12;
+  if (frr_value >= 1 - epsilon)
+    return scores(scores.extent(0)-1) + epsilon;
 
   // Move towards the end of array changing the threshold until we pass the
   // desired FRR value. Starting with a threshold that corresponds to FRR == 0.
