@@ -122,7 +122,7 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   // sort the array, if necessary
   blitz::Array<double, 1> neg;
   sort(negatives, neg, is_sorted);
-
+  
   // far == 1 is a corner case
   if (far_value >= 1 - 1e-12)
     return neg(0) - 1e-12;
@@ -130,16 +130,37 @@ double bob::measure::farThreshold(const blitz::Array<double, 1> &negatives,
   // Move towards the beginning of array changing the threshold until we pass
   // the desired FAR value. Start with a threshold that corresponds to FAR ==
   // 0.
-  int index = neg.extent(0) - 1;
-  double threshold = neg(index) + 1e-12;
+  int last_pivot = neg.extent(0);
+  int pivot = last_pivot / 2; 
+
+  double threshold = neg(last_pivot-1) + 1e-12;
   double future_far;
-  while (index >= 0) {
-    future_far = blitz::count(neg >= neg(index)) / (double)neg.extent(0);
-    if (future_far > far_value)
-      break;
-    threshold = neg(index);
-    --index;
-  }
+  while (pivot < neg.extent(0)) {
+    future_far = blitz::count(neg >= neg(pivot)) / (double)neg.extent(0);
+    if (future_far <= far_value){
+      // Moving towards the beggining of the list
+      last_pivot = pivot;
+      pivot = pivot / 2;      
+    }
+    else{
+      //Checking if we are in the boundary
+      if(pivot==neg.extent(0)-1){
+          threshold = neg(pivot) + 1e-12;
+          break;
+      }      
+      future_far = blitz::count(neg >= neg(pivot+1)) / (double)neg.extent(0);
+
+      // If we are in the boundary we are done....
+      if (future_far > far_value)
+        //Let's keep searching towards the end of the list
+        pivot = (last_pivot + pivot) / 2;
+      else{
+        // I found you....
+        threshold = neg(pivot+1);
+        break;
+      }
+    }
+  }  
   return threshold;
 }
 
