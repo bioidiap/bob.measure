@@ -288,7 +288,7 @@ def test_plots():
   # This example will test the ROC plot calculation functionality.
   xy = roc(negatives, positives, 100)
   # uncomment the next line to save a reference value
-  # save('nonsep-roc.hdf5', xy)
+  # save(F('nonsep-roc.hdf5'), xy)
   xyref = bob.io.base.load(F('nonsep-roc.hdf5'))
   assert numpy.array_equal(xy, xyref)
 
@@ -310,7 +310,7 @@ def test_plots():
   # This example will test the DET plot calculation functionality.
   det_xyzw = det(negatives, positives, 100)
   # uncomment the next line to save a reference value
-  # save('nonsep-det.hdf5', det_xyzw)
+  # save(F('nonsep-det.hdf5'), det_xyzw)
   det_xyzw_ref = bob.io.base.load(F('nonsep-det.hdf5'))
   assert numpy.allclose(det_xyzw, det_xyzw_ref, atol=1e-15)
 
