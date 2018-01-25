@@ -45,6 +45,18 @@ def test_compute_perf():
   from .script.compute_perf import main
   nose.tools.eq_(main(cmdline), 0)
 
+  tmp_output = tempfile.NamedTemporaryFile(prefix=__name__, suffix='.txt')
+  cmdline = [
+      DEV_SCORES,
+      TEST_SCORES,
+      '-x',
+      '--log=' + tmp_output.name,
+  ]
+  nose.tools.eq_(main(cmdline), 0)
+  nose.tools.eq_(
+      open(tmp_output.name).read(),
+      open(F('compute_perf.output.txt')).read())
+
 
 def test_compute_perf_only_dev():
 
