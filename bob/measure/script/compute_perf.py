@@ -32,7 +32,8 @@ Options:
   -o <path>, --output=<path>  Name of the output file that will contain the
                               plots [default: curves.pdf]
   -x, --no-plot               If set, then I'll execute no plotting
-
+  -l <path>, --log=<path>     If provided, computed numbers are written to this
+                              file instead of the standard output.
 
 Examples:
 
@@ -50,13 +51,15 @@ Examples:
 
 """
 
-from __future__ import division
+from __future__ import division, print_function
 import os
 import sys
 import numpy
 
 import bob.core
 logger = bob.core.log.setup("bob.measure")
+
+LOG_FILE = sys.stdout
 
 
 def print_crit(crit, dev_scores, dev_fta, test_scores=None, test_fta=None):
@@ -77,7 +80,7 @@ def print_crit(crit, dev_scores, dev_fta, test_scores=None, test_fta=None):
   dev_frr = dev_fta + dev_fnmr * (1 - dev_fta)
   dev_hter = (dev_far + dev_frr) / 2.0
 
-  print("[Min. criterion: %s] Threshold on Development set: %e" % (crit, thres))
+  print("[Min. criterion: %s] Threshold on Development set: %e" % (crit, thres), file=LOG_FILE)
 
   dev_ni = dev_neg.shape[0]  # number of impostors
   dev_fm = int(round(dev_fmr * dev_ni))  # number of false accepts
@@ -94,16 +97,16 @@ def print_crit(crit, dev_scores, dev_fta, test_scores=None, test_fta=None):
   if test_scores is None:
 
     # prints only dev performance rates
-    print("       | %s" % fmt("Development", -1 * dev_max_len))
-    print("-------+-%s" % (dev_max_len * "-"))
-    print("  FMR  | %s" % fmt(dev_fmr_str, -1 * dev_max_len))
-    print("  FNMR | %s" % fmt(dev_fnmr_str, -1 * dev_max_len))
+    print("       | %s" % fmt("Development", -1 * dev_max_len), file=LOG_FILE)
+    print("-------+-%s" % (dev_max_len * "-"), file=LOG_FILE)
+    print("  FMR  | %s" % fmt(dev_fmr_str, -1 * dev_max_len), file=LOG_FILE)
+    print("  FNMR | %s" % fmt(dev_fnmr_str, -1 * dev_max_len), file=LOG_FILE)
     dev_far_str = "%.3f%%" % (100 * dev_far)
-    print("  FAR  | %s" % fmt(dev_far_str, -1 * dev_max_len))
+    print("  FAR  | %s" % fmt(dev_far_str, -1 * dev_max_len), file=LOG_FILE)
     dev_frr_str = "%.3f%%" % (100 * dev_frr)
-    print("  FRR  | %s" % fmt(dev_frr_str, -1 * dev_max_len))
+    print("  FRR  | %s" % fmt(dev_frr_str, -1 * dev_max_len), file=LOG_FILE)
     dev_hter_str = "%.3f%%" % (100 * dev_hter)
-    print("  HTER | %s" % fmt(dev_hter_str, -1 * dev_max_len))
+    print("  HTER | %s" % fmt(dev_hter_str, -1 * dev_max_len), file=LOG_FILE)
 
   else:
 
@@ -126,24 +129,24 @@ def print_crit(crit, dev_scores, dev_fta, test_scores=None, test_fta=None):
 
     # prints both dev and test performance rates
     print("       | %s | %s" % (fmt("Development", -1 * dev_max_len),
-                                fmt("Test", -1 * test_max_len)))
-    print("-------+-%s-+-%s" % (dev_max_len * "-", (2 + test_max_len) * "-"))
+                                fmt("Test", -1 * test_max_len)), file=LOG_FILE)
+    print("-------+-%s-+-%s" % (dev_max_len * "-", (2 + test_max_len) * "-"), file=LOG_FILE)
     print("  FMR  | %s | %s" % (fmt(dev_fmr_str, -1 * dev_max_len),
-                                fmt(test_fmr_str, -1 * test_max_len)))
+                                fmt(test_fmr_str, -1 * test_max_len)), file=LOG_FILE)
     print("  FNMR | %s | %s" % (fmt(dev_fnmr_str, -1 * dev_max_len),
-                                fmt(test_fnmr_str, -1 * test_max_len)))
+                                fmt(test_fnmr_str, -1 * test_max_len)), file=LOG_FILE)
     dev_far_str = "%.3f%%" % (100 * dev_far)
     test_far_str = "%.3f%%" % (100 * test_far)
     print("  FAR  | %s | %s" % (fmt(dev_far_str, -1 * dev_max_len),
-                               fmt(test_far_str, -1 * test_max_len)))
+                               fmt(test_far_str, -1 * test_max_len)), file=LOG_FILE)
     dev_frr_str = "%.3f%%" % (100 * dev_frr)
     test_frr_str = "%.3f%%" % (100 * test_frr)
     print("  FRR  | %s | %s" % (fmt(dev_frr_str, -1 * dev_max_len),
-                               fmt(test_frr_str, -1 * test_max_len)))
+                               fmt(test_frr_str, -1 * test_max_len)), file=LOG_FILE)
     dev_hter_str = "%.3f%%" % (100 * dev_hter)
     test_hter_str = "%.3f%%" % (100 * test_hter)
     print("  HTER | %s | %s" % (fmt(dev_hter_str, -1 * dev_max_len),
-                                fmt(test_hter_str, -1 * test_max_len)))
+                                fmt(test_hter_str, -1 * test_max_len)), file=LOG_FILE)
 
 
 def plots(crit, points, filename, dev_scores, test_scores=None):
@@ -323,6 +326,11 @@ def main(user_input=None):
   verbosity = int(args['--verbose'])
   bob.core.log.set_verbosity_level(logger, verbosity)
 
+  # setup the logfile
+  global LOG_FILE
+  if args['--log'] is not None:
+    LOG_FILE = open(args['--log'], 'w')
+
   # Checks number of points option
   try:
     args['--points'] = int(args['--points'])
@@ -347,17 +355,18 @@ def main(user_input=None):
   # also calculate FTA
   dev_scores, dev_fta = get_fta(dev_scores)
   print("Failure To Acquire (FTA) in the development set is: {:.3f}%".format(
-     dev_fta * 100))
+     dev_fta * 100), file=LOG_FILE)
   if test_scores is not None:
     test_scores, test_fta = get_fta(test_scores)
     print("Failure To Acquire (FTA) in the test set is: {:.3f}%".format(
-       test_fta * 100))
+       test_fta * 100), file=LOG_FILE)
 
   print_crit('EER', dev_scores, dev_fta, test_scores, test_fta)
   print_crit('Min. HTER', dev_scores, dev_fta, test_scores, test_fta)
 
   if not args['--no-plot']:
     plots('EER', args['--points'], args['--output'], dev_scores, test_scores)
-    print("[Plots] Performance curves => '%s'" % args['--output'])
+    print("[Plots] Performance curves => '%s'" % args['--output'], file=LOG_FILE)
 
+  LOG_FILE.flush()
   return 0
