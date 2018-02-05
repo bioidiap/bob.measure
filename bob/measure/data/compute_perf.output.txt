@@ -1,0 +1,18 @@
+Failure To Acquire (FTA) in the development set is: 0.000%
+Failure To Acquire (FTA) in the test set is: 0.000%
+[Min. criterion: EER] Threshold on Development set: -4.830500e-03
+       | Development     | Test           
+-------+-----------------+------------------
+  FMR  | 6.731% (35/520) | 2.500% (13/520)
+  FNMR | 6.667% (26/390) | 6.154% (24/390)
+  FAR  | 6.731%          | 2.500%         
+  FRR  | 6.667%          | 6.154%         
+  HTER | 6.699%          | 4.327%         
+[Min. criterion: Min. HTER] Threshold on Development set: 3.430500e-03
+       | Development     | Test           
+-------+-----------------+------------------
+  FMR  | 4.231% (22/520) | 1.731% (9/520) 
+  FNMR | 7.949% (31/390) | 7.692% (30/390)
+  FAR  | 4.231%          | 1.731%         
+  FRR  | 7.949%          | 7.692%         
+  HTER | 6.090%          | 4.712%         
