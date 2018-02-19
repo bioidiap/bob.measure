@@ -304,7 +304,7 @@ def test_plots():
   # This example will test the Precision-Recall plot calculation functionality.
   xy = precision_recall_curve(negatives, positives, 100)
   # uncomment the next line to save a reference value
-  # save('nonsep-roc.hdf5', xy)
+  # save('nonsep-precisionrecall.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-precisionrecall.hdf5'))
   assert numpy.array_equal(xy, xyref)
 
