@@ -293,17 +293,18 @@ def test_plots():
   assert numpy.array_equal(xy, xyref)
 
   # This example will test the ROC for FAR plot calculation functionality.
-  far = [0.01, 0.1, 1]
-  ref = [0.42, 0.12, 0]
-  xy = roc_for_far(negatives, positives, far)
+  requested_far = [0.01, 0.1, 1]
+  expected_far = [0.0, 0.1, 1]
+  expected_frr = [0.48, 0.12, 0]
+  xy = roc_for_far(negatives, positives, requested_far)
 
-  assert numpy.array_equal(xy[0], far)
-  assert numpy.array_equal(xy[1], ref)
+  assert numpy.array_equal(xy[0], expected_far), xy[0]
+  assert numpy.array_equal(xy[1], expected_frr), xy[1]
 
   # This example will test the Precision-Recall plot calculation functionality.
   xy = precision_recall_curve(negatives, positives, 100)
   # uncomment the next line to save a reference value
-  # save('nonsep-roc.hdf5', xy)
+  # save('nonsep-precisionrecall.hdf5', xy)
   xyref = bob.io.base.load(F('nonsep-precisionrecall.hdf5'))
   assert numpy.array_equal(xy, xyref)
 

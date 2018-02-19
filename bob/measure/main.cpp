@@ -714,11 +714,7 @@ static auto far_threshold_doc =
     bob::extension::FunctionDoc(
         "far_threshold", "Computes the threshold such that the real FAR is "
                          "**at most** the requested ``far_value`` if possible",
-        "If no such threshold can be computed, ``NaN`` is returned. It is "
-        "impossible to compute the threshold, when too few non-identical "
-        "highest scores exist, so that the desired ``far_value`` cannot be "
-        "reached by any threshold.\n\n"
-        ".. note::\n\n"
+        "\n\n.. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
         "copied.\n"
         "   To avoid this copy, you can sort the ``negatives`` scores "
@@ -774,11 +770,7 @@ static auto frr_threshold_doc =
     bob::extension::FunctionDoc(
         "frr_threshold", "Computes the threshold such that the real FRR is "
                          "**at most** the requested ``frr_value`` if possible",
-        "If no such threshold can be computed, ``NaN`` is returned. It is "
-        "impossible to compute the threshold, when too few non-identical "
-        "lowest scores exist, so that the desired ``frr_value`` cannot be "
-        "reached by any threshold.\n\n"
-        ".. note::\n\n"
+        "\n\n.. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
         "copied.\n"
         "   To avoid this copy, you can sort the ``positives`` scores "

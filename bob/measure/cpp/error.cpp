@@ -421,73 +421,21 @@ bob::measure::roc_for_far(const blitz::Array<double, 1> &negatives,
   sort(negatives, neg, is_sorted);
   sort(positives, pos, is_sorted);
 
-  // do some magic to compute the FRR list
   blitz::Array<double, 2> retval(2, n_points);
 
-  // index into the FAR and FRR list
+  // index into the FAR list
   int far_index = n_points - 1;
-  int pos_index = 0, neg_index = 0;
-  int n_pos = pos.extent(0), n_neg = neg.extent(0);
 
-  // iterators into the result lists
-  auto pos_it = pos.begin(), neg_it = neg.begin();
-  // do some fast magic to compute the FRR values ;-)
-  do {
-    // check whether the current positive value is less than the current
-    // negative one
-    if (*pos_it < *neg_it) {
-      // increase the positive count
-      ++pos_index;
-      // go to the next positive value
-      ++pos_it;
-    } else {
-      // increase the negative count
-      ++neg_index;
-      // go to the next negative value
-      ++neg_it;
-    }
-    // check, if we have reached a new FAR limit,
-    // i.e. if the relative number of negative similarities is greater than
-    // 1-FAR (which is the CRR)
-
-    if (((double)neg_index / (double)n_neg > 1. - far_list(far_index)) &&
-        !(bob::core::isClose((double)neg_index / (double)n_neg,
-                             1. - far_list(far_index), 1e-9, 1e-9))) {
-      // copy the far value
-      retval(0, far_index) = far_list(far_index);
-      // calculate the FRR for the current FAR
-      retval(1, far_index) = (double)pos_index / (double)n_pos;
-      // go to the next FAR value
-      --far_index;
-    }
-
-    // do this, as long as there are elements in both lists left and not all FRR
-    // elements where calculated yet
-  } while (pos_it != pos.end() && neg_it != neg.end() && far_index >= 0);
-
-  // check if all FRR values have been set
-  if (far_index >= 0) {
-    // walk to the end of both lists; at least one of both lists should already
-    // have reached its limit.
-    while (pos_it != pos.end() && pos_it++ != pos.end())
-      ++pos_index;
-    while (neg_it != neg.end() && neg_it++ != neg.end())
-      ++neg_index;
-    // fill in the remaining elements of the CAR list
-    do {
-      // copy the FAR value
-      retval(0, far_index) = far_list(far_index);
-      // check if the criterion is fulfilled (should be, as long as the lowest
-      // far is not below 0)
-      if ((double)neg_index / (double)n_neg > 1. - far_list(far_index)) {
-        // calculate the FRR for the current FAR
-        retval(1, far_index) = (double)pos_index / (double)n_pos;
-      } else {
-        // set FRR to 1 (this should never happen, but might be due to numerical
-        // issues)
-        retval(1, far_index) = 1.;
-      }
-    } while (far_index--);
+  // Get the threshold for the requested far values and calculate far and frr
+  // values based on the threshold.
+  while(far_index >= 0) {
+    // calculate the threshold for the requested far
+    auto threshold = bob::measure::farThreshold(neg, pos, far_list(far_index), true);
+    // calculate the frr and re-calculate the far
+    auto farfrr = bob::measure::farfrr(neg, pos, threshold);
+    retval(0, far_index) = farfrr.first;
+    retval(1, far_index) = farfrr.second;
+    far_index--;
   }
 
   return retval;
