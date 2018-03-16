@@ -451,13 +451,9 @@ def det_axis(v, **kwargs):
 def cmc(cmc_scores, logx=True, **kwargs):
   """Plots the (cumulative) match characteristics and returns the maximum rank.
 
-  This function plots a CMC curve using the given CMC scores, which can be read
-  from the our score files using the
-  :py:func:`bob.measure.load.cmc_four_column` or
-  :py:func:`bob.measure.load.cmc_five_column` methods.  The structure of the
-  ``cmc_scores`` parameter is relatively complex.  It contains a list of pairs
-  of lists.  For each probe object, a pair of list negative and positive scores
-  is required.
+  This function plots a CMC curve using the given CMC scores (:py:class:`list`: 
+      A list of tuples, where each tuple contains the
+      ``negative`` and ``positive`` scores for one probe of the database).
 
 
   Parameters:

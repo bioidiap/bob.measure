@@ -64,21 +64,6 @@ Generic
    bob.measure.rmse
    bob.measure.get_config
 
-Loading data
-------------
-
-.. autosummary::
-   bob.measure.load.open_file
-   bob.measure.load.scores
-   bob.measure.load.split
-   bob.measure.load.cmc
-   bob.measure.load.four_column
-   bob.measure.load.split_four_column
-   bob.measure.load.cmc_four_column
-   bob.measure.load.five_column
-   bob.measure.load.split_five_column
-   bob.measure.load.cmc_five_column
-
 Calibration
 -----------
 
@@ -98,19 +83,10 @@ Plotting
    bob.measure.plot.cmc
    bob.measure.plot.detection_identification_curve
 
-OpenBR conversions
-------------------
-
-.. autosummary::
-   bob.measure.openbr.write_matrix
-   bob.measure.openbr.write_score_file
-
 
 Details
 -------
 
 .. automodule:: bob.measure
-.. automodule:: bob.measure.load
 .. automodule:: bob.measure.calibration
 .. automodule:: bob.measure.plot
-.. automodule:: bob.measure.openbr
