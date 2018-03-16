@@ -373,7 +373,7 @@ def test_rocch():
 
 def test_cmc():
 
-  from . import recognition_rate, cmc, load
+  from . import recognition_rate, cmc
 
   # tests the CMC calculation
   # test data; should give match characteristics [1/2,1/4,1/3] and CMC
@@ -391,24 +391,13 @@ def test_cmc():
   desired_rr = 0.76
   desired_cmc = [0.76, 0.89, 0.96, 0.98, 1., 1., 1.,
                  1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
-  data = load.cmc_four_column(F('scores-cmc-4col.txt'))
+  f = bob.io.base.HDF5File(F('test-cmc.hdf5'))
+  data = list(zip(f.read('data-neg'), f.read('data-pos')))
+  del f
   rr = recognition_rate(data)
   nose.tools.eq_(rr, desired_rr)
   cmc_ = cmc(data)
   assert (cmc_ == desired_cmc).all()
-
-  data = load.cmc_five_column(F('scores-cmc-5col.txt'))
-  rr = recognition_rate(data)
-  nose.tools.eq_(rr, desired_rr)
-  cmc_ = cmc(data)
-  assert (cmc_ == desired_cmc).all()
-
-  data = load.cmc(F('scores-cmc-5col.txt'))
-  rr = recognition_rate(data)
-  nose.tools.eq_(rr, desired_rr)
-  cmc_ = cmc(data)
-  assert (cmc_ == desired_cmc).all()
-
 
 def test_calibration():
 
@@ -440,9 +429,18 @@ def test_calibration():
 
 
 def test_open_set_rates():
-
   # No error files
-  cmc_scores = bob.measure.load.cmc(F("scores-cmc-4col-open-set.txt"))
+  f = bob.io.base.HDF5File(F('test0-open-set.hdf5'))
+  negative = []
+  positive = []
+  for key in f.keys():
+    which = negative if 'neg' in key else positive
+    val = f.read(key)
+    if str(val) == 'None':
+      val = None
+    which.append(val)
+  del f
+  cmc_scores = list(zip(negative, positive))
   assert abs(bob.measure.detection_identification_rate(
       cmc_scores, threshold=0.5) - 1.0) < 1e-8
   assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
@@ -452,8 +450,17 @@ def test_open_set_rates():
       cmc_scores, threshold=0.5) - 1.0) < 1e-8
 
   # One error
-  cmc_scores = bob.measure.load.cmc(
-      F("scores-cmc-4col-open-set-one-error.txt"))
+  f = bob.io.base.HDF5File(F('test1-open-set.hdf5'))
+  negative = []
+  positive = []
+  for key in f.keys():
+    which = negative if 'neg' in key else positive
+    val = f.read(key)
+    if str(val) == 'None':
+      val = None
+    which.append(val)
+  del f
+  cmc_scores = list(zip(negative, positive))
   assert abs(bob.measure.detection_identification_rate(
       cmc_scores, threshold=0.5) - 6. / 7.) < 1e-8
   assert abs(bob.measure.false_alarm_rate(cmc_scores, threshold=0.5)) < 1e-8
@@ -463,8 +470,17 @@ def test_open_set_rates():
       cmc_scores, threshold=0.5) - 6. / 7.) < 1e-8
 
   # Two errors
-  cmc_scores = bob.measure.load.cmc_four_column(
-      F("scores-cmc-4col-open-set-two-errors.txt"))
+  f = bob.io.base.HDF5File(F('test2-open-set.hdf5'))
+  negative = []
+  positive = []
+  for key in f.keys():
+    which = negative if 'neg' in key else positive
+    val = f.read(key)
+    if str(val) == 'None':
+      val = None
+    which.append(val)
+  del f
+  cmc_scores = list(zip(negative, positive))
   assert abs(bob.measure.detection_identification_rate(
       cmc_scores, threshold=0.5) - 6. / 7.) < 1e-8
   assert abs(bob.measure.false_alarm_rate(
