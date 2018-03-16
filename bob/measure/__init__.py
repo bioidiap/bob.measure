@@ -7,9 +7,7 @@ from . import version
 from .version import module as __version__
 
 from . import plot
-from . import load
 from . import calibration
-from . import openbr
 import numpy
 
 def mse (estimation, target):
@@ -134,9 +132,7 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
   The input has a specific format, which is a list of two-element tuples.  Each
   of the tuples contains the negative :math:`\\{S_p^-\\}` and the positive
   :math:`\\{S_p^+\\}` scores for one probe item :math:`p`, or ``None`` in case
-  of open set recognition.  To read the lists from score files in 4 or 5 column
-  format, please use the :py:func:`bob.measure.load.cmc_four_column` or
-  :py:func:`bob.measure.load.cmc_five_column` function.
+  of open set recognition.
 
   If ``threshold`` is set to ``None``, the rank 1 recognition rate is defined
   as the number of test items, for which the highest positive
@@ -172,9 +168,9 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
   Parameters:
 
     cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores loaded with one of the
-      functions (:py:func:`bob.measure.load.cmc_four_column` or
-      :py:func:`bob.measure.load.cmc_five_column`).
+      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`: 
+      A list of tuples, where each tuple contains the
+      ``negative`` and ``positive`` scores for one probe of the database).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
       probe item**.  Each pair can contain up to one empty array (or ``None``),
@@ -258,9 +254,7 @@ def cmc(cmc_scores):
 
   The input has a specific format, which is a list of two-element tuples. Each
   of the tuples contains the negative and the positive scores for one probe
-  item.  To read the lists from score files in 4 or 5 column format, please use
-  the :py:func:`bob.measure.load.cmc_four_column` or
-  :py:func:`bob.measure.load.cmc_five_column` function.
+  item.
 
   For each probe item the probability that the rank :math:`r` of the positive
   score is calculated.  The rank is computed as the number of negative scores
@@ -281,10 +275,7 @@ def cmc(cmc_scores):
 
   cmc_scores : :py:class:`list`
     A list in the format ``[(negatives, positives), ...]`` containing the CMC
-    scores loaded with one of the functions
-    :py:func:`bob.measure.load.cmc_four_column`,
-    :py:func:`bob.measure.load.cmc_five_column`, or
-    :py:func:`bob.measure.load.cmc`.
+    scores.
 
     Each pair contains the ``negative`` and the ``positive`` scores for **one
     probe item**.  Each pair can contain up to one empty array (or ``None``),
@@ -345,9 +336,7 @@ def detection_identification_rate(cmc_scores, threshold, rank = 1):
   Parameters:
 
     cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores loaded with one of the
-      functions (:py:func:`bob.measure.load.cmc_four_column` or
-      :py:func:`bob.measure.load.cmc_five_column`).
+      positives), ...]`` containing the CMC.
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
       probe item**.  Each pair can contain up to one empty array (or ``None``),
@@ -406,9 +395,9 @@ def false_alarm_rate(cmc_scores, threshold):
   Parameters:
 
     cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores loaded with one of the
-      functions (:py:func:`bob.measure.load.cmc_four_column` or
-      :py:func:`bob.measure.load.cmc_five_column`).
+      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`: 
+      A list of tuples, where each tuple contains the
+      ``negative`` and ``positive`` scores for one probe of the database).
 
       Each pair contains the ``negative`` and the ``positive`` scores for **one
       probe item**.  Each pair can contain up to one empty array (or ``None``),
