@@ -20,9 +20,8 @@ def split(filename):
 
     Parameters
     ----------
-    filename: :py:class:`str`, ``file-like``:
-        The file object that will be opened with :py:func:`open_file` containing
-        the scores.
+    filename: :py:class:`str`:
+        The name of the file containing the scores.
 
     Returns
     -------
