@@ -5,3 +5,5 @@ bob.math > 2
 bob.io.base
 matplotlib
 docopt
+numpy
+scipy
