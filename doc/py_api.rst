@@ -97,3 +97,4 @@ Details
 .. automodule:: bob.measure.calibration
 .. automodule:: bob.measure.plot
 .. automodule:: bob.measure.load
+.. automodule:: bob.measure.utils
