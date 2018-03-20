@@ -83,6 +83,12 @@ Plotting
    bob.measure.plot.cmc
    bob.measure.plot.detection_identification_curve
 
+Loading
+-------
+
+.. autosummary::
+   bob.measure.load.split
+
 
 Details
 -------
@@ -90,3 +96,4 @@ Details
 .. automodule:: bob.measure
 .. automodule:: bob.measure.calibration
 .. automodule:: bob.measure.plot
+.. automodule:: bob.measure.load
