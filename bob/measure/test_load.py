@@ -10,6 +10,9 @@
 from nose.tools import assert_equal
 import bob.measure.load
 import bob.io.base.test_utils
+import bob.io.base
+
+import numpy
 
 
 def test_split():
@@ -22,3 +25,12 @@ def test_split():
     assert neg is not None
     assert_equal(len(neg), 521)
     assert_equal(len(pos), 479)
+
+    test_ref_file_path = bob.io.base.test_utils.datafile(
+        'two-cols.hdf5', 'bob.measure')
+    test_ref = bob.io.base.HDF5File(test_ref_file_path)
+    neg_ref = test_ref.read('negatives')
+    pos_ref = test_ref.read('positives')
+    del test_ref
+    assert numpy.array_equal(numpy.nan_to_num(neg_ref), numpy.nan_to_num(neg))
+    assert numpy.array_equal(numpy.nan_to_num(pos_ref), numpy.nan_to_num(pos))
