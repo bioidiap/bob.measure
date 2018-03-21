@@ -35,7 +35,7 @@ def split(filename):
     try:
         columns = numpy.loadtxt(filename)
         neg_pos = columns[:, 0]
-        scores = columns[:, 0]
+        scores = columns[:, 1]
     except:
         LOGGER.error('''Cannot read {}. This file must be a two columns file with
                    the first column containing -1 or 1 (i.e. negative or
