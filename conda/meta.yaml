@@ -38,6 +38,7 @@ requirements:
   run:
     - python
     - setuptools
+    - scipy
     - matplotlib
     - boost
     - {{ pin_compatible('numpy') }}
