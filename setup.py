@@ -22,7 +22,7 @@ setup(
 
     name='bob.measure',
     version=version,
-    description='Evalution metrics for Bob',
+    description='Evaluation metrics for Bob',
     url='http://gitlab.idiap.ch/bob/bob.measure',
     license='BSD',
     author='Andre Anjos',
@@ -65,11 +65,14 @@ setup(
     },
 
     entry_points={
-      'console_scripts': [
-        'bob_compute_perf.py = bob.measure.script.compute_perf:main',
-        'bob_eval_threshold.py = bob.measure.script.eval_threshold:main',
-        'bob_apply_threshold.py = bob.measure.script.apply_threshold:main',
-        'bob_plot_cmc.py = bob.measure.script.plot_cmc:main',
+      # main entry for bob measure cli
+      'bob.cli': [
+          'measure  = bob.measure.script.measure:measure',
+      ],
+
+      # bob measure scripts
+      'bob.measure.cli': [
+          'evaluate = bob.measure.script.evaluate:evaluate',
       ],
     },
 

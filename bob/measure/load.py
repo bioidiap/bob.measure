@@ -41,6 +41,6 @@ def split(filename):
                    the first column containing -1 or 1 (i.e. negative or
                    positive) and the second the scores
                      (float).'''.format(filename))
-        return None, None
+        return (None, None)
     return (scores[numpy.where(neg_pos == -1)],
             scores[numpy.where(neg_pos == 1)])
