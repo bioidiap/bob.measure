@@ -303,9 +303,14 @@ def evaluate(scores, output, points, no_plot, log):
     assert points > 0, "Numbers of points must be positive"
 
     dev_scores = load.split(scores[0])
+    if dev_scores[0] is None:
+        logger.error("While loading dev-score file")
+        return -1
 
     if len(scores) > 1:
         test_scores = load.split(scores[1])
+        if test_scores[1] is None:
+            logger.error("While loading test-score file")
     else:
         test_scores = None
         test_fta = None
