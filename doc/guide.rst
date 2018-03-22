@@ -226,8 +226,19 @@ and confidence
 value :math:`\alpha` is used as :py:func:`bob.measure.utils.confidence_for_indicator_variable`.
 It is based on the cumulative probabilities of the binomial distribution. This
 method is quite conservative, meaning that the true coverage rate of a 95% 
-Clopper–Pearson interval may be well above 95%. 
+Clopper–Pearson interval may be well above 95%.
 
+For example, we want to evaluate the reliability of a system to
+identify registered persons. Let's say that among 10,000 accepted
+transactions, 9856 are true matches. The 95% confidence interval for true match
+rate is then:
+.. doctest:: python
+
+    >>> bob.measure.utils.confidence_for_indicator_variable(9856, 10000)
+    (0.98306835053282549, 0.98784270928084694)
+
+meaning there is a 95% probability that the true match rate is inside :math:`[0.983,
+0.988]`.
 
 Plotting
 --------
