@@ -208,18 +208,22 @@ Both functions require that at least one probe item exists, which has no accordi
 Confidence interval
 -------------------
 
-A confidence interval for parameter `x` consists of a lower
-estimate `L`, and an upper estimate `U`, such that the probability of the true value being
-within the interval estimate is equal to `\alpha`. For example,
-a 95% confidence interval (i.e. `\alpha = 0.95`) for a parameter `x` is given by `[L, U]` such that
-`Prob(x∈[L,U]) = 95%`. The smaller the test size, the wider the confidence 
-interval will be, and the greater `alpha`, the smaller the confidence interval
+A confidence interval for parameter :math:`x` consists of a lower
+estimate :math:`L`, and an upper estimate :math:`U`, such that the probability
+of the true value being within the interval estimate is equal to :math:`\alpha`.
+For example, a 95% confidence interval (i.e. :math:`\alpha = 0.95`) for a
+parameter :math:`x` is given by :math:`[L, U]` such that
+
+.. math:: Prob(x∈[L,U]) = 95% 
+
+The smaller the test size, the wider the confidence 
+interval will be, and the greater :math:`\alpha`, the smaller the confidence interval
 will be.
 
 `The Clopper-Pearson interval`_, a common method for calculating
 confidence intervals, is function of the number of success, the number of trials 
 and confidence
-value `\alpha` is used as :py:func:`bob.measure.utils.confidence_for_indicator_variable`.
+value :math:`\alpha` is used as :py:func:`bob.measure.utils.confidence_for_indicator_variable`.
 It is based on the cumulative probabilities of the binomial distribution. This
 method is quite conservative, meaning that the true coverage rate of a 95% 
 Clopper–Pearson interval may be well above 95%. 
