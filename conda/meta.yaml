@@ -34,7 +34,7 @@ requirements:
     - boost {{ boost }}
     - numpy {{ numpy }}
     - docopt {{ docopt }}
-    - tabulate {{tabulate }}
+    - tabulate {{ tabulate }}
   run:
     - python
     - setuptools
