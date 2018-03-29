@@ -10,7 +10,6 @@ from bob.extension.scripts.click_helper import verbosity_option
 
 logger = logging.getLogger(__name__)
 
-
 def scores_argument(test_mandatory=False, **kwargs):
     '''Get the argument for scores, and add `dev-scores` and `test-scores` in
     the context if `--test` flag is on (default `--no-test`).'''
@@ -20,8 +19,10 @@ def scores_argument(test_mandatory=False, **kwargs):
             if length < 1:
                 raise click.BadParameter('No scores provided', ctx=ctx)
             else:
+                div = 1
                 ctx.meta['scores'] = value
                 if test_mandatory or ctx.meta['test']:
+                    div = 2
                     if (length % 2) != 0:
                         pref = 'T' if test_mandatory else ('When `--test` flag'
                                                            ' is on t')
@@ -34,8 +35,16 @@ def scores_argument(test_mandatory=False, **kwargs):
                         ctx.meta['test-scores'] = [value[i] for i in
                                                    range(length) if i % 2]
                         ctx.meta['n_sys'] = len(ctx.meta['test-scores'])
+                if 'titles' in ctx.meta and \
+                   len(ctx.meta['titles']) != len(value) / div:
+                    raise click.BadParameter(
+                        '#titles not equal to #sytems', ctx=ctx
+                    )
             return value
-        return click.argument('scores', callback=callback, **kwargs)(func)
+        return click.argument(
+            'scores', type=click.Path(exists=True),
+            callback=callback, **kwargs
+        )(func)
     return custom_scores_argument
 
 def test_option(**kwargs):
@@ -47,8 +56,23 @@ def test_option(**kwargs):
         return click.option(
             '-t', '--test/--no-test', default=False,
             help='If set, test scores must be provided',
+            show_default=True,
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_test_option
+
+def sep_dev_test_option(**kwargs):
+    '''Get option flag to say if dev and test plots should be in different
+    plots'''
+    def custom_sep_dev_test_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['split'] = value
+            return value
+        return click.option(
+            '-s', '--split/--no-split', default=True, show_default=True,
+            help='If set, test and dev curve in different plots',
+            callback=callback, is_eager=True,**kwargs)(func)
+    return custom_sep_dev_test_option
+
 
 def n_sys_option(**kwargs):
     '''Get the number of systems to be processed'''
@@ -96,8 +120,6 @@ def n_bins_option(**kwargs):
             callback=callback, **kwargs)(func)
     return custom_n_bins_option
 
-@click.option('-n', '--points', type=INT, default=100, show_default=True,
-              help='Number of points to use in the curves')
 def table_option(**kwargs):
     '''Get table option for tabulate package
     More informnations: https://pypi.python.org/pypi/tabulate
@@ -186,6 +208,19 @@ def criterion_option(**kwargs):
             'metrics: `eer` (default), `hter`',
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
+
+def threshold_option(**kwargs):
+    '''Get option for given threshold'''
+    def custom_threshold_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['thres'] = value
+            return value
+        return click.option(
+            '--thres', type=click.FLOAT, default=None,
+            help='Given threshold for metrics computations',
+            callback=callback, show_default=True,**kwargs)(func)
+    return custom_threshold_option
+
 
 def label_option(name_option='x-label', **kwargs):
     '''Get labels options based on the given name.
@@ -288,11 +323,13 @@ def titles_option(**kwargs):
     '''Get the titles otpion for the different systems'''
     def custom_titles_option(func):
         def callback(ctx, param, value):
-            ctx.meta['titles'] = value if value is None else \
-                    value.split(',')
+            if value is not None:
+                value = value.split(',')
+            ctx.meta['titles'] = value
             return value
         return click.option(
-            '--titles', help='The title for each system comma separated. '
+            '--titles', type=click.STRING, default=None,
+            help='The title for each system comma separated. '
             'Example: --titles ISV,CNN',
             callback=callback, **kwargs)(func)
     return custom_titles_option
