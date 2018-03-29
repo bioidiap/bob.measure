@@ -54,12 +54,21 @@ def test_roc():
     test1 = bob.io.base.test_utils.datafile('test-1.txt', 'bob.measure')
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     with runner.isolated_filesystem():
-        result = runner.invoke(evaluate.roc, ['--test', '--output',
+        result = runner.invoke(evaluate.roc, ['--test', '--split', '--output',
                                               'test.pdf',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
         assert result.exit_code == 0
+
+    with runner.isolated_filesystem():
+        result = runner.invoke(evaluate.roc, ['--test', '--output',
+                                              'test.pdf', '--titles', 'A,B', 
+                                              dev1, test1, dev2, test2])
+        if result.output:
+            click.echo(result.output)
+        assert result.exit_code == 0
+
 
 def test_det():
     dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
@@ -72,6 +81,13 @@ def test_det():
     dev2 = bob.io.base.test_utils.datafile('dev-2.txt', 'bob.measure')
     test1 = bob.io.base.test_utils.datafile('test-1.txt', 'bob.measure')
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
+    with runner.isolated_filesystem():
+        result = runner.invoke(evaluate.det, ['--test', '--split', '--output',
+                                              'test.pdf', '--titles', 'A,B',
+                                              dev1, test1, dev2, test2])
+        if result.output:
+            click.echo(result.output)
+        assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(evaluate.det, ['--test', '--output',
                                               'test.pdf',
@@ -93,6 +109,7 @@ def test_epc():
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     with runner.isolated_filesystem():
         result = runner.invoke(evaluate.epc, ['--output', 'test.pdf',
+                                              '--titles', 'A,B',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
