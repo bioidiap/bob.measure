@@ -1,5 +1,6 @@
 '''Tests for bob.measure scripts'''
 
+import sys
 import os
 import filecmp
 import tempfile
@@ -17,7 +18,10 @@ def test_metrics():
         with open('tmp', 'w') as f:
             f.write(result.output)
         test_ref = bob.io.base.test_utils.datafile('test_m1.txt', 'bob.measure')
-        assert filecmp.cmp(test_ref, 'tmp')
+        assert result.exit_code == 0
+        #reference case has been generated using python 3.6
+        if sys.version_info >= (3, 6):
+            assert filecmp.cmp(test_ref, 'tmp')
 
     dev2 = bob.io.base.test_utils.datafile('dev-2.txt', 'bob.measure')
     test1 = bob.io.base.test_utils.datafile('test-1.txt', 'bob.measure')
@@ -29,7 +33,10 @@ def test_metrics():
         with open('tmp', 'w') as f:
             f.write(result.output)
         test_ref = bob.io.base.test_utils.datafile('test_m2.txt', 'bob.measure')
-        assert filecmp.cmp(test_ref, 'tmp')
+        assert result.exit_code == 0
+        #reference case has been generated using python 3.6
+        if sys.version_info >= (3, 6):
+            assert filecmp.cmp(test_ref, 'tmp')
 
     with runner.isolated_filesystem():
         result = runner.invoke(
