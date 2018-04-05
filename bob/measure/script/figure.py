@@ -394,6 +394,9 @@ class PlotBase(MeasureBase):
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
                 mpl.legend()
+                axis = [self._min_x, self._max_x, self._min_y, self._max_y]
+                if None not in axis:
+                    mpl.axis(axis)
                 #gives warning when applied with mpl
                 fig.set_tight_layout(True)
                 mpl.xticks(rotation=self._x_rotation)
@@ -437,6 +440,7 @@ class Roc(PlotBase):
                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
+        mpl.figure(1)
         if self._test:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.roc(
@@ -474,7 +478,6 @@ class Roc(PlotBase):
         if self._fmr_at is not None:
             mpl.figure(1)
             mpl.plot([self._fmr_at, self._fmr_at], [0., 1.], "--", color='black')
-            mpl.axis([self._min_x, self._max_x, self._min_y, self._max_y])
         super(Roc, self).end_process()
 
 class Det(PlotBase):
@@ -487,6 +490,7 @@ class Det(PlotBase):
                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
+        mpl.figure(1)
         if self._test and test_neg is not None:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.det(
