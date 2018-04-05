@@ -228,22 +228,9 @@ def evaluate(ctx, scores, test, **kwargs):
     ctx.forward(det) # use class defaults plot settings
     if test:
         click.echo("Computing EPC...")
-<<<<<<< HEAD
         ctx.forward(epc) # use class defaults plot settings
-    # the last one closes the file
-||||||| merged common ancestors
-        ctx.forward(epc)
-<<<<<<< HEAD
-    #the last one closes the file
-=======
         ctx.forward(epc)
     # the last one closes the file
->>>>>>> b98021d93c81eee46a730271fad67e001bf084ac
-||||||| merged common ancestors
-    #the last one closes the file
-=======
-    # the last one closes the file
->>>>>>> b98021d93c81eee46a730271fad67e001bf084ac
     ctx.meta['closef'] = True
     click.echo("Computing score histograms...")
     ctx.forward(hist)
