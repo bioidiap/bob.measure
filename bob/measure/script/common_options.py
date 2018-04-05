@@ -29,7 +29,8 @@ def scores_argument(test_mandatory=False, **kwargs):
                                                            ' is on t')
                         raise click.BadParameter(
                             '%sest-score(s) must '
-                            'be provided along with dev-score(s)' % pref, ctx=ctx)
+                            'be provided along with dev-score(s)' % pref, ctx=ctx
+                        )
                     else:
                         ctx.meta['dev-scores'] = [value[i] for i in
                                                   range(length) if not i % 2]
@@ -86,57 +87,38 @@ def semilogx_option(dflt= False, **kwargs):
             callback=callback, **kwargs)(func)
     return custom_semilogx_option
 
-def min_x_axis_val_option(dflt=1e-4, **kwargs):
-    '''Get option for min value on x axis'''
-    def custom_min_x_axis_val_option(func):
-        def callback(ctx, param, value):
-            if value > 0:
-                value = pow(10, int(math.floor(math.log(value, 10))))
-            ctx.meta['min_x'] = value
-            return value
-        return click.option(
-            '--min-x', type=float, default=dflt, show_default=True,
-            help='Min value display on X axis',
-            callback=callback, **kwargs)(func)
-    return custom_min_x_axis_val_option
+def axes_val_option(dflt=None, **kwargs):
+    '''Get option for min/max values for axes. If one the default is None, no
+    default is used
 
-def max_x_axis_val_option(dflt=1.0, **kwargs):
-    '''Get option for max value on x axis'''
-    def custom_max_x_axis_val_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['max_x'] = value
-            return value
-        return click.option(
-            '--max-x', type=float, default=dflt, show_default=True,
-            help='Max value display on X axis',
-            callback=callback, **kwargs)(func)
-    return custom_max_x_axis_val_option
+    Parameters
+    ----------
 
-def min_y_axis_val_option(dflt=1e-4, **kwargs):
-    '''Get option for min value on y axis'''
-    def custom_min_y_axis_val_option(func):
+    dflt: :any:`list`
+        List of default min/max values for axes. Must be of length 4
+    '''
+    def custom_axes_val_option(func):
         def callback(ctx, param, value):
-            if value > 0:
-                value = pow(10, int(math.floor(math.log(value, 10))))
-            ctx.meta['min_y'] = value
+            if value is not None:
+                tmp = value.split(',')
+                if len(tmp) != 4:
+                    raise click.BadParameter('Must provide 4 axis limits')
+                try:
+                    value = [float(i) for i in tmp]
+                except:
+                    raise click.BadParameter('Axis limits must be floats')
+                if None in value:
+                    value = None
+            elif None not in dflt or len(dflt) == 4:
+                value = dflt if not all(isinstance(x, float) for x in dflt) else None
+            ctx.meta['axlim'] = value
             return value
         return click.option(
-            '--min-y', type=float, default=dflt, show_default=True,
-            help='Min value display on Y axis',
+            '-L', '--axlim', default=None, show_default=True,
+            help='min/max axes values separated by commas (min_x, max_x, '
+            'min_y, max_y)',
             callback=callback, **kwargs)(func)
-    return custom_min_y_axis_val_option
-
-def max_y_axis_val_option(dflt=1.0, **kwargs):
-    '''Get option for max value on y axis'''
-    def custom_max_y_axis_val_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['max_y'] = value
-            return value
-        return click.option(
-            '--max-y', type=float, default=dflt, show_default=True,
-            help='Max value display on Y axis',
-            callback=callback, **kwargs)(func)
-    return custom_max_y_axis_val_option
+    return custom_axes_val_option
 
 def axis_fontsize_option(dflt=8, **kwargs):
     '''Get option for axis font size'''
@@ -328,7 +310,7 @@ def threshold_option(**kwargs):
     return custom_threshold_option
 
 
-def label_option(name_option='x-label', **kwargs):
+def label_option(name_option='x_label', **kwargs):
     '''Get labels options based on the given name.
 
     Parameters:

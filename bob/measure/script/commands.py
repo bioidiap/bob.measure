@@ -7,17 +7,18 @@ from . import figure
 from . import common_options
 from bob.extension.scripts.click_helper import verbosity_option
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
-@common_options.table_option()
 @common_options.test_option()
+@common_options.table_option()
 @common_options.open_file_mode_option()
 @common_options.output_plot_metric_option()
 @common_options.criterion_option()
 @common_options.threshold_option()
 @verbosity_option()
 @click.pass_context
-def metrics(ctx, scores, test, **kargs):
+def metrics(ctx, scores, test, **kwargs):
     """Prints a single output line that contains all info for a given
     criterion (eer or hter).
 
@@ -39,6 +40,7 @@ def metrics(ctx, scores, test, **kargs):
     process = figure.Metrics(ctx, scores, test, load.split_files)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.titles_option()
@@ -47,16 +49,13 @@ def metrics(ctx, scores, test, **kargs):
 @common_options.test_option()
 @common_options.points_curve_option()
 @common_options.semilogx_option(True)
-@common_options.min_x_axis_val_option()
-@common_options.max_x_axis_val_option(dflt=1)
-@common_options.min_y_axis_val_option(dflt=0)
-@common_options.max_y_axis_val_option(dflt=1)
+@common_options.axes_val_option(dflt=[1e-4, 1, 1e-4, 1])
 @common_options.axis_fontsize_option()
 @common_options.x_rotation_option()
 @common_options.fmr_line_at_option()
 @verbosity_option()
 @click.pass_context
-def roc(ctx, scores, test, **kargs):
+def roc(ctx, scores, test, **kwargs):
     """Plot ROC (receiver operating characteristic) curve:
     The plot will represent the false match rate on the horizontal axis and the
     false non match rate on the vertical axis.  The values for the axis will be
@@ -77,22 +76,20 @@ def roc(ctx, scores, test, **kargs):
     process = figure.Roc(ctx, scores, test, load.split_files)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.output_plot_file_option(default_out='det.pdf')
 @common_options.titles_option()
 @common_options.sep_dev_test_option()
 @common_options.test_option()
-@common_options.min_x_axis_val_option(dflt=0.01)
-@common_options.max_x_axis_val_option(dflt=95)
-@common_options.min_y_axis_val_option(dflt=0.01)
-@common_options.max_y_axis_val_option(dflt=95)
+@common_options.axes_val_option(dflt=[0.01, 95, 0.01, 95])
 @common_options.axis_fontsize_option(dflt=6)
 @common_options.x_rotation_option(dflt=45)
 @common_options.points_curve_option()
 @verbosity_option()
 @click.pass_context
-def det(ctx, scores, test, **kargs):
+def det(ctx, scores, test, **kwargs):
     """Plot DET (detection error trade-off) curve:
     modified ROC curve which plots error rates on both axes
     (false positives on the x-axis and false negatives on the y-axis)
@@ -112,6 +109,7 @@ def det(ctx, scores, test, **kargs):
     process = figure.Det(ctx, scores, test, load.split_files)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(test_mandatory=True, nargs=-1)
 @common_options.output_plot_file_option(default_out='epc.pdf')
@@ -120,7 +118,7 @@ def det(ctx, scores, test, **kargs):
 @common_options.axis_fontsize_option()
 @verbosity_option()
 @click.pass_context
-def epc(ctx, scores, **kargs):
+def epc(ctx, scores, **kwargs):
     """Plot EPC (expected performance curve):
     plots the error rate on the test set depending on a threshold selected
     a-priori on the development set and accounts for varying relative cost
@@ -137,6 +135,7 @@ def epc(ctx, scores, **kargs):
     process = figure.Epc(ctx, scores, True, load.split_files)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.output_plot_file_option(default_out='hist.pdf')
@@ -147,7 +146,7 @@ def epc(ctx, scores, **kargs):
 @common_options.threshold_option()
 @verbosity_option()
 @click.pass_context
-def hist(ctx, scores, test, **kargs):
+def hist(ctx, scores, test, **kwargs):
     """ Plots histograms of positive and negatives along with threshold
     criterion.
 
@@ -166,6 +165,7 @@ def hist(ctx, scores, test, **kargs):
     process = figure.Hist(ctx, scores, test, load.split_files)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.titles_option()
@@ -177,20 +177,24 @@ def hist(ctx, scores, test, **kargs):
 @common_options.points_curve_option()
 @common_options.semilogx_option(dflt=True)
 @common_options.n_bins_option()
+@common_options.fmr_line_at_option()
 @verbosity_option()
 @click.pass_context
-def evaluate(ctx, scores, test, **kargs):
+def evaluate(ctx, scores, test, **kwargs):
     '''Runs error analysis on score sets
+
+    \b
     1. Computes the threshold using either EER or min. HTER criteria on
-        development set scores
+       development set scores
     2. Applies the above threshold on test set scores to compute the HTER, if a
-        test-score set is provided
+       test-score set is provided
     3. Reports error rates on the console
     4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
-        file (unless --no-plot is passed)
+       file (unless --no-plot is passed)
 
 
     You need to provide 2 score files for each biometric system in this order:
+
     \b
     * development scores
     * evaluation scores
@@ -200,31 +204,46 @@ def evaluate(ctx, scores, test, **kargs):
 
         $ bob measure evaluate -t -l metrics.txt -o my_plots.pdf dev-scores test-scores
     '''
-    #first time erase if existing file
+    # first time erase if existing file
     click.echo("Computing metrics with EER...")
-    ctx.meta['criter'] = 'eer' #no criterion passed to evaluate
+    ctx.meta['criter'] = 'eer'  # no criterion passed to evaluate
     ctx.invoke(metrics, scores=scores, test=test)
-    #second time, appends the content
+    # second time, appends the content
     click.echo("Computing metrics with HTER...")
-    ctx.meta['criter'] = 'hter' #no criterion passed in evaluate
+    ctx.meta['criter'] = 'hter'  # no criterion passed in evaluate
     ctx.invoke(metrics, scores=scores, test=test)
     if 'log' in ctx.meta:
         click.echo("[metrics] => %s" % ctx.meta['log'])
 
-    #avoid closing pdf file before all figures are plotted
+    # avoid closing pdf file before all figures are plotted
     ctx.meta['closef'] = False
     if test:
         click.echo("Starting evaluate with dev and test scores...")
     else:
         click.echo("Starting evaluate with dev scores only...")
     click.echo("Computing ROC...")
-    ctx.forward(roc)
+    # set axes limits for ROC
+    ctx.forward(roc) # use class defaults plot settings
     click.echo("Computing DET...")
-    ctx.forward(det)
+    ctx.forward(det) # use class defaults plot settings
     if test:
         click.echo("Computing EPC...")
+<<<<<<< HEAD
+        ctx.forward(epc) # use class defaults plot settings
+    # the last one closes the file
+||||||| merged common ancestors
         ctx.forward(epc)
+<<<<<<< HEAD
     #the last one closes the file
+=======
+        ctx.forward(epc)
+    # the last one closes the file
+>>>>>>> b98021d93c81eee46a730271fad67e001bf084ac
+||||||| merged common ancestors
+    #the last one closes the file
+=======
+    # the last one closes the file
+>>>>>>> b98021d93c81eee46a730271fad67e001bf084ac
     ctx.meta['closef'] = True
     click.echo("Computing score histograms...")
     ctx.forward(hist)

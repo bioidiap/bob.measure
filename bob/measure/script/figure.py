@@ -319,17 +319,8 @@ class PlotBase(MeasureBase):
     _split: :obj:`bool`
         If False, dev and test curves will be printed on the some figure
 
-    _min_x: :obj:`float`
-        Minimum value for the X-axis
-
-    _max_x: :obj:`float`
-        Maximum value for the X-axis
-
-    _min_y: :obj:`float`
-        Minimum value for the Y-axis
-
-    _max_y: :obj:`float`
-        Maximum value for the Y-axis
+    _axlim: :any:`list`
+        Minimum/Maximum values for the X and Y axes
 
     _x_rotation: :obj:`int`
         Rotation of the X axis labels
@@ -343,13 +334,10 @@ class PlotBase(MeasureBase):
         self._points = None if 'points' not in ctx.meta else ctx.meta['points']
         self._titles = None if 'titles' not in ctx.meta else ctx.meta['titles']
         self._split = None if 'split' not in ctx.meta else ctx.meta['split']
-        self._min_x = None if 'min_x' not in ctx.meta else ctx.meta['min_x']
-        self._min_y = None if 'min_y' not in ctx.meta else ctx.meta['min_y']
-        self._max_x = None if 'max_x' not in ctx.meta else ctx.meta['max_x']
-        self._max_y = None if 'max_y' not in ctx.meta else ctx.meta['max_y']
+        self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
         self._x_rotation = None if 'x_rotation' not in ctx.meta else \
                 ctx.meta['x_rotation']
-        self._axisfontsize = None if 'fontsize' not in ctx.meta else \
+        self._axisfontsize = 6 if 'fontsize' not in ctx.meta else \
                 ctx.meta['fontsize']
 
         self._nb_figs = 2 if self._test and self._split else 1
@@ -371,11 +359,13 @@ class PlotBase(MeasureBase):
         self._pdf_page = self._ctx.meta['PdfPages'] if 'PdfPages'in \
         self._ctx.meta else PdfPages(self._output)
 
-        mpl.figure(1)
-
-        if self._axisfontsize is not None:
-            mpl.rc('xtick', labelsize=self._axisfontsize)
-            mpl.rc('ytick', labelsize=self._axisfontsize)
+        for i in range(self._nb_figs):
+            fig = mpl.figure(i + 1)
+            fig.clear()
+            if self._axisfontsize is not None:
+                mpl.rc('xtick', labelsize=self._axisfontsize)
+                mpl.rc('ytick', labelsize=self._axisfontsize)
+                mpl.rc('legend', fontsize=7)
 
     def end_process(self):
         ''' Set title, legend, axis labels, grid colors, save figures and
@@ -416,9 +406,10 @@ class PlotBase(MeasureBase):
         return base + (" (%s)" % name)
 
     def _set_axis(self):
-        axis = [self._min_x, self._max_x, self._min_y, self._max_y]
-        if None not in axis:
-            mpl.axis(axis)
+        if self._axlim is not None and None not in self._axlim:
+            mpl.axis(self._axlim)
+        else:
+            mpl.axes().autoscale()
 
 class Roc(PlotBase):
     ''' Handles the plotting of ROC
@@ -438,6 +429,9 @@ class Roc(PlotBase):
         self._title = 'ROC'
         self._x_label = 'FMR'
         self._y_label = ("1 - FNMR" if self._semilogx else "FNMR")
+        #custom defaults
+        if self._axlim is None:
+            self._axlim = [1e-4, 1.0, 1e-4, 1.0]
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
@@ -488,6 +482,9 @@ class Det(PlotBase):
     def __init__(self, ctx, scores, test, func_load):
         super(Det, self).__init__(ctx, scores, test, func_load)
         self._title = 'DET'
+        #custom defaults here
+        if self._x_rotation is None:
+            self._x_rotation = 50
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
@@ -517,9 +514,10 @@ class Det(PlotBase):
             )
 
     def _set_axis(self):
-        axis = [self._min_x, self._max_x, self._min_y, self._max_y]
-        if None not in axis:
-            plot.det_axis(axis)
+        if self._axlim is not None and None not in self._axlim:
+            plot.det_axis(self._axlim)
+        else:
+            plot.det_axis([0.01, 99, 0.01, 99])
 
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
@@ -531,6 +529,7 @@ class Epc(PlotBase):
         self._x_label = 'Cost'
         self._y_label = 'Min. HTER (%)'
         self._test = True #always test data with EPC
+        self._nb_figs = 1
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
@@ -605,7 +604,7 @@ class Hist(PlotBase):
             ax = mpl.gca()
             ax.axes.get_xaxis().set_ticklabels([])
             mpl.legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, -0.01),
-                       fontsize=10)
+                       fontsize=6)
         else:
             mpl.legend(loc='best', fancybox=True, framealpha=0.5)
 
