@@ -1,5 +1,6 @@
 '''Stores click common options for plots'''
 
+import math
 import pkg_resources  # to make sure bob gets imported properly
 import logging
 import click
@@ -57,7 +58,7 @@ def test_option(**kwargs):
             '-t', '--test/--no-test', default=False,
             help='If set, test scores must be provided',
             show_default=True,
-            callback=callback, is_eager=True ,**kwargs)(func)
+            callback=callback, is_eager=True , **kwargs)(func)
     return custom_test_option
 
 def sep_dev_test_option(**kwargs):
@@ -70,9 +71,112 @@ def sep_dev_test_option(**kwargs):
         return click.option(
             '-s', '--split/--no-split', default=True, show_default=True,
             help='If set, test and dev curve in different plots',
-            callback=callback, is_eager=True,**kwargs)(func)
+            callback=callback, is_eager=True, **kwargs)(func)
     return custom_sep_dev_test_option
 
+def semilogx_option(dflt= False, **kwargs):
+    '''Option to use semilog X-axis'''
+    def custom_semilogx_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['semilogx'] = value
+            return value
+        return click.option(
+            '--semilogx/--std-x', default=dflt, show_default=True,
+            help='If set, use semilog on X axis',
+            callback=callback, **kwargs)(func)
+    return custom_semilogx_option
+
+def min_x_axis_val_option(dflt=1e-4, **kwargs):
+    '''Get option for min value on x axis'''
+    def custom_min_x_axis_val_option(func):
+        def callback(ctx, param, value):
+            if value > 0:
+                value = pow(10, int(math.floor(math.log(value, 10))))
+            ctx.meta['min_x'] = value
+            return value
+        return click.option(
+            '--min-x', type=float, default=dflt, show_default=True,
+            help='Min value display on X axis',
+            callback=callback, **kwargs)(func)
+    return custom_min_x_axis_val_option
+
+def max_x_axis_val_option(dflt=1.0, **kwargs):
+    '''Get option for max value on x axis'''
+    def custom_max_x_axis_val_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['max_x'] = value
+            return value
+        return click.option(
+            '--max-x', type=float, default=dflt, show_default=True,
+            help='Max value display on X axis',
+            callback=callback, **kwargs)(func)
+    return custom_max_x_axis_val_option
+
+def min_y_axis_val_option(dflt=1e-4, **kwargs):
+    '''Get option for min value on y axis'''
+    def custom_min_y_axis_val_option(func):
+        def callback(ctx, param, value):
+            if value > 0:
+                value = pow(10, int(math.floor(math.log(value, 10))))
+            ctx.meta['min_y'] = value
+            return value
+        return click.option(
+            '--min-y', type=float, default=dflt, show_default=True,
+            help='Min value display on Y axis',
+            callback=callback, **kwargs)(func)
+    return custom_min_y_axis_val_option
+
+def max_y_axis_val_option(dflt=1.0, **kwargs):
+    '''Get option for max value on y axis'''
+    def custom_max_y_axis_val_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['max_y'] = value
+            return value
+        return click.option(
+            '--max-y', type=float, default=dflt, show_default=True,
+            help='Max value display on Y axis',
+            callback=callback, **kwargs)(func)
+    return custom_max_y_axis_val_option
+
+def axis_fontsize_option(dflt=8, **kwargs):
+    '''Get option for axis font size'''
+    def custom_axis_fontsize_option(func):
+        def callback(ctx, param, value):
+            value = abs(value)
+            ctx.meta['fontsize'] = value
+            return value
+        return click.option(
+            '-F', '--fontsize', type=click.INT, default=dflt, show_default=True,
+            help='Axis fontsize',
+            callback=callback, **kwargs)(func)
+    return custom_axis_fontsize_option
+
+def x_rotation_option(dflt=0, **kwargs):
+    '''Get option for rotartion of the x axis lables'''
+    def custom_x_rotation_option(func):
+        def callback(ctx, param, value):
+            value = abs(value)
+            ctx.meta['x_rotation'] = value
+            return value
+        return click.option(
+            '-r', '--x-rotation', type=click.INT, default=dflt, show_default=True,
+            help='X axis labels ration',
+            callback=callback, **kwargs)(func)
+    return custom_x_rotation_option
+
+def fmr_line_at_option(**kwargs):
+    '''Get option to draw const fmr line'''
+    def custom_fmr_line_at_option(func):
+        def callback(ctx, param, value):
+            if value is not None:
+                value = min(max(0.0, value), 1.0)
+            ctx.meta['fmr_at'] = value
+            return value
+        return click.option(
+            '-L', '--fmr-at', type=float, default=None, show_default=True,
+            help='If given, draw a veritcal line for constant FMR on ROC plots',
+            callback=callback, **kwargs)(func)
+    return custom_fmr_line_at_option
 
 def n_sys_option(**kwargs):
     '''Get the number of systems to be processed'''
@@ -83,7 +187,7 @@ def n_sys_option(**kwargs):
         return click.option(
             '--n-sys', type=INT, default=1, show_default=True,
             help='The number of systems to be processed',
-            callback=callback, is_eager=True ,**kwargs)(func)
+            callback=callback, is_eager=True , **kwargs)(func)
     return custom_n_sys_option
 
 def points_curve_option(**kwargs):
@@ -95,7 +199,7 @@ def points_curve_option(**kwargs):
                     'Number of points to draw curves must be greater than 1'
                     , ctx=ctx
                 )
-            ctx.meta['n'] = value
+            ctx.meta['points'] = value
             return value
         return click.option(
             '-n', '--points', type=INT, default=100, show_default=True,
@@ -107,7 +211,9 @@ def n_bins_option(**kwargs):
     '''Get the number of bins in the histograms'''
     def custom_n_bins_option(func):
         def callback(ctx, param, value):
-            if value < 2:
+            if value is None:
+                value = 'auto'
+            elif value < 2:
                 raise click.BadParameter(
                     'Number of bins must be greater than 1'
                     , ctx=ctx
@@ -115,8 +221,8 @@ def n_bins_option(**kwargs):
             ctx.meta['n_bins'] = value
             return value
         return click.option(
-            '-b', '--nbins', type=INT, default=20, show_default=True,
-            help='The number of bins in the histogram(s)',
+            '-b', '--nbins', type=INT, default=None,
+            help='The number of bins in the histogram(s). Default: `auto`',
             callback=callback, **kwargs)(func)
     return custom_n_bins_option
 
@@ -131,14 +237,14 @@ def table_option(**kwargs):
             elif 'log' in ctx.meta and ctx.meta['log'] is not None:
                 value = 'latex'
             else:
-                value = 'fancy_grid'
+                value = 'rst'
             ctx.meta['tablefmt'] = value
             return value
         return click.option(
             '--tablefmt', type=click.STRING, default=None,
             show_default=True, help='Format for table display: `plain`, '
-            '`simple`, `grid`, (default) `fancy_grid`, `pipe`, `orgtbl`, '
-            '`jira`, `presto`, `psql`, `rst`, `mediawiki`, `moinmoin`, '
+            '`simple`, `grid`, `fancy_grid`, `pipe`, `orgtbl`, '
+            '`jira`, `presto`, `psql`, (default) `rst`, `mediawiki`, `moinmoin`, '
             '`youtrack`, `html`, (default with `--log`)`latex`, '
             '`latex_raw`, `latex_booktabs`, `textile`',
             callback=callback,**kwargs)(func)
@@ -184,7 +290,7 @@ def open_file_mode_option(**kwargs):
         def callback(ctx, param, value):
             if value not in ['w', 'a', 'w+', 'a+']:
                 raise click.BadParameter('Incorrect open file mode')
-            ctx.meta['open-mode'] = value
+            ctx.meta['open_mode'] = value
             return value
         return click.option(
             '-om', '--open-mode', default='w',

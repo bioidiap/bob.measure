@@ -89,9 +89,9 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   from . import roc as calc
   out = calc(negatives, positives, npoints)
   if not CAR:
-    return pyplot.plot(100.0 * out[0, :], 100.0 * out[1, :], **kwargs)
+    return pyplot.plot(out[0, :], out[1, :], **kwargs)
   else:
-    return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
+    return pyplot.semilogx(out[0, :],(1 - out[1, :]), **kwargs)
 
 
 def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):

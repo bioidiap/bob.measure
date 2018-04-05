@@ -54,6 +54,18 @@ Curves
    bob.measure.precision_recall_curve
    bob.measure.cmc
 
+Figures
+-------
+
+.. autosummary::
+   bob.measure.script.figure.MeasureBase
+   bob.measure.script.figure.Metrics
+   bob.measure.script.figure.PlotBase
+   bob.measure.script.figure.Roc
+   bob.measure.script.figure.Det
+   bob.measure.script.figure.Epc
+   bob.measure.script.figure.Hist
+
 Generic
 +++++++
 
@@ -89,6 +101,14 @@ Loading
 .. autosummary::
    bob.measure.load.split
 
+Utilities
+---------
+
+.. autosummary::
+   bob.measure.utils.remove_nan
+   bob.measure.utils.get_fta
+   bob.measure.utils.get_thres
+   bob.measure.utils.get_colors
 
 Details
 -------
@@ -97,3 +117,6 @@ Details
 .. automodule:: bob.measure.calibration
 .. automodule:: bob.measure.plot
 .. automodule:: bob.measure.load
+.. automodule:: bob.measure.utils
+.. automodule:: bob.measure.script.figure
+.. automodule:: bob.measure.script.commands

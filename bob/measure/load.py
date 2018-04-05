@@ -29,6 +29,9 @@ def split(filename):
         This array contains the list of negative scores
 
     positives: 1D :py:class:`numpy.ndarray` of type float
+
+    def __init__(self):
+        pass
         This array contains the list of positive scores
 
     """
@@ -41,6 +44,34 @@ def split(filename):
                    the first column containing -1 or 1 (i.e. negative or
                    positive) and the second the scores
                      (float).'''.format(filename))
-        return (None, None)
+        raise
     return (scores[numpy.where(neg_pos == -1)],
             scores[numpy.where(neg_pos == 1)])
+
+def split_files(filenames):
+    """split_files
+
+    Parse a list of files using :py:func:`split`
+
+    Parameters
+    ----------
+
+    filenames :
+        :any:`list`: A list of file paths
+
+    Returns
+    -------
+    :any:`list`: A list of tuples, where each tuple contains the
+    ``negative`` and ``positive`` scores for one probe of the database. Both
+    ``negatives`` and ``positives`` can be either an 1D
+    :py:class:`numpy.ndarray` of type ``float``, or ``None``.
+    """
+    if filenames is None:
+        return None
+    res = []
+    for file_path in filenames:
+        try:
+            res.append(split(file_path))
+        except:
+            raise
+    return res

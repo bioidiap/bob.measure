@@ -435,7 +435,6 @@ look at the implementations at :py:mod:`bob.measure.plot` to understand how to
 use the |project| methods to compute the curves and interlace that in the way
 that best suits you.
 
-
 Full applications
 -----------------
 
@@ -454,19 +453,15 @@ on a set, after setting up |project|, just do:
 
   $ bob measure metrics dev-1.txt
   [Min. criterion: EER] Threshold on Development set `dev-1.txt`: -8.025286e-03
-    ╒══════╤═════════════════════════╕
-    │      │ Development dev-1.txt   │
-    ╞══════╪═════════════════════════╡
-    │ FMR  │ 6.263% (31/495)         │
-    ├──────┼─────────────────────────┤
-    │ FNMR │ 6.208% (28/451)         │
-    ├──────┼─────────────────────────┤
-    │ FAR  │ 5.924%                  │
-    ├──────┼─────────────────────────┤
-    │ FRR  │ 11.273%                 │
-    ├──────┼─────────────────────────┤
-    │ HTER │ 8.599%                  │
-    ╘══════╧═════════════════════════╛
+  ====  ===================
+  ..    Development dev-1
+  ====  ===================
+  FMR   6.263% (31/495)
+  FNMR  6.208% (28/451)
+  FAR   5.924%
+  FRR   11.273%
+  HTER  8.599%
+  ====  ===================
 
 The output will present the threshold together with the FMR, FMNR, FAR, FRR and
 HTER on the given set, calculated using such a threshold. The relative counts of FAs
@@ -485,21 +480,16 @@ To evaluate the performance of a new score file with a given threshold, use
 .. code-block:: sh
 
   $ bob measure metrics --thres 0.006 test-1.txt
-    [Min. criterion: user provider] Threshold onDevelopment set `test-1.txt`: -6.000000e-03
-    ╒══════╤═════════════════════════╕
-    │      │ Development test-1.txt  │
-    ╞══════╪═════════════════════════╡
-    │ FMR  │ 5.859% (29/495)         │
-    ├──────┼─────────────────────────┤
-    │ FNMR │ 6.208% (28/451)         │
-    ├──────┼─────────────────────────┤
-    │ FAR  │ 5.542%                  │
-    ├──────┼─────────────────────────┤
-    │ FRR  │ 11.273%                 │
-    ├──────┼─────────────────────────┤
-    │ HTER │ 8.408%                  │
-    ╘══════╧═════════════════════════╛
-
+  [Min. criterion: user provider] Threshold on Development set `test-1`: 6.000000e-03
+  ====  ====================
+  ..    Development test-1
+  ====  ====================
+  FMR   5.010% (24/479)
+  FNMR  6.977% (33/473)
+  FAR   4.770%
+  FRR   11.442%
+  HTER  8.106%
+  ====  ====================
 
 You can simultaneously conduct the threshold computation and its performance
 on a test set:
@@ -507,25 +497,22 @@ on a test set:
 .. code-block:: sh
 
   $ bob measure metrics --test dev-1.txt test-1.txt
-    [Min. criterion: EER] Threshold on Development set `dev-1.txt`: -8.025286e-03
-    ╒══════╤═════════════════════════╤═══════════════════╕
-    │      │ Development dev-1.txt   │ Test test-1.txt   │
-    ╞══════╪═════════════════════════╪═══════════════════╡
-    │ FMR  │ 6.263% (31/495)         │ 5.637% (27/479)   │
-    ├──────┼─────────────────────────┼───────────────────┤
-    │ FNMR │ 6.208% (28/451)         │ 6.131% (29/473)   │
-    ├──────┼─────────────────────────┼───────────────────┤
-    │ FAR  │ 5.924%                  │ 5.366%            │
-    ├──────┼─────────────────────────┼───────────────────┤
-    │ FRR  │ 11.273%                 │ 10.637%           │
-    ├──────┼─────────────────────────┼───────────────────┤
-    │ HTER │ 8.599%                  │ 8.001%            │
-    ╘══════╧═════════════════════════╧═══════════════════╛
+  [Min. criterion: EER] Threshold on Development set `dev-1`: -8.025286e-03
+  ====  ===================  ===============
+  ..    Development dev-1    Test test-1
+  ====  ===================  ===============
+  FMR   6.263% (31/495)      5.637% (27/479)
+  FNMR  6.208% (28/451)      6.131% (29/473)
+  FAR   5.924%               5.366%
+  FRR   11.273%              10.637%
+  HTER  8.599%               8.001%
+  ====  ===================  ===============
 
 .. note::
     Table format can be changed using ``--tablefmt`` option. Note that
     ``latex``
-    format is used by default when the outputs are witten in a log file. See
+    format is used by default when the outputs are witten in a log file and
+    ``rst`` when written in the terminal. See
     ``bob measure metrics --help`` for more details.
     
 
@@ -576,7 +563,6 @@ experiment. For example:
 
 will output metrics and plots for the two experiments (dev and test pairs) in
 `my_metrics.txt` and `my_plots.pdf`, respectively.
-
 
 .. include:: links.rst
 

@@ -72,12 +72,12 @@ setup(
 
       # bob measure scripts
       'bob.measure.cli': [
-          'evaluate = bob.measure.script.evaluate:evaluate',
-          'metrics = bob.measure.script.evaluate:metrics',
-          'roc = bob.measure.script.evaluate:roc',
-          'det = bob.measure.script.evaluate:det',
-          'epc = bob.measure.script.evaluate:epc',
-          'hist = bob.measure.script.evaluate:hist',
+          'evaluate = bob.measure.script.commands:evaluate',
+          'metrics = bob.measure.script.commands:metrics',
+          'roc = bob.measure.script.commands:roc',
+          'det = bob.measure.script.commands:det',
+          'epc = bob.measure.script.commands:epc',
+          'hist = bob.measure.script.commands:hist',
       ],
     },
 
