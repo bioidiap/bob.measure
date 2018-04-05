@@ -394,9 +394,7 @@ class PlotBase(MeasureBase):
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
                 mpl.legend()
-                axis = [self._min_x, self._max_x, self._min_y, self._max_y]
-                if None not in axis:
-                    mpl.axis(axis)
+                self._set_axis()
                 #gives warning when applied with mpl
                 fig.set_tight_layout(True)
                 mpl.xticks(rotation=self._x_rotation)
@@ -416,6 +414,11 @@ class PlotBase(MeasureBase):
         if self._multi_plots:
             return base + (" %d (%s)" % (idx + 1, name))
         return base + (" (%s)" % name)
+
+    def _set_axis(self):
+        axis = [self._min_x, self._max_x, self._min_y, self._max_y]
+        if None not in axis:
+            mpl.axis(axis)
 
 class Roc(PlotBase):
     ''' Handles the plotting of ROC
@@ -513,15 +516,10 @@ class Det(PlotBase):
                 label=self._label('development', dev_file, idx)
             )
 
-    def end_process(self):
-        ''' Set specific axis for det '''
-        axlim = [self._min_x, self._max_x, self._min_y, self._max_y]
-        mpl.figure(1)
-        plot.det_axis(axlim)
-        if self._test and self._split:
-            mpl.figure(2)
-            plot.det_axis(axlim)
-        super(Det, self).end_process()
+    def _set_axis(self):
+        axis = [self._min_x, self._max_x, self._min_y, self._max_y]
+        if None not in axis:
+            plot.det_axis(axis)
 
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
