@@ -387,7 +387,7 @@ class PlotBase(MeasureBase):
                 title = self._title
                 if not self._test:
                     title += (" (%s)" % self._states[0])
-                if self._split:
+                elif self._split:
                     title += (" (%s)" % self._states[i])
                 mpl.title(title)
                 mpl.xlabel(self._x_label)
