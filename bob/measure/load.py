@@ -29,9 +29,6 @@ def split(filename):
         This array contains the list of negative scores
 
     positives: 1D :py:class:`numpy.ndarray` of type float
-
-    def __init__(self):
-        pass
         This array contains the list of positive scores
 
     """
