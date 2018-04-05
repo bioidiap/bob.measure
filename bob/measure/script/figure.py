@@ -229,7 +229,7 @@ class Metrics(MeasureBase):
             self.log_file = open(self._log, self._open_mode)
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
+                test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Compute metrics thresholds and tables (FAR, FMR, FMNR, HTER) for
         given system inputs'''
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
@@ -378,7 +378,7 @@ class PlotBase(MeasureBase):
             mpl.rc('ytick', labelsize=self._axisfontsize)
 
     def end_process(self):
-        ''' Set title, legend, axiss labels, grid colors, save figures and
+        ''' Set title, legend, axis labels, grid colors, save figures and
         close pdf is needed '''
         #only for plots
         if self._end_setup_plot:
@@ -434,7 +434,7 @@ class Roc(PlotBase):
         self._y_label = ("1 - FNMR" if self._semilogx else "FNMR")
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
+                test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
         if self._test:
@@ -484,7 +484,7 @@ class Det(PlotBase):
         self._title = 'DET'
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
+                test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
         if self._test and test_neg is not None:
@@ -531,7 +531,7 @@ class Epc(PlotBase):
         self._test = True #always test data with EPC
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
+                test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Plot EPC using
         :py:func:`bob.measure.plot.epc`'''
         plot.epc(
@@ -566,7 +566,7 @@ class Hist(PlotBase):
         self._end_setup_plot = False
 
     def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                 test_neg=None, test_pos=None, test_fta=None, test_file=None):
+                test_neg=None, test_pos=None, test_fta=None, test_file=None):
         ''' Draw histograms of negative and positive scores.'''
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
                 if self._thres is None else self._thres

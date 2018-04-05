@@ -123,8 +123,8 @@ def det(ctx, scores, test, **kargs):
 def epc(ctx, scores, **kargs):
     """Plot EPC (expected performance curve):
     plots the error rate on the test set depending on a threshold selected
-    a-priori on the development set and accounts for varying relative cost β
-    ∈ [0; 1] of FPR and FNR when calculating the threshold.
+    a-priori on the development set and accounts for varying relative cost
+    in [0; 1] of FPR and FNR when calculating the threshold.
 
     You need provide one or more development score and test file(s)
     for each experiment.
