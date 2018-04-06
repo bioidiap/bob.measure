@@ -35,9 +35,11 @@ requirements:
     - numpy {{ numpy }}
     - docopt {{ docopt }}
     - tabulate {{ tabulate }}
+    - scipy {{ scipy }}
   run:
     - python
     - setuptools
+    - scipy
     - matplotlib
     - boost
     - {{ pin_compatible('numpy') }}

@@ -6,3 +6,5 @@ bob.io.base
 matplotlib
 docopt
 tabulate
+numpy
+scipy

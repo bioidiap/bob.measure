@@ -76,6 +76,13 @@ Generic
    bob.measure.rmse
    bob.measure.get_config
 
+
+Confidence interval
+-------------------
+
+.. autosummary::
+   bob.measure.utils.confidence_for_indicator_variable
+
 Calibration
 -----------
 

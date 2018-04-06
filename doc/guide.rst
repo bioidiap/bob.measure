@@ -210,6 +210,40 @@ Both functions require that at least one probe item exists, which has no accordi
    >>> dir = bob.measure.detection_identification_rate(rr_scores, threshold = 0, rank=1)
    >>> far = bob.measure.false_alarm_rate(rr_scores, threshold = 0)
 
+Confidence interval
+-------------------
+
+A confidence interval for parameter :math:`x` consists of a lower
+estimate :math:`L`, and an upper estimate :math:`U`, such that the probability
+of the true value being within the interval estimate is equal to :math:`\alpha`.
+For example, a 95% confidence interval (i.e. :math:`\alpha = 0.95`) for a
+parameter :math:`x` is given by :math:`[L, U]` such that
+
+.. math:: Prob(x∈[L,U]) = 95% 
+
+The smaller the test size, the wider the confidence 
+interval will be, and the greater :math:`\alpha`, the smaller the confidence interval
+will be.
+
+`The Clopper-Pearson interval`_, a common method for calculating
+confidence intervals, is function of the number of success, the number of trials 
+and confidence
+value :math:`\alpha` is used as :py:func:`bob.measure.utils.confidence_for_indicator_variable`.
+It is based on the cumulative probabilities of the binomial distribution. This
+method is quite conservative, meaning that the true coverage rate of a 95% 
+Clopper–Pearson interval may be well above 95%.
+
+For example, we want to evaluate the reliability of a system to
+identify registered persons. Let's say that among 10,000 accepted
+transactions, 9856 are true matches. The 95% confidence interval for true match
+rate is then:
+.. doctest:: python
+
+    >>> bob.measure.utils.confidence_for_indicator_variable(9856, 10000)
+    (0.98306835053282549, 0.98784270928084694)
+
+meaning there is a 95% probability that the true match rate is inside :math:`[0.983,
+0.988]`.
 
 Plotting
 --------
@@ -570,4 +604,4 @@ will output metrics and plots for the two experiments (dev and test pairs) in
 
 .. _`The Expected Performance Curve`: http://publications.idiap.ch/downloads/reports/2005/bengio_2005_icml.pdf
 .. _`The DET curve in assessment of detection task performance`: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&rep=rep1&type=pdf
-.. _openbr: http://openbiometrics.org
+.. _`The Clopper-Pearson interval`: https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Clopper-Pearson_interval
