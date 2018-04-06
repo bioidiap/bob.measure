@@ -311,6 +311,18 @@ def threshold_option(**kwargs):
             callback=callback, show_default=True,**kwargs)(func)
     return custom_threshold_option
 
+def rank_option(**kwargs):
+    '''Get option for rank parameter'''
+    def custom_rank_option(func):
+        def callback(ctx, param, value):
+            value = 1 if value < 0 else value
+            ctx.meta['rank'] = value
+            return value
+        return click.option(
+            '--rank', type=click.INT, default=1,
+            help='Given threshold for metrics computations',
+            callback=callback, show_default=True,**kwargs)(func)
+    return custom_rank_option
 
 def label_option(name_option='x_label', **kwargs):
     '''Get labels options based on the given name.
