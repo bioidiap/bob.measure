@@ -109,8 +109,10 @@ def axes_val_option(dflt=None, **kwargs):
                     raise click.BadParameter('Axis limits must be floats')
                 if None in value:
                     value = None
-            elif None not in dflt or len(dflt) == 4:
-                value = dflt if not all(isinstance(x, float) for x in dflt) else None
+                elif None not in dflt and len(dflt) == 4:
+                    value = dflt if not all(
+                        isinstance(x, float) for x in dflt
+                    ) else None
             ctx.meta['axlim'] = value
             return value
         return click.option(

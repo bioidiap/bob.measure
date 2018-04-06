@@ -481,9 +481,9 @@ def cmc(cmc_scores, logx=True, **kwargs):
   out = calc(cmc_scores)
 
   if logx:
-    pyplot.semilogx(range(1, len(out) + 1), out * 100, **kwargs)
+    pyplot.semilogx(range(1, len(out) + 1), out, **kwargs)
   else:
-    pyplot.plot(range(1, len(out) + 1), out * 100, **kwargs)
+    pyplot.plot(range(1, len(out) + 1), out, **kwargs)
 
   return len(out)
 

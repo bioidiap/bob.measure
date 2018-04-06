@@ -92,11 +92,8 @@ class MeasureBase(object):
             test_score = self.test_scores[idx] if self.test_scores is not None\
             else None
             test_file = None if self.test_names is None else self.test_names[idx]
-            dev_neg, dev_pos, dev_fta, test_neg, test_pos, test_fta =\
-                self._process_scores(dev_score, test_score)
             #does the main computations/plottings here
-            self.compute(idx, dev_neg, dev_pos, dev_fta, dev_file,
-                          test_neg, test_pos, test_fta, test_file)
+            self.compute(idx, dev_score, dev_file, test_score, test_file)
         #setup final configuration, plotting properties, ...
         self.end_process()
 
@@ -109,9 +106,9 @@ class MeasureBase(object):
 
     #Main computations are done here in the subclasses
     @abstractmethod
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
-        """Compute metrics or plots from the inputs given by
+    def compute(self, idx, dev_score, dev_file=None,
+                test_score=None, test_file=None):
+        """Compute metrics or plots from the given scores provided by
         :py:func:`~bob.measure.script.figure.MeasureBase.run`.
         Should reimplemented in derived classes
 
@@ -121,20 +118,18 @@ class MeasureBase(object):
         idx : :obj:`int`
             index of the system
 
-        dev_neg : :py:class:`numpy.ndarray`
-            negative dev scores
-        dev_pos : :py:class:`numpy.ndarray`
-            positive dev scores
-        dev_fta : :obj:`float`
-            failure to acquire rate
+        dev_score:
+            Development scores. Can be a tuple (neg, pos) of
+            :py:class:`numpy.ndarray` (e.g.
+            :py:func:`~bob.measure.script.Roc.compute`) or
+            a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
         dev_file : str
             name of the dev file without extension
-        test_neg : :py:class:`numpy.ndarray`
-            negative test scores
-        test_pos : :py:class:`numpy.ndarray`
-            positive test scores
-        test_fta : :obj:`float`
-            failure to acquire rate for test scores
+        test_score:
+            Test scores. Can be a tuple (neg, pos) of
+            :py:class:`numpy.ndarray` (e.g.
+            :py:func:`~bob.measure.script.Roc.compute`) or
+            a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
         test_file : str
             name of the test file without extension
         """
@@ -143,6 +138,9 @@ class MeasureBase(object):
     #Things to do after the main iterative computations are done
     @abstractmethod
     def end_process(self):
+        """ Called in :py:func:`~bob.measure.script.figure.MeasureBase`.run
+        after iterating through the different sytems.
+        Should reimplemented in derived classes"""
         pass
 
     #common protected functions
@@ -153,7 +151,7 @@ class MeasureBase(object):
         Returns
         -------
 
-            :any:`list`: A list of tuples, where each tuple contains the
+            :any:`list`: A list (of list) of tuples, where each tuple contains the
             ``negative`` and ``positive`` scores for one probe of the database. Both
             ``negatives`` and ``positives`` can be either an 1D'''
 
@@ -228,10 +226,12 @@ class Metrics(MeasureBase):
         if self._log is not None:
             self.log_file = open(self._log, self._open_mode)
 
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
+    def compute(self, idx, dev_score, dev_file=None,
+                test_score=None, test_file=None):
         ''' Compute metrics thresholds and tables (FAR, FMR, FMNR, HTER) for
         given system inputs'''
+        dev_neg, dev_pos, dev_fta, test_neg, test_pos, test_fta =\
+                self._process_scores(dev_score, test_score)
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
                 if self._thres is None else self._thres
         if self._thres is None:
@@ -419,10 +419,14 @@ class Roc(PlotBase):
 
     _semilogx: :obj:`bool`
         If true, X-axis will be semilog10
+
+    _fmr_at: :obj:`float`
+        If not None, plot a vertical line at this value on the dev plot and
+        corresponding dots on the test plot (if any).
     '''
     def __init__(self, ctx, scores, test, func_load):
         super(Roc, self).__init__(ctx, scores, test, func_load)
-        self._semilogx = None if 'semilogx' not in ctx.meta else\
+        self._semilogx = True if 'semilogx' not in ctx.meta else\
         ctx.meta['semilogx']
         self._fmr_at = None if 'fmr_at' not in ctx.meta else\
         ctx.meta['fmr_at']
@@ -433,10 +437,12 @@ class Roc(PlotBase):
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 1e-4, 1.0]
 
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
+    def compute(self, idx, dev_score, dev_file=None,
+                test_score=None, test_file=None):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
+        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
+                self._process_scores(dev_score, test_score)
         mpl.figure(1)
         if self._test:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
@@ -486,10 +492,12 @@ class Det(PlotBase):
         if self._x_rotation is None:
             self._x_rotation = 50
 
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
+    def compute(self, idx, dev_score, dev_file=None,
+                test_score=None, test_file=None):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
+        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
+                self._process_scores(dev_score, test_score)
         mpl.figure(1)
         if self._test and test_neg is not None:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
@@ -531,10 +539,11 @@ class Epc(PlotBase):
         self._test = True #always test data with EPC
         self._nb_figs = 1
 
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
+    def compute(self, idx, dev_score, dev_file, test_score, test_file=None):
         ''' Plot EPC using
         :py:func:`bob.measure.plot.epc`'''
+        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
+                self._process_scores(dev_score, test_score)
         plot.epc(
             dev_neg, dev_pos, test_neg, test_pos, self._points,
             color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
@@ -566,9 +575,11 @@ class Hist(PlotBase):
         self._x_label = 'Score values' if not self._test else ''
         self._end_setup_plot = False
 
-    def compute(self, idx, dev_neg, dev_pos, dev_fta=None, dev_file=None,
-                test_neg=None, test_pos=None, test_fta=None, test_file=None):
+    def compute(self, idx, dev_score, dev_file=None,
+                test_score=None, test_file=None):
         ''' Draw histograms of negative and positive scores.'''
+        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
+                self._process_scores(dev_score, test_score)
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
                 if self._thres is None else self._thres
 
