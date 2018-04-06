@@ -121,14 +121,14 @@ class MeasureBase(object):
         dev_score:
             Development scores. Can be a tuple (neg, pos) of
             :py:class:`numpy.ndarray` (e.g.
-            :py:func:`~bob.measure.script.Roc.compute`) or
+            :py:func:`~bob.measure.script.figure.Roc.compute`) or
             a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
         dev_file : str
             name of the dev file without extension
         test_score:
             Test scores. Can be a tuple (neg, pos) of
             :py:class:`numpy.ndarray` (e.g.
-            :py:func:`~bob.measure.script.Roc.compute`) or
+            :py:func:`~bob.measure.script.figure.Roc.compute`) or
             a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
         test_file : str
             name of the test file without extension
