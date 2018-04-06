@@ -203,8 +203,12 @@ class Metrics(MeasureBase):
     _open_mode: str
         Open mode of the output file (e.g. `w`, `a+`)
 
-    _thres: :obj:`float`
-        If given, uses this threshold instead of computing it
+    _thres: :any:`list`
+        If given, uses those threshold instead of computing them. Lenght of the
+        list must be the same as the number of systems.
+
+    _far: :obj:`float`
+        If given, uses this FAR to compute threshold
 
     _log: str
         Path to output log file
@@ -221,6 +225,16 @@ class Metrics(MeasureBase):
         self._open_mode = None if 'open_mode' not in ctx.meta else\
                 ctx.meta['open_mode']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
+        if self._thres is not None :
+            if len(self._thres) == 1:
+                self._thres = self._thres * len(self.dev_names)
+            elif len(self._thres) != len(self.dev_names):
+                raise click.BadParameter(
+                    '#thresholds must be the same as #systems (%d)' \
+                    % len(self.dev_names)
+                )
+        self._far = None if 'far_value' not in ctx.meta else \
+        ctx.meta['far_value']
         self._log = None if 'log' not in ctx.meta else ctx.meta['log']
         self.log_file = sys.stdout
         if self._log is not None:
@@ -228,12 +242,12 @@ class Metrics(MeasureBase):
 
     def compute(self, idx, dev_score, dev_file=None,
                 test_score=None, test_file=None):
-        ''' Compute metrics thresholds and tables (FAR, FMR, FMNR, HTER) for
+        ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
         dev_neg, dev_pos, dev_fta, test_neg, test_pos, test_fta =\
                 self._process_scores(dev_score, test_score)
-        threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
-                if self._thres is None else self._thres
+        threshold = utils.get_thres(self._criter, dev_neg, dev_pos, self._far) \
+                if self._thres is None else self._thres[idx]
         if self._thres is None:
             click.echo("[Min. criterion: %s] Threshold on Development set `%s`: %e"\
                        % (self._criter.upper(), dev_file, threshold),
@@ -286,7 +300,7 @@ class Metrics(MeasureBase):
             test_frr_str = "%.3f%%" % (100 * test_frr)
             test_hter_str = "%.3f%%" % (100 * test_hter)
 
-            headers.append('Test % s' % self.test_names[idx])
+            headers.append('Test % s' % test_file)
             raws[0].append(test_fmr_str)
             raws[1].append(test_fnmr_str)
             raws[2].append(test_far_str)
@@ -559,8 +573,9 @@ class Hist(PlotBase):
     _nbins: :obj:`int`, str
     Number of bins. Default: `auto`
 
-    _thres: :obj:`float`
-        If given, this threshold will be used in the plots
+    _thres: :any:`list`
+        If given, uses those threshold instead of computing them. Lenght of the
+        list must be the same as the number of systems.
 
     _criter: str
         Criterion to compute threshold (eer or hter)
@@ -569,6 +584,14 @@ class Hist(PlotBase):
         super(Hist, self).__init__(ctx, scores, test, func_load)
         self._nbins = None if 'nbins' not in ctx.meta else ctx.meta['nbins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
+        if self._thres is not None and len(self._thres) != len(self.dev_names):
+            if len(self._thres) == 1:
+                self._thres = self._thres * len(self.dev_names)
+            else:
+                raise click.BadParameter(
+                    '#thresholds must be the same as #systems (%d)' \
+                    % len(self.dev_names)
+                )
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
         self._y_label = 'Dev. Scores \n (normalized)' if self._test else \
                 'Normalized Count'
@@ -581,7 +604,7 @@ class Hist(PlotBase):
         dev_neg, dev_pos, _, test_neg, test_pos, _ =\
                 self._process_scores(dev_score, test_score)
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
-                if self._thres is None else self._thres
+                if self._thres is None else self._thres[idx]
 
         fig = mpl.figure()
         if test_neg is not None:

@@ -87,40 +87,60 @@ def semilogx_option(dflt= False, **kwargs):
             callback=callback, **kwargs)(func)
     return custom_semilogx_option
 
-def axes_val_option(dflt=None, **kwargs):
-    '''Get option for min/max values for axes. If one the default is None, no
-    default is used
-
+def list_float_option(name, short_name, desc, nitems=None, dflt=None, **kwargs):
+    '''Get option to get a list of float f
     Parameters
     ----------
 
+    name: str
+        name of the option
+    short_name: str
+        short name for the option
+    desc: str
+        short description for the option
+    nitems: :obj:`int`
+        if given, the parsed list must contains this number of items
     dflt: :any:`list`
-        List of default min/max values for axes. Must be of length 4
+        List of default  values for axes.
     '''
-    def custom_axes_val_option(func):
+    def custom_list_float_option(func):
         def callback(ctx, param, value):
             if value is not None:
                 tmp = value.split(',')
-                if len(tmp) != 4:
-                    raise click.BadParameter('Must provide 4 axis limits')
+                if nitems is not None and len(tmp) != nitems:
+                    raise click.BadParameter(
+                        '%s Must provide %d axis limits' % (name, nitems)
+                    )
                 try:
                     value = [float(i) for i in tmp]
                 except:
-                    raise click.BadParameter('Axis limits must be floats')
+                    raise click.BadParameter('Inputs of %s be floats' % name)
                 if None in value:
                     value = None
-                elif None not in dflt and len(dflt) == 4:
+                elif dflt is not None and None not in dflt and len(dflt) == nitems:
                     value = dflt if not all(
                         isinstance(x, float) for x in dflt
                     ) else None
-            ctx.meta['axlim'] = value
+            ctx.meta[name.replace('-', '_')] = value
             return value
         return click.option(
-            '-L', '--axlim', default=None, show_default=True,
-            help='min/max axes values separated by commas (min_x, max_x, '
-            'min_y, max_y)',
-            callback=callback, **kwargs)(func)
-    return custom_axes_val_option
+            '-'+short_name, '--'+name, default=None, show_default=True,
+            help=desc, callback=callback, **kwargs)(func)
+    return custom_list_float_option
+
+def axes_val_option(dflt=None, **kwargs):
+    return list_float_option(
+        name='axlim', short_name='L',
+        desc='min/max axes values separated by commas (min_x, max_x, min_y, max_y)',
+        nitems=4, dflt=dflt, **kwargs
+    )
+
+def thresholds_option(**kwargs):
+    return list_float_option(
+        name='thres', short_name='T',
+        desc='Given threshold for metrics computations',
+        nitems=None, dflt=None, **kwargs
+    )
 
 def axis_fontsize_option(dflt=8, **kwargs):
     '''Get option for axis font size'''
@@ -161,6 +181,20 @@ def fmr_line_at_option(**kwargs):
             help='If given, draw a veritcal line for constant FMR on ROC plots',
             callback=callback, **kwargs)(func)
     return custom_fmr_line_at_option
+
+def cost_option(**kwargs):
+    '''Get option to get cost for FAR'''
+    def custom_cost_option(func):
+        def callback(ctx, param, value):
+            if value < 0 or value > 1:
+                raise click.BadParameter("Cost for FAR must be betwen 0 and 1")
+            ctx.meta['cost'] = value
+            return value
+        return click.option(
+            '-C', '--cost', type=float, default=0.99, show_default=True,
+            help='Cost for FAR in minDCF',
+            callback=callback, **kwargs)(func)
+    return custom_cost_option
 
 def n_sys_option(**kwargs):
     '''Get the number of systems to be processed'''
@@ -282,11 +316,19 @@ def open_file_mode_option(**kwargs):
             callback=callback, **kwargs)(func)
     return custom_open_file_mode_option
 
-def criterion_option(**kwargs):
-    '''Get option flag to tell which criteriom is used (default:eer)'''
+def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
+    """Get option flag to tell which criteriom is used (default:eer)
+
+    Parameters
+    ----------
+
+    lcriteria : :any:`list`
+        List of possible criteria
+    """
     def custom_criterion_option(func):
         def callback(ctx, param, value):
-            list_accepted_crit = ['eer', 'hter']
+            list_accepted_crit = lcriteria if lcriteria is not None else \
+                    ['eer', 'hter', 'far']
             if value not in list_accepted_crit:
                 raise click.BadParameter('Incorrect value for `--criter`. '
                                          'Must be one of [`%s`]' %
@@ -299,17 +341,20 @@ def criterion_option(**kwargs):
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
 
-def threshold_option(**kwargs):
-    '''Get option for given threshold'''
-    def custom_threshold_option(func):
+
+def far_option(**kwargs):
+    '''Get option to get far value'''
+    def custom_far_option(func):
         def callback(ctx, param, value):
-            ctx.meta['thres'] = value
+            if value > 1 or value < 0:
+                raise click.BadParameter("FAR value should be between 0 and 1")
+            ctx.meta['far_value'] = value
             return value
         return click.option(
-            '--thres', type=click.FLOAT, default=None,
-            help='Given threshold for metrics computations',
+            '-f', '--far-value', type=click.FLOAT, default=1e-2,
+            help='The FAR value for which to compute metrics',
             callback=callback, show_default=True,**kwargs)(func)
-    return custom_threshold_option
+    return custom_far_option
 
 def rank_option(**kwargs):
     '''Get option for rank parameter'''

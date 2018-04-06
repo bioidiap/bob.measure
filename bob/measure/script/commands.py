@@ -15,7 +15,8 @@ from bob.extension.scripts.click_helper import verbosity_option
 @common_options.open_file_mode_option()
 @common_options.output_plot_metric_option()
 @common_options.criterion_option()
-@common_options.threshold_option()
+@common_options.thresholds_option()
+@common_options.far_option()
 @verbosity_option()
 @click.pass_context
 def metrics(ctx, scores, test, **kwargs):
@@ -143,7 +144,7 @@ def epc(ctx, scores, **kwargs):
 @common_options.n_bins_option()
 @common_options.criterion_option()
 @common_options.axis_fontsize_option()
-@common_options.threshold_option()
+@common_options.thresholds_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, test, **kwargs):

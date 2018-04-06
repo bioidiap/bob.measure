@@ -56,7 +56,7 @@ def get_fta(scores):
     fta_total += total
     return ((neg, pos), fta_sum / fta_total)
 
-def get_thres(criter, neg, pos):
+def get_thres(criter, neg, pos, far=1e-3):
     """Get threshold for the given positive/negatives scores and criterion
 
     Parameters
@@ -82,6 +82,10 @@ def get_thres(criter, neg, pos):
     elif criter == 'hter':
         from . import min_hter_threshold
         return min_hter_threshold(neg, pos)
+    elif criter == 'far':
+        from . import far_threshold
+        return far_threshold(neg, pos, far)
+
     else:
         raise click.UsageError("Incorrect plotting criterion: ``%s``" % criter)
 
