@@ -56,7 +56,7 @@ def get_fta(scores):
     fta_total += total
     return ((neg, pos), fta_sum / fta_total)
 
-def get_thres(criter, neg, pos, far=1e-3):
+def get_thres(criter, neg, pos, far=None):
     """Get threshold for the given positive/negatives scores and criterion
 
     Parameters
@@ -83,6 +83,9 @@ def get_thres(criter, neg, pos, far=1e-3):
         from . import min_hter_threshold
         return min_hter_threshold(neg, pos)
     elif criter == 'far':
+        if far is None:
+            raise click.UsageError("FAR value must be provided through "
+                                   "``--far-value`` option.")
         from . import far_threshold
         return far_threshold(neg, pos, far)
 
