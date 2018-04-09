@@ -49,56 +49,48 @@ def scores_argument(test_mandatory=False, **kwargs):
         )(func)
     return custom_scores_argument
 
+def bool_option(name, short_name, desc, dflt=False, **kwargs):
+    '''Generic provider for boolean options
+    Parameters
+    ----------
+
+    name: str
+        name of the option
+    short_name: str
+        short name for the option
+    desc: str
+        short description for the option
+    dflt: bool or None
+        Default value
+     '''
+    def custom_bool_option(func):
+        def callback(ctx, param, value):
+            ctx.meta[name.replace('-', '_')] = value
+            return value
+        return click.option(
+            '-' + short_name, '--%s/--no-%s' % (name, name), default=dflt,
+            help=desc,
+            show_default=True, callback=callback, is_eager=True, **kwargs)(func)
+    return custom_bool_option
+
 def test_option(**kwargs):
     '''Get option flag to say if test-scores are provided'''
-    def custom_test_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['test'] = value
-            return value
-        return click.option(
-            '-t', '--test/--no-test', default=False,
-            help='If set, test scores must be provided',
-            show_default=True,
-            callback=callback, is_eager=True , **kwargs)(func)
-    return custom_test_option
+    return bool_option('test', 't', 'If set, test scores must be provided')
 
-def cmc_option(dflt=False, **kwargs):
-    '''Get option flag to say if cmc scores'''
-    def custom_cmc_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['cmc'] = value
-            return value
-        return click.option(
-            '-C', '--cmc/--no-cmc', default=dflt,
-            help='If set, CMC score files are provided',
-            show_default=True,
-            callback=callback, is_eager=True , **kwargs)(func)
-    return custom_cmc_option
-
-def sep_dev_test_option(**kwargs):
+def sep_dev_test_option(dflt=True, **kwargs):
     '''Get option flag to say if dev and test plots should be in different
     plots'''
-    def custom_sep_dev_test_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['split'] = value
-            return value
-        return click.option(
-            '-s', '--split/--no-split', default=True, show_default=True,
-            help='If set, test and dev curve in different plots',
-            callback=callback, is_eager=True, **kwargs)(func)
-    return custom_sep_dev_test_option
+    return bool_option(
+        'split', 's','If set, test and dev curve in different plots', dflt
+    )
+
+def cmc_option(**kwargs):
+    '''Get option flag to say if cmc scores'''
+    return bool_option('cmc', 'C', 'If set, CMC score files are provided')
 
 def semilogx_option(dflt= False, **kwargs):
     '''Option to use semilog X-axis'''
-    def custom_semilogx_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['semilogx'] = value
-            return value
-        return click.option(
-            '--semilogx/--std-x', default=dflt, show_default=True,
-            help='If set, use semilog on X axis',
-            callback=callback, **kwargs)(func)
-    return custom_semilogx_option
+    return bool_option('semilogx', 'G', 'If set, use semilog on X axis', dflt)
 
 def list_float_option(name, short_name, desc, nitems=None, dflt=None, **kwargs):
     '''Get option to get a list of float f
@@ -359,12 +351,12 @@ def far_option(**kwargs):
     '''Get option to get far value'''
     def custom_far_option(func):
         def callback(ctx, param, value):
-            if value > 1 or value < 0:
+            if value is not None and (value > 1 or value < 0):
                 raise click.BadParameter("FAR value should be between 0 and 1")
             ctx.meta['far_value'] = value
             return value
         return click.option(
-            '-f', '--far-value', type=click.FLOAT, default=1e-2,
+            '-f', '--far-value', type=click.FLOAT, default=None,
             help='The FAR value for which to compute metrics',
             callback=callback, show_default=True,**kwargs)(func)
     return custom_far_option
