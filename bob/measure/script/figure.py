@@ -249,8 +249,11 @@ class Metrics(MeasureBase):
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos, self._far) \
                 if self._thres is None else self._thres[idx]
         if self._thres is None:
-            click.echo("[Min. criterion: %s] Threshold on Development set `%s`: %e"\
-                       % (self._criter.upper(), dev_file, threshold),
+            far_str = ''
+            if self._criter == 'far' and self._far is not None:
+                far_str = str(self._far)
+            click.echo("[Min. criterion: %s %s] Threshold on Development set `%s`: %e"\
+                       % (self._criter.upper(), far_str, dev_file, threshold),
                        file=self.log_file)
         else:
             click.echo("[Min. criterion: user provider] Threshold on "
@@ -551,6 +554,7 @@ class Epc(PlotBase):
         self._x_label = 'Cost'
         self._y_label = 'Min. HTER (%)'
         self._test = True #always test data with EPC
+        self._split = False
         self._nb_figs = 1
 
     def compute(self, idx, dev_score, dev_file, test_score, test_file=None):
