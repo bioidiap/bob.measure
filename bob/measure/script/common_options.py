@@ -62,6 +62,19 @@ def test_option(**kwargs):
             callback=callback, is_eager=True , **kwargs)(func)
     return custom_test_option
 
+def cmc_option(dflt=False, **kwargs):
+    '''Get option flag to say if cmc scores'''
+    def custom_cmc_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['cmc'] = value
+            return value
+        return click.option(
+            '-C', '--cmc/--no-cmc', default=dflt,
+            help='If set, CMC score files are provided',
+            show_default=True,
+            callback=callback, is_eager=True , **kwargs)(func)
+    return custom_cmc_option
+
 def sep_dev_test_option(**kwargs):
     '''Get option flag to say if dev and test plots should be in different
     plots'''

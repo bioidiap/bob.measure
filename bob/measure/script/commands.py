@@ -191,7 +191,7 @@ def evaluate(ctx, scores, test, **kwargs):
        test-score set is provided
     3. Reports error rates on the console
     4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
-       file (unless --no-plot is passed)
+       file
 
 
     You need to provide 2 score files for each biometric system in this order:
@@ -206,10 +206,12 @@ def evaluate(ctx, scores, test, **kwargs):
         $ bob measure evaluate -t -l metrics.txt -o my_plots.pdf dev-scores test-scores
     '''
     # first time erase if existing file
+    ctx.meta['open_mode'] = 'w'
     click.echo("Computing metrics with EER...")
     ctx.meta['criter'] = 'eer'  # no criterion passed to evaluate
     ctx.invoke(metrics, scores=scores, test=test)
     # second time, appends the content
+    ctx.meta['open_mode'] = 'a'
     click.echo("Computing metrics with HTER...")
     ctx.meta['criter'] = 'hter'  # no criterion passed in evaluate
     ctx.invoke(metrics, scores=scores, test=test)
