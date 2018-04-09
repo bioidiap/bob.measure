@@ -236,6 +236,7 @@ def evaluate(ctx, scores, test, **kwargs):
     # the last one closes the file
     ctx.meta['closef'] = True
     click.echo("Computing score histograms...")
+    ctx.meta['criter'] = 'hter'  # no criterion passed in evaluate
     ctx.forward(hist)
     click.echo("Evaluate successfully completed!")
     click.echo("[plots] => %s" % (ctx.meta['output']))
