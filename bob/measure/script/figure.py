@@ -392,7 +392,7 @@ class PlotBase(MeasureBase):
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
         self._clayout = None if 'clayout' not in ctx.meta else\
         ctx.meta['clayout']
-        self._print_fn = False if 'show_fn' not in ctx.meta else\
+        self._print_fn = True if 'show_fn' not in ctx.meta else\
         ctx.meta['show_fn']
         self._x_rotation = None if 'x_rotation' not in ctx.meta else \
                 ctx.meta['x_rotation']
@@ -657,12 +657,11 @@ class Hist(PlotBase):
         self._get_neg_pos_thres(idx, dev_score, eval_score)
 
         fig = mpl.figure()
-        mpl.title(self._get_title(dev_file, eval_file))
         if eval_neg is not None and self._show_dev:
             mpl.subplot(2, 1, 1)
-            mpl.title(self._get_title(dev_file, eval_file))
         if self._show_dev:
             self._setup_hist(dev_neg, dev_pos)
+            mpl.title(self._get_title(idx, dev_file, eval_file))
             mpl.ylabel(self._y_label)
             mpl.xlabel(self._x_label)
             if eval_neg is not None and self._show_dev:
@@ -679,6 +678,8 @@ class Hist(PlotBase):
             self._setup_hist(
                 eval_neg, eval_pos
             )
+            if not self._show_dev:
+                mpl.title(self._get_title(idx, dev_file, eval_file))
             mpl.ylabel('Eval. probability density')
             mpl.xlabel(self._x_label)
             #Setup lines, corresponding axis and legends
@@ -689,12 +690,14 @@ class Hist(PlotBase):
         fig.set_tight_layout(True)
         self._pdf_page.savefig(fig)
 
-    def _get_title(self, dev_file, eval_file):
-        title = self._title_base if not self._print_fn else \
-                ('%s (%s)' % (
-                    self._title_base,
-                    dev_file + (" / %s" % eval_file if self._eval else "")
-                ))
+    def _get_title(self, idx, dev_file, eval_file):
+        title = self._titles[idx] if self._titles is not None else None
+        if title is None:
+            title = self._title_base if not self._print_fn else \
+                    ('%s (%s)' % (
+                        self._title_base,
+                        dev_file + (" / %s" % eval_file if self._eval else "")
+                    ))
         return title
 
     def _plot_legends(self):

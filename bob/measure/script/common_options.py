@@ -126,7 +126,7 @@ def show_dev_option(dflt=False, **kwargs):
     '''Option to tell if should show dev histo'''
     return bool_option('show-dev', 'D', 'If set, show dev histograms', dflt)
 
-def print_filenames_option(dflt=False, **kwargs):
+def print_filenames_option(dflt=True, **kwargs):
     '''Option to tell if filenames should be in the title'''
     return bool_option('show-fn', 'P', 'If set, show filenames in title', dflt)
 
