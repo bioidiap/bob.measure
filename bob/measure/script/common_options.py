@@ -11,34 +11,60 @@ from bob.extension.scripts.click_helper import verbosity_option
 
 logger = logging.getLogger(__name__)
 
-def scores_argument(test_mandatory=False, **kwargs):
-    '''Get the argument for scores, and add `dev-scores` and `test-scores` in
-    the context if `--test` flag is on (default `--no-test`).'''
+def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
+    """Get the argument for scores, and add `dev-scores` and `eval-scores` in
+    the context when `--evaluation` flag is on (default)
+
+    Parameters
+    ----------
+
+    eval_mandatory :
+        If evaluation files are mandatory
+    min_len :
+        The min lenght of inputs files that are needed. If eval_mandatory is
+        True, this quantity is multiplied by 2.
+
+    Returns
+    -------
+        Click option
+    """
     def custom_scores_argument(func):
         def callback(ctx, param, value):
             length = len(value)
-            if length < 1:
-                raise click.BadParameter('No scores provided', ctx=ctx)
+            min_arg = min_len or 1
+            ctx.meta['min_arg'] = min_arg
+            if length < min_arg:
+                raise click.BadParameter(
+                    'You must provide at least %d score files' % min_arg,
+                    ctx=ctx
+                )
             else:
-                div = 1
                 ctx.meta['scores'] = value
-                if test_mandatory or ctx.meta['test']:
-                    div = 2
-                    if (length % 2) != 0:
-                        pref = 'T' if test_mandatory else ('When `--test` flag'
-                                                           ' is on t')
+                step = 1
+                if eval_mandatory or ctx.meta['evaluation']:
+                    step = 2
+                    if (length % (min_arg * 2)) != 0:
+                        pref = 'T' if eval_mandatory else \
+                                ('When `--evaluation` flag is on t')
                         raise click.BadParameter(
                             '%sest-score(s) must '
-                            'be provided along with dev-score(s)' % pref, ctx=ctx
+                            'be provided along with dev-score(s). '
+                            'You must provide at least %d score files.' \
+                            % (pref, min_arg * 2), ctx=ctx
                         )
-                    else:
-                        ctx.meta['dev-scores'] = [value[i] for i in
-                                                  range(length) if not i % 2]
-                        ctx.meta['test-scores'] = [value[i] for i in
-                                                   range(length) if i % 2]
-                        ctx.meta['n_sys'] = len(ctx.meta['test-scores'])
+                for arg in range(min_arg):
+                    ctx.meta['dev_scores_%d' % arg] = [
+                        value[i] for i in range(arg * step, length,
+                                                min_arg * step)
+                    ]
+                    if step > 1:
+                        ctx.meta['eval_scores_%d' % arg] = [
+                            value[i] for i in range((arg * step + 1),
+                                                    length, min_arg * step)
+                        ]
+                ctx.meta['n_sys'] = len(ctx.meta['dev_scores_0'])
                 if 'titles' in ctx.meta and \
-                   len(ctx.meta['titles']) != len(value) / div:
+                   len(ctx.meta['titles']) != ctx.meta['n_sys']:
                     raise click.BadParameter(
                         '#titles not equal to #sytems', ctx=ctx
                     )
@@ -73,24 +99,40 @@ def bool_option(name, short_name, desc, dflt=False, **kwargs):
             show_default=True, callback=callback, is_eager=True, **kwargs)(func)
     return custom_bool_option
 
-def test_option(**kwargs):
-    '''Get option flag to say if test-scores are provided'''
-    return bool_option('test', 't', 'If set, test scores must be provided')
+def eval_option(**kwargs):
+    '''Get option flag to say if eval-scores are provided'''
+    return bool_option(
+        'evaluation', 'e', 'If set, evaluation scores must be provided',
+        dflt=True
+    )
 
-def sep_dev_test_option(dflt=True, **kwargs):
-    '''Get option flag to say if dev and test plots should be in different
+def sep_dev_eval_option(dflt=True, **kwargs):
+    '''Get option flag to say if dev and eval plots should be in different
     plots'''
     return bool_option(
-        'split', 's','If set, test and dev curve in different plots', dflt
+        'split', 's','If set, evaluation and dev curve in different plots',
+        dflt
     )
 
 def cmc_option(**kwargs):
     '''Get option flag to say if cmc scores'''
     return bool_option('cmc', 'C', 'If set, CMC score files are provided')
 
-def semilogx_option(dflt= False, **kwargs):
+def semilogx_option(dflt=False, **kwargs):
     '''Option to use semilog X-axis'''
     return bool_option('semilogx', 'G', 'If set, use semilog on X axis', dflt)
+
+def show_dev_option(dflt=False, **kwargs):
+    '''Option to tell if should show dev histo'''
+    return bool_option('show-dev', 'D', 'If set, show dev histograms', dflt)
+
+def print_filenames_option(dflt=False, **kwargs):
+    '''Option to tell if filenames should be in the title'''
+    return bool_option('show-fn', 'P', 'If set, show filenames in title', dflt)
+
+def const_layout_option(dflt=True, **kwargs):
+    '''Option to set matplotlib constrained_layout'''
+    return bool_option('clayout', 'Y', '(De)Activate constrained layout', dflt)
 
 def list_float_option(name, short_name, desc, nitems=None, dflt=None, **kwargs):
     '''Get option to get a list of float f
@@ -255,20 +297,14 @@ def table_option(**kwargs):
     '''
     def custom_table_option(func):
         def callback(ctx, param, value):
-            if value is not None:
-                ctx.meta['tablefmt'] = value
-            elif 'log' in ctx.meta and ctx.meta['log'] is not None:
-                value = 'latex'
-            else:
-                value = 'rst'
             ctx.meta['tablefmt'] = value
             return value
         return click.option(
-            '--tablefmt', type=click.STRING, default=None,
+            '--tablefmt', type=click.STRING, default='rst',
             show_default=True, help='Format for table display: `plain`, '
             '`simple`, `grid`, `fancy_grid`, `pipe`, `orgtbl`, '
-            '`jira`, `presto`, `psql`, (default) `rst`, `mediawiki`, `moinmoin`, '
-            '`youtrack`, `html`, (default with `--log`)`latex`, '
+            '`jira`, `presto`, `psql`, `rst`, `mediawiki`, `moinmoin`, '
+            '`youtrack`, `html`, `latex`, '
             '`latex_raw`, `latex_booktabs`, `textile`',
             callback=callback,**kwargs)(func)
     return custom_table_option
@@ -308,7 +344,7 @@ def output_plot_metric_option(**kwargs):
     return custom_output_plot_file_option
 
 def open_file_mode_option(**kwargs):
-    '''Get the top option for matplotlib'''
+    '''Get open mode file option'''
     def custom_open_file_mode_option(func):
         def callback(ctx, param, value):
             if value not in ['w', 'a', 'w+', 'a+']:
@@ -385,7 +421,7 @@ def label_option(name_option='x_label', **kwargs):
     def custom_label_option(func):
         def callback(ctx, param, value):
             ''' Get and save labels list in the context list '''
-            ctx.meta[name_option] = value if value is None else \
+            ctx.meta[name_option.replace('-', '_')] = value if value is None else \
                     [int(i) for i in value.split(',')]
             return value
         return click.option(
@@ -457,20 +493,6 @@ def marker_style_option(**kwargs):
             callback=callback, **kwargs)(func)
     return custom_marker_style_option
 
-def top_option(**kwargs):
-    '''Get the top option for matplotlib'''
-    def custom_top_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['top'] = value
-            return value
-        return click.option(
-            '--top', type=FLOAT,
-            help='To give to ``plt.subplots_adjust(top=top)``. If given, first'
-            ' plt.tight_layout is called. If you want to tight_layout to be '
-            'called, then you need to provide this option.',
-            callback=callback, **kwargs)(func)
-    return custom_top_option
-
 def titles_option(**kwargs):
     '''Get the titles otpion for the different systems'''
     def custom_titles_option(func):
@@ -480,7 +502,7 @@ def titles_option(**kwargs):
             ctx.meta['titles'] = value
             return value
         return click.option(
-            '--titles', type=click.STRING, default=None,
+            '-t', '--titles', type=click.STRING, default=None,
             help='The title for each system comma separated. '
             'Example: --titles ISV,CNN',
             callback=callback, **kwargs)(func)

@@ -38,20 +38,23 @@ class MeasureBase(object):
     ----------
 
     _scores: :any:`list`:
-        List of input files (e.g. dev-{1, 2, 3}, {dev,test}-scores1
+        List of input files (e.g. dev-{1, 2, 3}, {dev,eval}-scores1
 
     _ctx : :py:class:`dict`
         Click context dictionary.
 
-    _test : :py:class:`bool`
-        True if test data are used
+    _eval : :py:class:`bool`
+        True if eval data are used
+
+    _titles: :any:`list`
+        List of titles for each system (dev + (eval) scores)
 
     func_load:
         Function that is used to load the input files
 
     """
     __metaclass__ = ABCMeta #for python 2.7 compatibility
-    def __init__(self, ctx, scores, test, func_load):
+    def __init__(self, ctx, scores, eval, func_load):
         """
         Parameters
         ----------
@@ -60,18 +63,24 @@ class MeasureBase(object):
             Click context dictionary.
 
         scores : :any:`list`:
-            List of input files (e.g. dev-{1, 2, 3}, {dev,test}-scores1
-            {dev,test}-scores2)
-        test : :py:class:`bool`
-            True if test data are used
+            List of input files (e.g. dev-{1, 2, 3}, {dev,eval}-scores1
+            {dev,eval}-scores2)
+        eval : :py:class:`bool`
+            True if eval data are used
         func_load : Function that is used to load the input files
         """
         self._scores = scores
+        self._min_arg = 1 if 'min_arg' not in ctx.meta else ctx.meta['min_arg']
         self._ctx = ctx
         self.func_load = func_load
-        self.dev_names, self.test_names, self.dev_scores, self.test_scores = \
+        self.dev_names, self.eval_names, self.dev_scores, self.eval_scores = \
                 self._load_files()
-        self._test = test
+        self.n_sytem = len(self.dev_names[0]) # at least one set of dev scores
+        self._titles = None if 'titles' not in ctx.meta else ctx.meta['titles']
+        if self._titles is not None and len(self._titles) != self.n_sytem:
+            raise click.BadParameter("Number of titles must be equal to the "
+                                     "number of systems")
+        self._eval = eval
 
     def run(self):
         """ Generate outputs (e.g. metrics, files, pdf plots).
@@ -85,15 +94,29 @@ class MeasureBase(object):
         #init matplotlib, log files, ...
         self.init_process()
         #iterates through the different systems and feed `compute`
-        #with the dev (and test) scores of each system
-        for idx, (dev_score, dev_file) in enumerate(
-                zip(self.dev_scores, self.dev_names)
-        ):
-            test_score = self.test_scores[idx] if self.test_scores is not None\
-            else None
-            test_file = None if self.test_names is None else self.test_names[idx]
-            #does the main computations/plottings here
-            self.compute(idx, dev_score, dev_file, test_score, test_file)
+        #with the dev (and eval) scores of each system
+        # Note that more than one dev or eval scores score can be passed to
+        # each system
+        for idx in range(self.n_sytem):
+            dev_score = []
+            eval_score = []
+            dev_file = []
+            eval_file = []
+            for arg in range(self._min_arg):
+                dev_score.append(self.dev_scores[arg][idx])
+                dev_file.append(self.dev_names[arg][idx])
+                eval_score.append(self.eval_scores[arg][idx] \
+                        if self.eval_scores[arg] is not None else None)
+                eval_file.append(self.eval_names[arg][idx] \
+                        if self.eval_names[arg] is not None else None)
+            if self._min_arg == 1: # most of measure only take one arg
+                                   # so do not pass a list of one arg
+                #does the main computations/plottings here
+                self.compute(idx, dev_score[0], dev_file[0], eval_score[0],
+                             eval_file[0])
+            else:
+                #does the main computations/plottings here
+                self.compute(idx, dev_score, dev_file, eval_score, eval_file)
         #setup final configuration, plotting properties, ...
         self.end_process()
 
@@ -107,7 +130,7 @@ class MeasureBase(object):
     #Main computations are done here in the subclasses
     @abstractmethod
     def compute(self, idx, dev_score, dev_file=None,
-                test_score=None, test_file=None):
+                eval_score=None, eval_file=None):
         """Compute metrics or plots from the given scores provided by
         :py:func:`~bob.measure.script.figure.MeasureBase.run`.
         Should reimplemented in derived classes
@@ -125,13 +148,13 @@ class MeasureBase(object):
             a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
         dev_file : str
             name of the dev file without extension
-        test_score:
-            Test scores. Can be a tuple (neg, pos) of
+        eval_score:
+            eval scores. Can be a tuple (neg, pos) of
             :py:class:`numpy.ndarray` (e.g.
             :py:func:`~bob.measure.script.figure.Roc.compute`) or
             a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
-        test_file : str
-            name of the test file without extension
+        eval_file : str
+            name of the eval file without extension
         """
         pass
 
@@ -151,14 +174,12 @@ class MeasureBase(object):
         Returns
         -------
 
-            :any:`list`: A list (of list) of tuples, where each tuple contains the
-            ``negative`` and ``positive`` scores for one probe of the database. Both
-            ``negatives`` and ``positives`` can be either an 1D'''
+            dev_scores: :any:`list`: A list that contains, for each required
+            dev score file, the output of ``func_load``
+            eval_scores: :any:`list`: A list that contains, for each required
+            eval score file, the output of ``func_load``
+        '''
 
-        dev_paths = self._scores if 'dev-scores' not in self._ctx.meta else \
-                self._ctx.meta['dev-scores']
-        test_paths = None if 'test-scores' not in self._ctx.meta else \
-                self._ctx.meta['test-scores']
         def _extract_file_names(filenames):
             if filenames is None:
                 return None
@@ -167,25 +188,40 @@ class MeasureBase(object):
                 _, name = ntpath.split(file_path)
                 res.append(name.split(".")[0])
             return res
-        return (_extract_file_names(dev_paths), _extract_file_names(test_paths),
-                self.func_load(dev_paths), self.func_load(test_paths))
 
-    def _process_scores(self, dev_score, test_score):
-        '''Process score files and return neg/pos/fta for test and dev'''
-        dev_neg = dev_pos = dev_fta = test_neg = test_pos = test_fta = None
+        dev_scores = []
+        eval_scores = []
+        dev_files = []
+        eval_files = []
+        for arg in range(self._min_arg):
+            key = 'dev_scores_%d' % arg
+            dev_paths = self._scores if key not in self._ctx.meta else \
+                    self._ctx.meta[key]
+            key = 'eval_scores_%d' % arg
+            eval_paths = None if key not in self._ctx.meta else \
+                    self._ctx.meta[key]
+            dev_files.append(_extract_file_names(dev_paths))
+            eval_files.append(_extract_file_names(eval_paths))
+            dev_scores.append(self.func_load(dev_paths))
+            eval_scores.append(self.func_load(eval_paths))
+        return (dev_files, eval_files, dev_scores, eval_scores)
+
+    def _process_scores(self, dev_score, eval_score):
+        '''Process score files and return neg/pos/fta for eval and dev'''
+        dev_neg = dev_pos = dev_fta = eval_neg = eval_pos = eval_fta = None
         if dev_score[0] is not None:
             dev_score, dev_fta = utils.get_fta(dev_score)
             dev_neg, dev_pos = dev_score
             if dev_neg is None:
                 raise click.UsageError("While loading dev-score file")
 
-        if self._test and test_score is not None and test_score[0] is not None:
-            test_score, test_fta = utils.get_fta(test_score)
-            test_neg, test_pos = test_score
-            if test_neg is None:
-                raise click.UsageError("While loading test-score file")
+        if self._eval and eval_score is not None and eval_score[0] is not None:
+            eval_score, eval_fta = utils.get_fta(eval_score)
+            eval_neg, eval_pos = eval_score
+            if eval_neg is None:
+                raise click.UsageError("While loading eval-score file")
 
-        return (dev_neg, dev_pos, dev_fta, test_neg, test_pos, test_fta)
+        return (dev_neg, dev_pos, dev_fta, eval_neg, eval_pos, eval_fta)
 
 
 class Metrics(MeasureBase):
@@ -217,8 +253,8 @@ class Metrics(MeasureBase):
         output stream
 
     '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(Metrics, self).__init__(ctx, scores, test, func_load)
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self._tablefmt = None if 'tablefmt' not in ctx.meta else\
                 ctx.meta['tablefmt']
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
@@ -241,24 +277,25 @@ class Metrics(MeasureBase):
             self.log_file = open(self._log, self._open_mode)
 
     def compute(self, idx, dev_score, dev_file=None,
-                test_score=None, test_file=None):
+                eval_score=None, eval_file=None):
         ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
-        dev_neg, dev_pos, dev_fta, test_neg, test_pos, test_fta =\
-                self._process_scores(dev_score, test_score)
+        dev_neg, dev_pos, dev_fta, eval_neg, eval_pos, eval_fta =\
+                self._process_scores(dev_score, eval_score)
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos, self._far) \
                 if self._thres is None else self._thres[idx]
+        title = self._titles[idx] if self._titles is not None else None
         if self._thres is None:
             far_str = ''
             if self._criter == 'far' and self._far is not None:
                 far_str = str(self._far)
             click.echo("[Min. criterion: %s %s] Threshold on Development set `%s`: %e"\
-                       % (self._criter.upper(), far_str, dev_file, threshold),
+                       % (self._criter.upper(), far_str, title or dev_file, threshold),
                        file=self.log_file)
         else:
             click.echo("[Min. criterion: user provider] Threshold on "
                        "Development set `%s`: %e"\
-                       % (dev_file, threshold), file=self.log_file)
+                       % (dev_file or title, threshold), file=self.log_file)
 
 
         from .. import farfrr
@@ -272,43 +309,47 @@ class Metrics(MeasureBase):
         dev_nc = dev_pos.shape[0]  # number of clients
         dev_fnm = int(round(dev_fnmr * dev_nc))  # number of false rejects
 
-        dev_fmr_str = "%.3f%% (%d/%d)" % (100 * dev_fmr, dev_fm, dev_ni)
-        dev_fnmr_str = "%.3f%% (%d/%d)" % (100 * dev_fnmr, dev_fnm, dev_nc)
-        dev_far_str = "%.3f%%" % (100 * dev_far)
-        dev_frr_str = "%.3f%%" % (100 * dev_frr)
-        dev_hter_str = "%.3f%%" % (100 * dev_hter)
-        headers = ['', 'Development %s' % dev_file]
-        raws = [['FMR', dev_fmr_str],
+        dev_fta_str = "%.1f%%" % (100 * dev_fta)
+        dev_fmr_str = "%.1f%% (%d/%d)" % (100 * dev_fmr, dev_fm, dev_ni)
+        dev_fnmr_str = "%.1f%% (%d/%d)" % (100 * dev_fnmr, dev_fnm, dev_nc)
+        dev_far_str = "%.1f%%" % (100 * dev_far)
+        dev_frr_str = "%.1f%%" % (100 * dev_frr)
+        dev_hter_str = "%.1f%%" % (100 * dev_hter)
+        headers = ['' or title, 'Development %s' % dev_file]
+        raws = [['FtA', dev_fta_str],
+                ['FMR', dev_fmr_str],
                 ['FNMR', dev_fnmr_str],
                 ['FAR', dev_far_str],
                 ['FRR', dev_frr_str],
                 ['HTER', dev_hter_str]]
 
-        if self._test and test_neg is not None:
-            # computes statistics for the test set based on the threshold a priori
-            test_fmr, test_fnmr = farfrr(test_neg, test_pos, threshold)
-            test_far = test_fmr * (1 - test_fta)
-            test_frr = test_fta + test_fnmr * (1 - test_fta)
-            test_hter = (test_far + test_frr) / 2.0
+        if self._eval and eval_neg is not None:
+            # computes statistics for the eval set based on the threshold a priori
+            eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, threshold)
+            eval_far = eval_fmr * (1 - eval_fta)
+            eval_frr = eval_fta + eval_fnmr * (1 - eval_fta)
+            eval_hter = (eval_far + eval_frr) / 2.0
 
-            test_ni = test_neg.shape[0]  # number of impostors
-            test_fm = int(round(test_fmr * test_ni))  # number of false accepts
-            test_nc = test_pos.shape[0]  # number of clients
-            test_fnm = int(round(test_fnmr * test_nc))  # number of false rejects
+            eval_ni = eval_neg.shape[0]  # number of impostors
+            eval_fm = int(round(eval_fmr * eval_ni))  # number of false accepts
+            eval_nc = eval_pos.shape[0]  # number of clients
+            eval_fnm = int(round(eval_fnmr * eval_nc))  # number of false rejects
 
-            test_fmr_str = "%.3f%% (%d/%d)" % (100 * test_fmr, test_fm, test_ni)
-            test_fnmr_str = "%.3f%% (%d/%d)" % (100 * test_fnmr, test_fnm, test_nc)
+            eval_fta_str = "%.1f%%" % (100 * eval_fta)
+            eval_fmr_str = "%.1f%% (%d/%d)" % (100 * eval_fmr, eval_fm, eval_ni)
+            eval_fnmr_str = "%.1f%% (%d/%d)" % (100 * eval_fnmr, eval_fnm, eval_nc)
 
-            test_far_str = "%.3f%%" % (100 * test_far)
-            test_frr_str = "%.3f%%" % (100 * test_frr)
-            test_hter_str = "%.3f%%" % (100 * test_hter)
+            eval_far_str = "%.1f%%" % (100 * eval_far)
+            eval_frr_str = "%.1f%%" % (100 * eval_frr)
+            eval_hter_str = "%.1f%%" % (100 * eval_hter)
 
-            headers.append('Test % s' % test_file)
-            raws[0].append(test_fmr_str)
-            raws[1].append(test_fnmr_str)
-            raws[2].append(test_far_str)
-            raws[3].append(test_frr_str)
-            raws[4].append(test_hter_str)
+            headers.append('Eval. % s' % eval_file)
+            raws[0].append(eval_fta_str)
+            raws[1].append(eval_fmr_str)
+            raws[2].append(eval_fnmr_str)
+            raws[3].append(eval_far_str)
+            raws[4].append(eval_frr_str)
+            raws[5].append(eval_hter_str)
 
         click.echo(tabulate(raws, headers, self._tablefmt), file=self.log_file)
 
@@ -330,11 +371,9 @@ class PlotBase(MeasureBase):
     _points: :obj:`int`
         Number of points used to draw curves
 
-    _titles: :any:`list`
-        List of titles for each system (dev + (test) scores)
 
     _split: :obj:`bool`
-        If False, dev and test curves will be printed on the some figure
+        If False, dev and eval curves will be printed on the some figure
 
     _axlim: :any:`list`
         Minimum/Maximum values for the X and Y axes
@@ -345,19 +384,22 @@ class PlotBase(MeasureBase):
     _axisfontsize: :obj:`int`
         Axis font size
     '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(PlotBase, self).__init__(ctx, scores, test, func_load)
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(PlotBase, self).__init__(ctx, scores, evaluation, func_load)
         self._output = None if 'output' not in ctx.meta else ctx.meta['output']
         self._points = None if 'points' not in ctx.meta else ctx.meta['points']
-        self._titles = None if 'titles' not in ctx.meta else ctx.meta['titles']
         self._split = None if 'split' not in ctx.meta else ctx.meta['split']
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
+        self._clayout = None if 'clayout' not in ctx.meta else\
+        ctx.meta['clayout']
+        self._print_fn = False if 'show_fn' not in ctx.meta else\
+        ctx.meta['show_fn']
         self._x_rotation = None if 'x_rotation' not in ctx.meta else \
                 ctx.meta['x_rotation']
         self._axisfontsize = 6 if 'fontsize' not in ctx.meta else \
                 ctx.meta['fontsize']
 
-        self._nb_figs = 2 if self._test and self._split else 1
+        self._nb_figs = 2 if self._eval and self._split else 1
         self._multi_plots = len(self.dev_scores) > 1
         self._colors = utils.get_colors(len(self.dev_scores))
         self._states = ['Development', 'Evaluation']
@@ -367,6 +409,7 @@ class PlotBase(MeasureBase):
         self._grid_color = 'silver'
         self._pdf_page = None
         self._end_setup_plot = True
+        self._kwargs = {}
 
     def init_process(self):
         ''' Open pdf and set axis font size if provided '''
@@ -382,7 +425,9 @@ class PlotBase(MeasureBase):
             if self._axisfontsize is not None:
                 mpl.rc('xtick', labelsize=self._axisfontsize)
                 mpl.rc('ytick', labelsize=self._axisfontsize)
-                mpl.rc('legend', fontsize=7)
+                mpl.rc('legend', fontsize=6)
+                mpl.rc('axes', labelsize=8)
+                #mpl.rcParams['figure.constrained_layout.use'] = self._clayout
 
     def end_process(self):
         ''' Set title, legend, axis labels, grid colors, save figures and
@@ -392,7 +437,7 @@ class PlotBase(MeasureBase):
             for i in range(self._nb_figs):
                 fig = mpl.figure(i + 1)
                 title = self._title
-                if not self._test:
+                if not self._eval:
                     title += (" (%s)" % self._states[0])
                 elif self._split:
                     title += (" (%s)" % self._states[i])
@@ -439,10 +484,10 @@ class Roc(PlotBase):
 
     _fmr_at: :obj:`float`
         If not None, plot a vertical line at this value on the dev plot and
-        corresponding dots on the test plot (if any).
+        corresponding dots on the eval plot (if any).
     '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(Roc, self).__init__(ctx, scores, test, func_load)
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(Roc, self).__init__(ctx, scores, evaluation, func_load)
         self._semilogx = True if 'semilogx' not in ctx.meta else\
         ctx.meta['semilogx']
         self._fmr_at = None if 'fmr_at' not in ctx.meta else\
@@ -455,18 +500,18 @@ class Roc(PlotBase):
             self._axlim = [1e-4, 1.0, 1e-4, 1.0]
 
     def compute(self, idx, dev_score, dev_file=None,
-                test_score=None, test_file=None):
+                eval_score=None, eval_file=None):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
-        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
-                self._process_scores(dev_score, test_score)
+        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
+                self._process_scores(dev_score, eval_score)
         mpl.figure(1)
-        if self._test:
+        if self._eval:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.roc(
                 dev_neg, dev_pos, self._points, self._semilogx,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('development', dev_file, idx)
+                label=self._label('development', dev_file, idx, **self._kwargs)
             )
             linestyle = '--'
             if self._split:
@@ -474,26 +519,26 @@ class Roc(PlotBase):
                 linestyle = LINESTYLES[idx % 14]
 
             plot.roc(
-                test_neg, test_pos, self._points, self._semilogx,
+                eval_neg, eval_pos, self._points, self._semilogx,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('test', test_file, idx)
+                label=self._label('eval', eval_file, idx, **self._kwargs)
             )
             if self._fmr_at is not None:
                 from .. import farfrr
-                test_fmr, test_fnmr = farfrr(test_neg, test_pos, self._fmr_at)
+                eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, self._fmr_at)
                 if self._semilogx:
-                    test_fnmr = 1 - test_fnmr
-                mpl.scatter(test_fmr, test_fnmr, c=self._colors[idx], s=30)
+                    eval_fnmr = 1 - eval_fnmr
+                mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
         else:
             plot.roc(
                 dev_neg, dev_pos, self._points, self._semilogx,
                 color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
-                label=self._label('development', dev_file, idx)
+                label=self._label('development', dev_file, idx, **self._kwargs)
             )
 
     def end_process(self):
         ''' Draw vertical line on the dev plot at the given fmr and print the
-        corresponding points on the test plot for all the systems '''
+        corresponding points on the eval plot for all the systems '''
         #draw vertical lines
         if self._fmr_at is not None:
             mpl.figure(1)
@@ -502,40 +547,40 @@ class Roc(PlotBase):
 
 class Det(PlotBase):
     ''' Handles the plotting of DET '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(Det, self).__init__(ctx, scores, test, func_load)
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(Det, self).__init__(ctx, scores, evaluation, func_load)
         self._title = 'DET'
         #custom defaults here
         if self._x_rotation is None:
             self._x_rotation = 50
 
     def compute(self, idx, dev_score, dev_file=None,
-                test_score=None, test_file=None):
+                eval_score=None, eval_file=None):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
-        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
-                self._process_scores(dev_score, test_score)
+        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
+                self._process_scores(dev_score, eval_score)
         mpl.figure(1)
-        if self._test and test_neg is not None:
+        if self._eval and eval_neg is not None:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle, axisfontsize=self._axisfontsize,
-                label=self._label('development', dev_file, idx,)
+                label=self._label('development', dev_file, idx, **self._kwargs)
             )
             if self._split:
                 mpl.figure(2)
             linestyle = '--' if not self._split else LINESTYLES[idx % 14]
             plot.det(
-                test_neg, test_pos, self._points, color=self._colors[idx],
+                eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle, axisfontsize=self._axisfontsize,
-                label=self._label('test', test_file, idx)
+                label=self._label('eval', eval_file, idx, **self._kwargs)
             )
         else:
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=LINESTYLES[idx % 14], axisfontsize=self._axisfontsize,
-                label=self._label('development', dev_file, idx)
+                label=self._label('development', dev_file, idx, **self._kwargs)
             )
 
     def _set_axis(self):
@@ -546,30 +591,30 @@ class Det(PlotBase):
 
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(Epc, self).__init__(ctx, scores, test, func_load)
-        if 'dev-scores' not in self._ctx.meta or 'test-scores' not in self._ctx.meta:
-            raise click.UsageError("EPC requires dev and test score files")
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(Epc, self).__init__(ctx, scores, evaluation, func_load)
+        if 'eval_scores_0' not in self._ctx.meta:
+            raise click.UsageError("EPC requires dev and eval score files")
         self._title = 'EPC'
         self._x_label = 'Cost'
         self._y_label = 'Min. HTER (%)'
-        self._test = True #always test data with EPC
+        self._eval = True #always eval data with EPC
         self._split = False
         self._nb_figs = 1
 
-    def compute(self, idx, dev_score, dev_file, test_score, test_file=None):
+    def compute(self, idx, dev_score, dev_file, eval_score, eval_file=None):
         ''' Plot EPC using
         :py:func:`bob.measure.plot.epc`'''
-        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
-                self._process_scores(dev_score, test_score)
+        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
+                self._process_scores(dev_score, eval_score)
         plot.epc(
-            dev_neg, dev_pos, test_neg, test_pos, self._points,
+            dev_neg, dev_pos, eval_neg, eval_pos, self._points,
             color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
-            label=self._label('curve', dev_file + "_" + test_file, idx)
+            label=self._label('curve', dev_file + "_" + eval_file, idx, **self._kwargs)
         )
 
 class Hist(PlotBase):
-    ''' Handles the plotting of score histograms 
+    ''' Functional base class for histograms
 
     Attributes
     ----------
@@ -584,10 +629,12 @@ class Hist(PlotBase):
     _criter: str
         Criterion to compute threshold (eer or hter)
     '''
-    def __init__(self, ctx, scores, test, func_load):
-        super(Hist, self).__init__(ctx, scores, test, func_load)
+    def __init__(self, ctx, scores, evaluation, func_load):
+        super(Hist, self).__init__(ctx, scores, evaluation, func_load)
         self._nbins = None if 'nbins' not in ctx.meta else ctx.meta['nbins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
+        self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
+                ctx.meta['show_dev']) or not self._eval
         if self._thres is not None and len(self._thres) != len(self.dev_names):
             if len(self._thres) == 1:
                 self._thres = self._thres * len(self.dev_names)
@@ -597,60 +644,106 @@ class Hist(PlotBase):
                     % len(self.dev_names)
                 )
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
-        self._y_label = 'Dev. Scores \n (normalized)' if self._test else \
-                'Normalized Count'
-        self._x_label = 'Score values' if not self._test else ''
+        self._y_label = 'Dev. probability density' if self._eval else \
+                'density'
+        self._x_label = 'Scores' if not self._eval else ''
+        self._title_base = 'Scores'
         self._end_setup_plot = False
 
     def compute(self, idx, dev_score, dev_file=None,
-                test_score=None, test_file=None):
+                eval_score=None, eval_file=None):
         ''' Draw histograms of negative and positive scores.'''
-        dev_neg, dev_pos, _, test_neg, test_pos, _ =\
-                self._process_scores(dev_score, test_score)
-        threshold = utils.get_thres(self._criter, dev_neg, dev_pos) \
-                if self._thres is None else self._thres[idx]
+        dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
+        self._get_neg_pos_thres(idx, dev_score, eval_score)
 
         fig = mpl.figure()
-        if test_neg is not None:
+        mpl.title(self._get_title(dev_file, eval_file))
+        if eval_neg is not None and self._show_dev:
             mpl.subplot(2, 1, 1)
-            all_scores = numpy.hstack((dev_neg, test_neg, dev_pos, test_pos))
-        else:
-            all_scores = numpy.hstack((dev_neg, dev_pos))
-
-        score_range = all_scores.min(), all_scores.max()
-
-        def _setup_hist(neg, pos, xlim, thres, y_label=None):
-            mpl.hist(neg, label='Positives', normed=True, color='red',
-                     alpha=0.5, bins=self._nbins)
-            mpl.hist(pos, label='Negatives', normed=True, color='blue',
-                     alpha=0.5, bins=self._nbins)
-            mpl.xlim(*xlim)
-            _, _, ymax, ymin = mpl.axis()
-            mpl.vlines(
-                thres, ymin, ymax, color='black',
-                label=('' if self._criter is None else self._criter.upper()),
-                linestyle='dashed'
-            )
-            mpl.grid(True, alpha=0.5)
-            mpl.ylabel(self._y_label if y_label is None else y_label)
+            mpl.title(self._get_title(dev_file, eval_file))
+        if self._show_dev:
+            self._setup_hist(dev_neg, dev_pos)
+            mpl.ylabel(self._y_label)
             mpl.xlabel(self._x_label)
+            if eval_neg is not None and self._show_dev:
+                ax = mpl.gca()
+                ax.axes.get_xaxis().set_ticklabels([])
+            #Setup lines, corresponding axis and legends
+            self._lines(threshold, dev_neg, dev_pos)
+            if self._eval:
+                self._plot_legends()
 
-        title = dev_file + (" / %s" % test_file if self._test else "")
-        mpl.title('Scores  (%s)' % title)
-        _setup_hist(dev_neg, dev_pos, score_range, threshold)
-        if test_neg is not None:
-            ax = mpl.gca()
-            ax.axes.get_xaxis().set_ticklabels([])
-            mpl.legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, -0.01),
-                       fontsize=6)
-        else:
-            mpl.legend(loc='best', fancybox=True, framealpha=0.5)
-
-        if test_neg is not None:
-            mpl.subplot(2, 1, 2)
-            _setup_hist(
-                test_neg, test_pos, score_range, threshold,
-                y_label='Test Scores \n (normalized)'
+        if eval_neg is not None:
+            if self._show_dev:
+                mpl.subplot(2, 1, 2)
+            self._setup_hist(
+                eval_neg, eval_pos
             )
+            mpl.ylabel('Eval. probability density')
+            mpl.xlabel(self._x_label)
+            #Setup lines, corresponding axis and legends
+            self._lines(threshold, eval_neg, eval_pos)
+            if not self._show_dev:
+                self._plot_legends()
+
         fig.set_tight_layout(True)
         self._pdf_page.savefig(fig)
+
+    def _get_title(self, dev_file, eval_file):
+        title = self._title_base if not self._print_fn else \
+                ('%s (%s)' % (
+                    self._title_base,
+                    dev_file + (" / %s" % eval_file if self._eval else "")
+                ))
+        return title
+
+    def _plot_legends(self):
+        lines = []
+        labels = []
+        for ax in mpl.gcf().get_axes():
+            li, la = ax.get_legend_handles_labels()
+            lines += li
+            labels += la
+        if self._show_dev and self._eval:
+            mpl.legend(
+                lines, labels, loc='upper center', ncol=6,
+                bbox_to_anchor=(0.5, -0.01), fontsize=6
+            )
+        else:
+            mpl.legend(lines, labels,
+                       loc='best', fancybox=True, framealpha=0.5)
+
+
+    def _get_neg_pos_thres(self, idx, dev_score, eval_score):
+        dev_neg, dev_pos, _, eval_neg, eval_pos, _ = self._process_scores(
+            dev_score, eval_score
+        )
+        threshold = utils.get_thres(
+            self._criter, dev_neg,
+            dev_pos
+        ) if self._thres is None else self._thres[idx]
+        return (dev_neg, dev_pos, eval_neg, eval_pos, threshold)
+
+    def _density_hist(self, scores, **kwargs):
+        n, bins, patches = mpl.hist(
+            scores, normed=True, bins=self._nbins, **kwargs
+        )
+        return (n, bins, patches)
+
+    def _lines(self, threshold, neg=None, pos=None, **kwargs):
+        label = 'Threshold' if self._criter is None else self._criter.upper()
+        kwargs.setdefault('color', 'C3')
+        kwargs.setdefault('linestyle', '--')
+        kwargs.setdefault('label', label)
+        _, _, ymax, ymin = mpl.axis()
+        # plot a vertical threshold line
+        mpl.axvline(x=threshold, ymin=ymin, ymax=ymax, **kwargs)
+
+    def _setup_hist(self, neg, pos):
+        ''' This function can be overwritten in derived classes'''
+        self._density_hist(
+            pos, label='Positives', alpha=0.5, color='blue', **self._kwargs
+        )
+        self._density_hist(
+            neg, label='Negatives', alpha=0.5, color='red', **self._kwargs
+        )

@@ -75,7 +75,8 @@ The optimal threshold :math:`\tau^*` is then computed using different values of
 where :math:`\mathcal{D}_{d}` denotes the development set and should be
 completely separate to the evaluation set :math:`\mathcal{D}`.
 
-Performance for different values of :math:`\beta` is then computed on the test
+Performance for different values of :math:`\beta` is then computed on the
+evaluation
 set :math:`\mathcal{D}_{t}` using the previously derived threshold. Note that
 setting :math:`\beta` to 0.5 yields to the Half Total Error Rate (HTER) as
 defined in the first equation.
@@ -134,7 +135,7 @@ We do provide a method to calculate the FAR and FRR in a single shot:
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
 threshold that matches a certain criterion and applying this derived threshold
-to the test (or evaluation) set. This technique gives a better overview of the
+to the evaluation set. This technique gives a better overview of the
 generalization of a method. We implement different techniques for the
 calculation of the threshold:
 
@@ -363,7 +364,7 @@ EPC
 ===
 
 Drawing an EPC requires that both the development set negatives and positives are provided alongside
-the test (or evaluation) set ones. Because of this the API is slightly modified:
+the evaluation set ones. Because of this the API is slightly modified:
 
 .. doctest::
 
@@ -503,9 +504,9 @@ and FRs are also displayed between parenthesis.
 
 .. note::
     Several scores files can be given at once and the metrics will be computed
-    for each of them separatly. Development and test files must be given by
-    pairs and the ``--test`` (or ``-t``) flag must be given (otherwise test 
-    scores are treated as development scores)
+    for each of them separatly. Development and evaluation files must be given by
+    pairs. When only Development file are provided, ``--no-evaluation`` flag
+    must be given.
 
 
 To evaluate the performance of a new score file with a given threshold, use
@@ -513,10 +514,10 @@ To evaluate the performance of a new score file with a given threshold, use
 
 .. code-block:: sh
 
-  $ bob measure metrics --thres 0.006 test-1.txt
-  [Min. criterion: user provider] Threshold on Development set `test-1`: 6.000000e-03
+  $ bob measure metrics --thres 0.006 eval-1.txt
+  [Min. criterion: user provider] Threshold on Development set `eval-1`: 6.000000e-03
   ====  ====================
-  ..    Development test-1
+  ..    Development eval-1
   ====  ====================
   FMR   5.010% (24/479)
   FNMR  6.977% (33/473)
@@ -526,14 +527,14 @@ To evaluate the performance of a new score file with a given threshold, use
   ====  ====================
 
 You can simultaneously conduct the threshold computation and its performance
-on a test set:
+on an evaluation set:
 
 .. code-block:: sh
 
-  $ bob measure metrics --test dev-1.txt test-1.txt
+  $ bob measure metrics dev-1.txt eval-1.txt
   [Min. criterion: EER] Threshold on Development set `dev-1`: -8.025286e-03
   ====  ===================  ===============
-  ..    Development dev-1    Test test-1
+  ..    Development dev-1    Eval. eval-1
   ====  ===================  ===============
   FMR   6.263% (31/495)      5.637% (27/479)
   FNMR  6.208% (28/451)      6.131% (29/473)
@@ -554,7 +555,7 @@ Plots
 =====
 
 Customizable plotting commands are available in the :py:mod:`bob.measure` module.
-They take a list of development and/or test files and generate a single PDF
+They take a list of development and/or evaluation files and generate a single PDF
 file containing the plots. Available plots are:
 
 *  ``roc`` (receiver operating characteristic)
@@ -568,12 +569,12 @@ file containing the plots. Available plots are:
 Use the ``--help`` option on the above-cited commands to find-out about more
 options.
 
-For example, to generate a DET curve from development and test datasets:
+For example, to generate a DET curve from development and evaluation datasets:
 
 .. code-block:: sh
 
-    $bob measure det --test --split --output 'my_det.pdf' dev-1.txt test-1.txt 
-    dev-2.txt test-2.txt
+    $bob measure det --split --output 'my_det.pdf' dev-1.txt eval-1.txt 
+    dev-2.txt eval-2.txt
 
 where `my_det.pdf` will contain DET plots for the two experiments.
 
@@ -593,9 +594,9 @@ experiment. For example:
 .. code-block:: sh
 
     $bob measure evaluate -t -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1, sys2}/
-    {test,dev}
+    {eval,dev}
 
-will output metrics and plots for the two experiments (dev and test pairs) in
+will output metrics and plots for the two experiments (dev and eval pairs) in
 `my_metrics.txt` and `my_plots.pdf`, respectively.
 
 .. include:: links.rst
