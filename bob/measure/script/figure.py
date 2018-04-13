@@ -694,9 +694,9 @@ class Hist(PlotBase):
         title = self._titles[idx] if self._titles is not None else None
         if title is None:
             title = self._title_base if not self._print_fn else \
-                    ('%s (%s)' % (
+                    ('%s \n (%s)' % (
                         self._title_base,
-                        dev_file + (" / %s" % eval_file if self._eval else "")
+                        str(dev_file) + (" / %s" % str(eval_file) if self._eval else "")
                     ))
         return title
 
