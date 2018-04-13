@@ -152,6 +152,7 @@ def epc(ctx, scores, **kwargs):
 @common_options.const_layout_option()
 @common_options.show_dev_option()
 @common_options.print_filenames_option()
+@common_options.titles_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, evaluation, **kwargs):

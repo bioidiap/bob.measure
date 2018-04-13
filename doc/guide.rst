@@ -491,6 +491,7 @@ on a set, after setting up |project|, just do:
   ====  ===================
   ..    Development dev-1
   ====  ===================
+  FtA   0.000%
   FMR   6.263% (31/495)
   FNMR  6.208% (28/451)
   FAR   5.924%
@@ -498,7 +499,7 @@ on a set, after setting up |project|, just do:
   HTER  8.599%
   ====  ===================
 
-The output will present the threshold together with the FMR, FMNR, FAR, FRR and
+The output will present the threshold together with the FtA, FMR, FMNR, FAR, FRR and
 HTER on the given set, calculated using such a threshold. The relative counts of FAs
 and FRs are also displayed between parenthesis.
 
@@ -519,6 +520,7 @@ To evaluate the performance of a new score file with a given threshold, use
   ====  ====================
   ..    Development eval-1
   ====  ====================
+  FtA   0.000%
   FMR   5.010% (24/479)
   FNMR  6.977% (33/473)
   FAR   4.770%
@@ -536,6 +538,7 @@ on an evaluation set:
   ====  ===================  ===============
   ..    Development dev-1    Eval. eval-1
   ====  ===================  ===============
+  FtA   0.000%               0.000%
   FMR   6.263% (31/495)      5.637% (27/479)
   FNMR  6.208% (28/451)      6.131% (29/473)
   FAR   5.924%               5.366%
@@ -544,11 +547,8 @@ on an evaluation set:
   ====  ===================  ===============
 
 .. note::
-    Table format can be changed using ``--tablefmt`` option. Note that
-    ``latex``
-    format is used by default when the outputs are witten in a log file and
-    ``rst`` when written in the terminal. See
-    ``bob measure metrics --help`` for more details.
+    Table format can be changed using ``--tablefmt`` option, the default format
+    being ``rst``. Please refer to ``bob measure metrics --help`` for more details.
     
 
 Plots
@@ -573,7 +573,7 @@ For example, to generate a DET curve from development and evaluation datasets:
 
 .. code-block:: sh
 
-    $bob measure det --split --output 'my_det.pdf' dev-1.txt eval-1.txt 
+    $bob measure det --output 'my_det.pdf' dev-1.txt eval-1.txt 
     dev-2.txt eval-2.txt
 
 where `my_det.pdf` will contain DET plots for the two experiments.
@@ -586,14 +586,14 @@ where `my_det.pdf` will contain DET plots for the two experiments.
 Evaluate
 ========
 
-A convenient command `evaluate` is provided to generate multiple metrics and
-plots for a list of experiments. It generates two `metrics` outputs with EER
-and HTER criteria along with `roc`, `det`, `epc`, `hist` plots for each
+A convenient command ``evaluate`` is provided to generate multiple metrics and
+plots for a list of experiments. It generates two ``metrics`` outputs with ERR
+and HTER criteria along with ``roc``, ``det``, ``epc``, ``hist`` plots for each
 experiment. For example:
 
 .. code-block:: sh
 
-    $bob measure evaluate -t -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1, sys2}/
+    $bob measure evaluate -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1, sys2}/
     {eval,dev}
 
 will output metrics and plots for the two experiments (dev and eval pairs) in
