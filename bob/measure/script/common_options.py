@@ -7,7 +7,8 @@ import click
 from click.types import INT, FLOAT, Choice, File
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from bob.extension.scripts.click_helper import verbosity_option
+from bob.extension.scripts.click_helper import (verbosity_option, bool_option,
+                                                list_float_option)
 
 logger = logging.getLogger(__name__)
 
@@ -75,30 +76,6 @@ def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
         )(func)
     return custom_scores_argument
 
-def bool_option(name, short_name, desc, dflt=False, **kwargs):
-    '''Generic provider for boolean options
-    Parameters
-    ----------
-
-    name: str
-        name of the option
-    short_name: str
-        short name for the option
-    desc: str
-        short description for the option
-    dflt: bool or None
-        Default value
-     '''
-    def custom_bool_option(func):
-        def callback(ctx, param, value):
-            ctx.meta[name.replace('-', '_')] = value
-            return value
-        return click.option(
-            '-' + short_name, '--%s/--no-%s' % (name, name), default=dflt,
-            help=desc,
-            show_default=True, callback=callback, is_eager=True, **kwargs)(func)
-    return custom_bool_option
-
 def eval_option(**kwargs):
     '''Get option flag to say if eval-scores are provided'''
     return bool_option(
@@ -134,47 +111,6 @@ def const_layout_option(dflt=True, **kwargs):
     '''Option to set matplotlib constrained_layout'''
     return bool_option('clayout', 'Y', '(De)Activate constrained layout', dflt)
 
-def list_float_option(name, short_name, desc, nitems=None, dflt=None, **kwargs):
-    '''Get option to get a list of float f
-    Parameters
-    ----------
-
-    name: str
-        name of the option
-    short_name: str
-        short name for the option
-    desc: str
-        short description for the option
-    nitems: :obj:`int`
-        if given, the parsed list must contains this number of items
-    dflt: :any:`list`
-        List of default  values for axes.
-    '''
-    def custom_list_float_option(func):
-        def callback(ctx, param, value):
-            if value is not None:
-                tmp = value.split(',')
-                if nitems is not None and len(tmp) != nitems:
-                    raise click.BadParameter(
-                        '%s Must provide %d axis limits' % (name, nitems)
-                    )
-                try:
-                    value = [float(i) for i in tmp]
-                except:
-                    raise click.BadParameter('Inputs of %s be floats' % name)
-                if None in value:
-                    value = None
-                elif dflt is not None and None not in dflt and len(dflt) == nitems:
-                    value = dflt if not all(
-                        isinstance(x, float) for x in dflt
-                    ) else None
-            ctx.meta[name.replace('-', '_')] = value
-            return value
-        return click.option(
-            '-'+short_name, '--'+name, default=None, show_default=True,
-            help=desc, callback=callback, **kwargs)(func)
-    return custom_list_float_option
-
 def axes_val_option(dflt=None, **kwargs):
     return list_float_option(
         name='axlim', short_name='L',
@@ -186,6 +122,14 @@ def thresholds_option(**kwargs):
     return list_float_option(
         name='thres', short_name='T',
         desc='Given threshold for metrics computations',
+        nitems=None, dflt=None, **kwargs
+    )
+
+def lines_at_option(**kwargs):
+    '''Get option to draw const far line'''
+    return list_float_option(
+        name='lines-at', short_name='la',
+        desc='If given, draw a veritcal lines on ROC plots',
         nitems=None, dflt=None, **kwargs
     )
 
@@ -215,19 +159,6 @@ def x_rotation_option(dflt=0, **kwargs):
             callback=callback, **kwargs)(func)
     return custom_x_rotation_option
 
-def fmr_line_at_option(**kwargs):
-    '''Get option to draw const fmr line'''
-    def custom_fmr_line_at_option(func):
-        def callback(ctx, param, value):
-            if value is not None:
-                value = min(max(0.0, value), 1.0)
-            ctx.meta['fmr_at'] = value
-            return value
-        return click.option(
-            '-L', '--fmr-at', type=float, default=None, show_default=True,
-            help='If given, draw a veritcal line for constant FMR on ROC plots',
-            callback=callback, **kwargs)(func)
-    return custom_fmr_line_at_option
 
 def cost_option(**kwargs):
     '''Get option to get cost for FAR'''
@@ -342,20 +273,6 @@ def output_plot_metric_option(**kwargs):
               'this file instead of the standard output.',
             callback=callback, **kwargs)(func)
     return custom_output_plot_file_option
-
-def open_file_mode_option(**kwargs):
-    '''Get open mode file option'''
-    def custom_open_file_mode_option(func):
-        def callback(ctx, param, value):
-            if value not in ['w', 'a', 'w+', 'a+']:
-                raise click.BadParameter('Incorrect open file mode')
-            ctx.meta['open_mode'] = value
-            return value
-        return click.option(
-            '-om', '--open-mode', default='w',
-            help='File open mode',
-            callback=callback, **kwargs)(func)
-    return custom_open_file_mode_option
 
 def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
     """Get option flag to tell which criteriom is used (default:eer)
@@ -494,7 +411,7 @@ def marker_style_option(**kwargs):
     return custom_marker_style_option
 
 def titles_option(**kwargs):
-    '''Get the titles otpion for the different systems'''
+    '''Get the titles option for the different systems'''
     def custom_titles_option(func):
         def callback(ctx, param, value):
             if value is not None:
@@ -502,11 +419,47 @@ def titles_option(**kwargs):
             ctx.meta['titles'] = value
             return value
         return click.option(
-            '-t', '--titles', type=click.STRING, default=None,
+            '-ts', '--titles', type=click.STRING, default=None,
             help='The title for each system comma separated. '
             'Example: --titles ISV,CNN',
             callback=callback, **kwargs)(func)
     return custom_titles_option
+
+def title_option(**kwargs):
+    '''Get the title option for the different systems'''
+    def custom_title_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['title'] = value
+            return value
+        return click.option(
+            '-t', '--title', type=click.STRING, default=None,
+            help='The title of the plots',
+            callback=callback, **kwargs)(func)
+    return custom_title_option
+
+def x_label_option(dflt=None, **kwargs):
+    '''Get the label option for X axis '''
+    def custom_x_label_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['x_label'] = value
+            return value
+        return click.option(
+            '-xl', '--x-lable', type=click.STRING, default=dflt,
+            help='Label for x-axis',
+            callback=callback, **kwargs)(func)
+    return custom_x_label_option
+
+def y_label_option(dflt=None, **kwargs):
+    '''Get the label option for Y axis '''
+    def custom_y_label_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['y_label'] = value
+            return value
+        return click.option(
+            '-yl', '--y-lable', type=click.STRING, default=dflt,
+            help='Label for y-axis',
+            callback=callback, **kwargs)(func)
+    return custom_y_label_option
 
 def style_option(**kwargs):
     '''Get option for matplotlib style'''

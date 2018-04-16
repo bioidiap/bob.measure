@@ -5,19 +5,19 @@ import click
 from .. import load
 from . import figure
 from . import common_options
-from bob.extension.scripts.click_helper import verbosity_option
-
+from bob.extension.scripts.click_helper import (verbosity_option,
+                                                open_file_mode_option)
 
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.eval_option()
 @common_options.table_option()
-@common_options.open_file_mode_option()
 @common_options.output_plot_metric_option()
 @common_options.criterion_option()
 @common_options.thresholds_option()
 @common_options.far_option()
 @common_options.titles_option()
+@open_file_mode_option()
 @verbosity_option()
 @click.pass_context
 def metrics(ctx, scores, evaluation, **kwargs):
@@ -45,6 +45,7 @@ def metrics(ctx, scores, evaluation, **kwargs):
 
 @click.command()
 @common_options.scores_argument(nargs=-1)
+@common_options.title_option()
 @common_options.titles_option()
 @common_options.sep_dev_eval_option()
 @common_options.output_plot_file_option(default_out='roc.pdf')
@@ -54,7 +55,9 @@ def metrics(ctx, scores, evaluation, **kwargs):
 @common_options.axes_val_option(dflt=[1e-4, 1, 1e-4, 1])
 @common_options.axis_fontsize_option()
 @common_options.x_rotation_option()
-@common_options.fmr_line_at_option()
+@common_options.x_label_option()
+@common_options.y_label_option()
+@common_options.lines_at_option()
 @common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
@@ -83,12 +86,15 @@ def roc(ctx, scores, evaluation, **kwargs):
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.output_plot_file_option(default_out='det.pdf')
+@common_options.title_option()
 @common_options.titles_option()
 @common_options.sep_dev_eval_option()
 @common_options.eval_option()
 @common_options.axes_val_option(dflt=[0.01, 95, 0.01, 95])
 @common_options.axis_fontsize_option(dflt=6)
 @common_options.x_rotation_option(dflt=45)
+@common_options.x_label_option()
+@common_options.y_label_option()
 @common_options.points_curve_option()
 @common_options.const_layout_option()
 @verbosity_option()
@@ -117,10 +123,13 @@ def det(ctx, scores, evaluation, **kwargs):
 @click.command()
 @common_options.scores_argument(eval_mandatory=True, nargs=-1)
 @common_options.output_plot_file_option(default_out='epc.pdf')
+@common_options.title_option()
 @common_options.titles_option()
 @common_options.points_curve_option()
 @common_options.axis_fontsize_option()
 @common_options.const_layout_option()
+@common_options.x_label_option()
+@common_options.y_label_option()
 @verbosity_option()
 @click.pass_context
 def epc(ctx, scores, **kwargs):
@@ -152,6 +161,7 @@ def epc(ctx, scores, **kwargs):
 @common_options.const_layout_option()
 @common_options.show_dev_option()
 @common_options.print_filenames_option()
+@common_options.title_option()
 @common_options.titles_option()
 @verbosity_option()
 @click.pass_context
@@ -191,7 +201,7 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.points_curve_option()
 @common_options.semilogx_option(dflt=True)
 @common_options.n_bins_option()
-@common_options.fmr_line_at_option()
+@common_options.lines_at_option()
 @common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context

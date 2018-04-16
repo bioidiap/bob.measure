@@ -403,9 +403,11 @@ class PlotBase(MeasureBase):
         self._multi_plots = len(self.dev_scores) > 1
         self._colors = utils.get_colors(len(self.dev_scores))
         self._states = ['Development', 'Evaluation']
-        self._title = ''
-        self._x_label = 'FMR (%)'
-        self._y_label = 'FNMR (%)'
+        self._title = None if 'title' not in ctx.meta else ctx.meta['title']
+        self._x_label = None if 'x_label' not in ctx.meta else\
+        ctx.meta['x_label']
+        self._y_label = None if 'y_label' not in ctx.meta else\
+        ctx.meta['y_label']
         self._grid_color = 'silver'
         self._pdf_page = None
         self._end_setup_plot = True
@@ -445,7 +447,7 @@ class PlotBase(MeasureBase):
                 mpl.xlabel(self._x_label)
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
-                mpl.legend()
+                mpl.legend(loc='best')
                 self._set_axis()
                 #gives warning when applied with mpl
                 fig.set_tight_layout(True)
@@ -490,14 +492,18 @@ class Roc(PlotBase):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
         self._semilogx = True if 'semilogx' not in ctx.meta else\
         ctx.meta['semilogx']
-        self._fmr_at = None if 'fmr_at' not in ctx.meta else\
-        ctx.meta['fmr_at']
-        self._title = 'ROC'
-        self._x_label = 'FMR'
-        self._y_label = ("1 - FNMR" if self._semilogx else "FNMR")
+        self._far_at = None if 'lines_at' not in ctx.meta else\
+        ctx.meta['lines_at']
+        self._title = self._title or 'ROC'
+        self._x_label = self._x_label or 'False Positive Rate'
+        self._y_label = self._y_label or (
+            "1 - False Negative Rate" if self._semilogx else "False Negative Rate"
+        )
         #custom defaults
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 1e-4, 1.0]
+        if self._far_at is not None:
+            self._eval_points = {line: [] for line in self._far_at}
 
     def compute(self, idx, dev_score, dev_file=None,
                 eval_score=None, eval_file=None):
@@ -523,12 +529,14 @@ class Roc(PlotBase):
                 color=self._colors[idx], linestyle=linestyle,
                 label=self._label('eval', eval_file, idx, **self._kwargs)
             )
-            if self._fmr_at is not None:
+            if self._far_at is not None:
                 from .. import farfrr
-                eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, self._fmr_at)
-                if self._semilogx:
-                    eval_fnmr = 1 - eval_fnmr
-                mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
+                for line in self._far_at:
+                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, line)
+                    if self._semilogx:
+                        eval_fnmr = 1 - eval_fnmr
+                    mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
+                    self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
             plot.roc(
                 dev_neg, dev_pos, self._points, self._semilogx,
@@ -540,16 +548,31 @@ class Roc(PlotBase):
         ''' Draw vertical line on the dev plot at the given fmr and print the
         corresponding points on the eval plot for all the systems '''
         #draw vertical lines
-        if self._fmr_at is not None:
-            mpl.figure(1)
-            mpl.plot([self._fmr_at, self._fmr_at], [0., 1.], "--", color='black')
+        if self._far_at is not None:
+            for line in self._far_at:
+                mpl.figure(1)
+                mpl.plot([line, line], [0., 1.], "--", color='black')
+                if self._eval and self._split:
+                    mpl.figure(2)
+                    x_values = [i for i, _ in self._eval_points[line]]
+                    y_values = [j for _, j in self._eval_points[line]]
+                    sort_indice = sorted(
+                        range(len(x_values)), key=x_values.__getitem__
+                    )
+                    x_values = [x_values[i] for i in sort_indice]
+                    y_values = [y_values[i] for i in sort_indice]
+                    mpl.plot(x_values,
+                             y_values, '--',
+                             color='black')
         super(Roc, self).end_process()
 
 class Det(PlotBase):
     ''' Handles the plotting of DET '''
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
-        self._title = 'DET'
+        self._title = self._title or 'DET' 
+        self._x_label = self._x_label or 'False Positive Rate'
+        self._y_label = self._y_label or 'False Negative Rate'
         #custom defaults here
         if self._x_rotation is None:
             self._x_rotation = 50
@@ -595,9 +618,9 @@ class Epc(PlotBase):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if 'eval_scores_0' not in self._ctx.meta:
             raise click.UsageError("EPC requires dev and eval score files")
-        self._title = 'EPC'
-        self._x_label = 'Cost'
-        self._y_label = 'Min. HTER (%)'
+        self._title = self._title or 'EPC'
+        self._x_label = self._x_label or 'Cost'
+        self._y_label = self._y_label or 'Min. HTER (%)'
         self._eval = True #always eval data with EPC
         self._split = False
         self._nb_figs = 1
@@ -645,9 +668,9 @@ class Hist(PlotBase):
                 )
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
         self._y_label = 'Dev. probability density' if self._eval else \
-                'density'
+                'density' or self._y_label
         self._x_label = 'Scores' if not self._eval else ''
-        self._title_base = 'Scores'
+        self._title_base = self._title or 'Scores'
         self._end_setup_plot = False
 
     def compute(self, idx, dev_score, dev_file=None,

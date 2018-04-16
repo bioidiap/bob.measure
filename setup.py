@@ -78,6 +78,7 @@ setup(
           'det = bob.measure.script.commands:det',
           'epc = bob.measure.script.commands:epc',
           'hist = bob.measure.script.commands:hist',
+          'gen = bob.measure.script.gen:gen',
       ],
     },
 

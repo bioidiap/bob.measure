@@ -15,7 +15,7 @@ def test_metrics():
         with open('tmp', 'w') as f:
             f.write(result.output)
         test_ref = bob.io.base.test_utils.datafile('test_m1.txt', 'bob.measure')
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     dev2 = bob.io.base.test_utils.datafile('dev-2.txt', 'bob.measure')
     test1 = bob.io.base.test_utils.datafile('test-1.txt', 'bob.measure')
@@ -30,15 +30,16 @@ def test_metrics():
         assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-t',
+            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-ts',
                               'A,B']
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
+
     with runner.isolated_filesystem():
         result = runner.invoke(
             commands.metrics, ['-l', 'tmp', '--no-evaluation', dev1, dev2]
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 def test_roc():
     dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
@@ -58,7 +59,7 @@ def test_roc():
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.roc, ['--output',
@@ -66,7 +67,7 @@ def test_roc():
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 
 def test_det():
@@ -86,14 +87,15 @@ def test_det():
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
+
     with runner.isolated_filesystem():
         result = runner.invoke(commands.det, ['--output',
                                               'test.pdf',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 def test_epc():
     dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
@@ -103,7 +105,8 @@ def test_epc():
         result = runner.invoke(commands.epc, [dev1, test1])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
+
     dev2 = bob.io.base.test_utils.datafile('dev-2.txt', 'bob.measure')
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     with runner.isolated_filesystem():
@@ -112,7 +115,7 @@ def test_epc():
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 def test_hist():
     dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
@@ -124,7 +127,7 @@ def test_hist():
         result = runner.invoke(commands.hist, ['--no-evaluation', dev1])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--no-evaluation', '--criter', 'hter',
@@ -132,7 +135,7 @@ def test_hist():
                                                30, dev1, dev2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--criter', 'eer','--output',
@@ -140,7 +143,7 @@ def test_hist():
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 
 def test_evaluate():
@@ -151,15 +154,15 @@ def test_evaluate():
     runner = CliRunner()
     with runner.isolated_filesystem():
         result = runner.invoke(commands.evaluate, ['--no-evaluation', dev1])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(
             commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf', '-b',
                                 30, '-n', 300, dev1, dev2])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(
             commands.evaluate, [dev1, test1, dev2, test2])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, (result.exit_code, result.output)
