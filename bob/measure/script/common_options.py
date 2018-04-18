@@ -109,6 +109,7 @@ def const_layout_option(dflt=True, **kwargs):
     return bool_option('clayout', 'Y', '(De)Activate constrained layout', dflt)
 
 def axes_val_option(dflt=None, **kwargs):
+    ''' Option for setting min/max values on axes '''
     return list_float_option(
         name='axlim', short_name='L',
         desc='min/max axes values separated by commas (min_x, max_x, min_y, max_y)',
@@ -116,6 +117,7 @@ def axes_val_option(dflt=None, **kwargs):
     )
 
 def thresholds_option(**kwargs):
+    ''' Option to give a list of thresholds '''
     return list_float_option(
         name='thres', short_name='T',
         desc='Given threshold for metrics computations',
