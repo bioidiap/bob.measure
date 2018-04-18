@@ -38,7 +38,7 @@ class MeasureBase(object):
         Function that is used to load the input files
     """
     __metaclass__ = ABCMeta #for python 2.7 compatibility
-    def __init__(self, ctx, scores, eval, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load):
         """
         Parameters
         ----------
@@ -63,7 +63,7 @@ class MeasureBase(object):
         if self._titles is not None and len(self._titles) != self.n_sytem:
             raise click.BadParameter("Number of titles must be equal to the "
                                      "number of systems")
-        self._eval = eval
+        self._eval = evaluation
 
     def run(self):
         """ Generate outputs (e.g. metrics, files, pdf plots).

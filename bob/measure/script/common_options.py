@@ -241,12 +241,10 @@ def output_plot_file_option(default_out='plots.pdf', **kwargs):
             callback=callback, **kwargs)(func)
     return custom_output_plot_file_option
 
-def output_plot_metric_option(**kwargs):
+def output_log_metric_option(**kwargs):
     '''Get options for output file for metrics'''
-    def custom_output_plot_file_option(func):
+    def custom_output_log_file_option(func):
         def callback(ctx, param, value):
-            ''' Save ouput file  and associated pdf in context list,
-            print the path of the file in the log'''
             if value is not None:
                 LOGGER.debug("Metrics will be output in %s", value)
             ctx.meta['log'] = value
@@ -256,7 +254,7 @@ def output_plot_metric_option(**kwargs):
             help='If provided, computed numbers are written to '
               'this file instead of the standard output.',
             callback=callback, **kwargs)(func)
-    return custom_output_plot_file_option
+    return custom_output_log_file_option
 
 def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
     """Get option flag to tell which criteriom is used (default:eer)
