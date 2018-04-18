@@ -104,10 +104,7 @@ def get_colors(n):
         cmap = pyplot.cm.get_cmap(name='magma')
         return [cmap(i) for i in numpy.linspace(0, 1.0, n + 1)]
 
-    # matplotlib 2.0 default color cycler list: Vega category10 palette
-    return ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-            '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-            '#bcbd22', '#17becf']
+    return ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9']
 
 def confidence_for_indicator_variable(x, n, alpha=0.05):
     '''Calculates the confidence interval for proportion estimates

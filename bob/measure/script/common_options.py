@@ -404,7 +404,7 @@ def style_option(**kwargs):
             plt.style.use(value)
             return value
         return click.option(
-            '--style', multiple=True, type=click.types.Choice(plt.style.available),
+            '--style', multiple=True, type=click.types.Choice(sorted(plt.style.available)),
             help='The matplotlib style to use for plotting. You can provide '
             'multiple styles by repeating this option',
             callback=callback, **kwargs)(func)
