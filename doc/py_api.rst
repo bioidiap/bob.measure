@@ -117,6 +117,13 @@ Utilities
    bob.measure.utils.get_thres
    bob.measure.utils.get_colors
 
+CLI options
+-----------
+
+.. autosummary::
+   bob.measure.script.common_options
+
+
 Details
 -------
 
