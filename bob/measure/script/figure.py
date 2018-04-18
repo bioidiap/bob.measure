@@ -670,8 +670,8 @@ class Hist(PlotBase):
     def _setup_hist(self, neg, pos):
         ''' This function can be overwritten in derived classes'''
         self._density_hist(
-            pos, label='Positives', alpha=0.5, color='blue', **self._kwargs
+            pos, label='Positives', alpha=0.5, color='C0', **self._kwargs
         )
         self._density_hist(
-            neg, label='Negatives', alpha=0.5, color='red', **self._kwargs
+            neg, label='Negatives', alpha=0.5, color='C3', **self._kwargs
         )
