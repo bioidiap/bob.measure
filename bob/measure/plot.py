@@ -260,7 +260,7 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   return pyplot.plot(out[0, :], 100.0 * out[1, :], **kwargs)
 
 
-def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
+def det(negatives, positives, npoints=100, **kwargs):
   """Plots Detection Error Trade-off (DET) curve as defined in the paper:
 
   Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
@@ -381,9 +381,9 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
   pticks = [ppndf(float(v)) for v in desiredTicks]
   ax = pyplot.gca()  # and finally we set our own tick marks
   ax.set_xticks(pticks)
-  ax.set_xticklabels(desiredLabels, size=axisfontsize)
+  ax.set_xticklabels(desiredLabels)
   ax.set_yticks(pticks)
-  ax.set_yticklabels(desiredLabels, size=axisfontsize)
+  ax.set_yticklabels(desiredLabels)
 
   return retval
 

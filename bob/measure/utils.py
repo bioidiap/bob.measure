@@ -2,7 +2,6 @@
 
 import numpy
 import scipy.stats
-import click
 import bob.core
 
 def remove_nan(scores):
@@ -12,7 +11,6 @@ def remove_nan(scores):
 
     Parameters
     ----------
-
     scores :
         :py:class:`numpy.ndarray` : array
 
@@ -37,7 +35,6 @@ def get_fta(scores):
 
     Parameters
     ----------
-
     scores :
         Tuple of (``positive``, ``negative``) :py:class:`numpy.ndarray`.
 
@@ -61,7 +58,6 @@ def get_thres(criter, neg, pos, far=None):
 
     Parameters
     ----------
-
     criter :
         Criterion (`eer` or `hter`)
     neg : :py:class:`numpy.ndarray`:
@@ -71,10 +67,8 @@ def get_thres(criter, neg, pos, far=None):
 
     Returns
     -------
-
     :py:obj:`float`
         threshold
-
     """
     if criter == 'eer':
         from . import eer_threshold
@@ -84,13 +78,12 @@ def get_thres(criter, neg, pos, far=None):
         return min_hter_threshold(neg, pos)
     elif criter == 'far':
         if far is None:
-            raise click.UsageError("FAR value must be provided through "
-                                   "``--far-value`` option.")
+            raise ValueError("FAR value must be provided through "
+                             "``--far-value`` option.")
         from . import far_threshold
         return far_threshold(neg, pos, far)
-
     else:
-        raise click.UsageError("Incorrect plotting criterion: ``%s``" % criter)
+        raise ValueError("Incorrect plotting criterion: ``%s``" % criter)
 
 def get_colors(n):
     """get_colors
@@ -98,13 +91,11 @@ def get_colors(n):
 
     Parameters
     ----------
-
     n : :obj:`int`
         Number of colors to output
 
     Returns
     -------
-
     :any:`list`
         list of colors
     """

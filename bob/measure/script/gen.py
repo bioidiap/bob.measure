@@ -16,11 +16,10 @@ NUM_NEG = 5000
 NUM_POS = 5000
 
 def gen_score_distr(mean_neg, mean_pos, sigma_neg=1, sigma_pos=1):
-        """Generate scores from normal distributions
+    """Generate scores from normal distributions
 
     Parameters
     ----------
-
     mean_neg : float
         Mean for negative scores
     mean_pos : float
@@ -32,10 +31,9 @@ def gen_score_distr(mean_neg, mean_pos, sigma_neg=1, sigma_pos=1):
 
     Returns
     -------
-
-    neg_scores : array_like
+    neg_scores : :any:`list`
         Negatives scores
-    pos_scores : array_like
+    pos_scores : :any:`list`
         Positive scores
     """
     mt = random.mt19937()  # initialise the random number generator
@@ -56,9 +54,9 @@ def write_scores_to_file(pos, neg, filename):
 
     Parameters
     ----------
-    pos : array_like
+    pos : :py:class:`numpy.ndarray`
         Scores for positive samples.
-    neg : array_like
+    neg : :py:class:`numpy.ndarray`
         Scores for negative samples.
     filename : str
         The path to write the score to.

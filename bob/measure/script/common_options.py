@@ -1,16 +1,14 @@
 '''Stores click common options for plots'''
 
-import math
 import pkg_resources  # to make sure bob gets imported properly
 import logging
 import click
-from click.types import INT, FLOAT, Choice, File
+from click.types import INT, FLOAT
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from bob.extension.scripts.click_helper import (verbosity_option, bool_option,
-                                                list_float_option)
+from bob.extension.scripts.click_helper import (bool_option, list_float_option)
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
@@ -18,7 +16,6 @@ def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
 
     Parameters
     ----------
-
     eval_mandatory :
         If evaluation files are mandatory
     min_len :
@@ -27,7 +24,8 @@ def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
 
     Returns
     -------
-        Click option
+     callable
+      A decorator to be used for adding score arguments for click commands
     """
     def custom_scores_argument(func):
         def callback(ctx, param, value):
@@ -129,22 +127,9 @@ def lines_at_option(**kwargs):
     '''Get option to draw const far line'''
     return list_float_option(
         name='lines-at', short_name='la',
-        desc='If given, draw a veritcal lines on ROC plots',
+        desc='If given, draw veritcal lines on ROC plots',
         nitems=None, dflt=None, **kwargs
     )
-
-def axis_fontsize_option(dflt=8, **kwargs):
-    '''Get option for axis font size'''
-    def custom_axis_fontsize_option(func):
-        def callback(ctx, param, value):
-            value = abs(value)
-            ctx.meta['fontsize'] = value
-            return value
-        return click.option(
-            '-F', '--fontsize', type=click.INT, default=dflt, show_default=True,
-            help='Axis fontsize',
-            callback=callback, **kwargs)(func)
-    return custom_axis_fontsize_option
 
 def x_rotation_option(dflt=0, **kwargs):
     '''Get option for rotartion of the x axis lables'''
@@ -159,7 +144,6 @@ def x_rotation_option(dflt=0, **kwargs):
             callback=callback, **kwargs)(func)
     return custom_x_rotation_option
 
-
 def cost_option(**kwargs):
     '''Get option to get cost for FAR'''
     def custom_cost_option(func):
@@ -173,18 +157,6 @@ def cost_option(**kwargs):
             help='Cost for FAR in minDCF',
             callback=callback, **kwargs)(func)
     return custom_cost_option
-
-def n_sys_option(**kwargs):
-    '''Get the number of systems to be processed'''
-    def custom_n_sys_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['n_sys'] = value
-            return value
-        return click.option(
-            '--n-sys', type=INT, default=1, show_default=True,
-            help='The number of systems to be processed',
-            callback=callback, is_eager=True , **kwargs)(func)
-    return custom_n_sys_option
 
 def points_curve_option(**kwargs):
     '''Get the number of points use to draw curves'''
@@ -248,7 +220,7 @@ def output_plot_file_option(default_out='plots.pdf', **kwargs):
             print the path of the file in the log'''
             ctx.meta['output'] = value
             ctx.meta['PdfPages'] = PdfPages(value)
-            logger.debug("Plots will be output in %s", value)
+            LOGGER.debug("Plots will be output in %s", value)
             return value
         return click.option(
             '-o', '--output',
@@ -264,7 +236,7 @@ def output_plot_metric_option(**kwargs):
             ''' Save ouput file  and associated pdf in context list,
             print the path of the file in the log'''
             if value is not None:
-                logger.debug("Metrics will be output in %s", value)
+                LOGGER.debug("Metrics will be output in %s", value)
             ctx.meta['log'] = value
             return value
         return click.option(
@@ -279,7 +251,6 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
 
     Parameters
     ----------
-
     lcriteria : :any:`list`
         List of possible criteria
     """
@@ -299,7 +270,6 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
 
-
 def far_option(**kwargs):
     '''Get option to get far value'''
     def custom_far_option(func):
@@ -313,40 +283,6 @@ def far_option(**kwargs):
             help='The FAR value for which to compute metrics',
             callback=callback, show_default=True,**kwargs)(func)
     return custom_far_option
-
-def rank_option(**kwargs):
-    '''Get option for rank parameter'''
-    def custom_rank_option(func):
-        def callback(ctx, param, value):
-            value = 1 if value < 0 else value
-            ctx.meta['rank'] = value
-            return value
-        return click.option(
-            '--rank', type=click.INT, default=1,
-            help='Given threshold for metrics computations',
-            callback=callback, show_default=True,**kwargs)(func)
-    return custom_rank_option
-
-def label_option(name_option='x_label', **kwargs):
-    '''Get labels options based on the given name.
-
-    Parameters:
-    ----------
-    name_option: str, optional
-        Name of the label option (e.g. x-lable, y1-label)
-    '''
-    def custom_label_option(func):
-        def callback(ctx, param, value):
-            ''' Get and save labels list in the context list '''
-            ctx.meta[name_option.replace('-', '_')] = value if value is None else \
-                    [int(i) for i in value.split(',')]
-            return value
-        return click.option(
-            '--' + name_option,
-            help='The id of figures which should have x_label separated by '
-            'comma. For example ``--%s 1,2,4``.' % name_option,
-            callback=callback, **kwargs)(func)
-    return custom_label_option
 
 def figsize_option(**kwargs):
     '''Get option for matplotlib figsize'''

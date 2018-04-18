@@ -127,3 +127,5 @@ Details
 .. automodule:: bob.measure.utils
 .. automodule:: bob.measure.script.figure
 .. automodule:: bob.measure.script.commands
+.. automodule:: bob.measure.script.gen
+.. automodule:: bob.measure.script.common_options

@@ -7,8 +7,8 @@ from click.types import INT, FLOAT, Choice, File
 
 
 @with_plugins(pkg_resources.iter_entry_points('bob.measure.cli'))
-@click.group(chain=True)
+@click.group()
 def measure():
-    """Entry for bob.measure commands."""
+    """Generic performance evaluation commands."""
     pass
 
