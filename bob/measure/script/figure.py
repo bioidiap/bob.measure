@@ -3,7 +3,7 @@
 from __future__ import division, print_function
 from abc import ABCMeta, abstractmethod
 import sys
-import ntpath
+import os.path
 import click
 import matplotlib
 import matplotlib.pyplot as mpl
@@ -166,7 +166,7 @@ class MeasureBase(object):
                 return None
             res = []
             for file_path in filenames:
-                _, name = ntpath.split(file_path)
+                name = os.path.basename(file_path)
                 res.append(name.split(".")[0])
             return res
 
