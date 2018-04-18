@@ -1,6 +1,5 @@
 '''Stores click common options for plots'''
 
-import pkg_resources  # to make sure bob gets imported properly
 import logging
 import click
 from click.types import INT, FLOAT
@@ -293,8 +292,8 @@ def figsize_option(**kwargs):
             plt.figure(figsize=ctx.meta['figsize'])
             return value
         return click.option(
-            '--figsize', help='If given, will run \
-            ``plt.figure(figsize=figsize)(f)``. Example: --fig-size 4,6',
+            '--figsize', help='If given, will run '
+            '``plt.figure(figsize=figsize)``. Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
 
