@@ -142,7 +142,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
   from matplotlib import pyplot
   from . import roc_for_far as calc
   out = calc(negatives, positives, far_values)
-  return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
+  return pyplot.semilogx(out[0, :], (1 - out[1, :]), **kwargs)
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):

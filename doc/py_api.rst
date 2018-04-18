@@ -125,7 +125,6 @@ CLI options
    bob.measure.script.common_options.eval_option
    bob.measure.script.common_options.sep_dev_eval_option
    bob.measure.script.common_options.cmc_option
-   bob.measure.script.common_options.semilogx_option
    bob.measure.script.common_options.show_dev_option
    bob.measure.script.common_options.print_filenames_option
    bob.measure.script.common_options.const_layout_option

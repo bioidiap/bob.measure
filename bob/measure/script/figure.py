@@ -9,8 +9,7 @@ import matplotlib
 import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
-from .. import plot
-from .. import utils
+from .. import (far_threshold, plot, utils, ppndf)
 
 LINESTYLES = [
     (0, ()),                    #solid
@@ -329,6 +328,12 @@ class PlotBase(MeasureBase):
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
         self._clayout = None if 'clayout' not in ctx.meta else\
         ctx.meta['clayout']
+        self._far_at = None if 'lines_at' not in ctx.meta else\
+        ctx.meta['lines_at']
+        self._trans_far_val = self._far_at
+        if self._far_at is not None:
+            self._eval_points = {line: [] for line in self._far_at}
+            self._lines_val = []
         self._print_fn = True if 'show_fn' not in ctx.meta else\
         ctx.meta['show_fn']
         self._x_rotation = None if 'x_rotation' not in ctx.meta else \
@@ -365,8 +370,28 @@ class PlotBase(MeasureBase):
             fig.clear()
 
     def end_process(self):
-        ''' Set title, legend, axis labels, grid colors, save figures and
-        close pdf is needed '''
+        ''' Set title, legend, axis labels, grid colors, save figures, drow
+        lines and close pdf if needed '''
+        #draw vertical lines
+        if self._far_at is not None:
+            for (line, line_trans) in zip(self._far_at, self._trans_far_val):
+                mpl.figure(1)
+                mpl.plot(
+                    [line_trans, line_trans], [-100.0, 100.], "--",
+                    color='black'
+                )
+                if self._eval and self._split:
+                    mpl.figure(2)
+                    x_values = [i for i, _ in self._eval_points[line]]
+                    y_values = [j for _, j in self._eval_points[line]]
+                    sort_indice = sorted(
+                        range(len(x_values)), key=x_values.__getitem__
+                    )
+                    x_values = [x_values[i] for i in sort_indice]
+                    y_values = [y_values[i] for i in sort_indice]
+                    mpl.plot(x_values,
+                             y_values, '--',
+                             color='black')
         #only for plots
         if self._end_setup_plot:
             for i in range(self._nb_figs):
@@ -390,7 +415,6 @@ class PlotBase(MeasureBase):
            ('closef' not in self._ctx.meta or self._ctx.meta['closef']):
             self._pdf_page.close()
 
-
     #common protected functions
 
     def _label(self, base, name, idx):
@@ -408,20 +432,12 @@ class Roc(PlotBase):
     ''' Handles the plotting of ROC'''
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
-        self._semilogx = True if 'semilogx' not in ctx.meta else\
-        ctx.meta['semilogx']
-        self._far_at = None if 'lines_at' not in ctx.meta else\
-        ctx.meta['lines_at']
         self._title = self._title or 'ROC'
         self._x_label = self._x_label or 'False Positive Rate'
-        self._y_label = self._y_label or (
-            "1 - False Negative Rate" if self._semilogx else "False Negative Rate"
-        )
+        self._y_label = self._y_label or "1 - False Negative Rate"
         #custom defaults
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 1e-4, 1.0]
-        if self._far_at is not None:
-            self._eval_points = {line: [] for line in self._far_at}
 
     def compute(self, idx, dev_score, dev_file=None,
                 eval_score=None, eval_file=None):
@@ -432,8 +448,8 @@ class Roc(PlotBase):
         mpl.figure(1)
         if self._eval:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
-            plot.roc(
-                dev_neg, dev_pos, self._points, self._semilogx,
+            plot.roc_for_far(
+                dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=linestyle,
                 label=self._label('development', dev_file, idx, **self._kwargs)
             )
@@ -442,47 +458,25 @@ class Roc(PlotBase):
                 mpl.figure(2)
                 linestyle = LINESTYLES[idx % 14]
 
-            plot.roc(
-                eval_neg, eval_pos, self._points, self._semilogx,
+            plot.roc_for_far(
+                eval_neg, eval_pos,
                 color=self._colors[idx], linestyle=linestyle,
                 label=self._label('eval', eval_file, idx, **self._kwargs)
             )
             if self._far_at is not None:
                 from .. import farfrr
                 for line in self._far_at:
-                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, line)
-                    if self._semilogx:
-                        eval_fnmr = 1 - eval_fnmr
+                    thres_line = far_threshold(dev_neg, dev_pos, line)
+                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, thres_line)
+                    eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
-            plot.roc(
-                dev_neg, dev_pos, self._points, self._semilogx,
+            plot.roc_for_far(
+                dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
                 label=self._label('development', dev_file, idx, **self._kwargs)
             )
-
-    def end_process(self):
-        ''' Draw vertical line on the dev plot at the given fmr and print the
-        corresponding points on the eval plot for all the systems '''
-        #draw vertical lines
-        if self._far_at is not None:
-            for line in self._far_at:
-                mpl.figure(1)
-                mpl.plot([line, line], [0., 1.], "--", color='black')
-                if self._eval and self._split:
-                    mpl.figure(2)
-                    x_values = [i for i, _ in self._eval_points[line]]
-                    y_values = [j for _, j in self._eval_points[line]]
-                    sort_indice = sorted(
-                        range(len(x_values)), key=x_values.__getitem__
-                    )
-                    x_values = [x_values[i] for i in sort_indice]
-                    y_values = [y_values[i] for i in sort_indice]
-                    mpl.plot(x_values,
-                             y_values, '--',
-                             color='black')
-        super(Roc, self).end_process()
 
 class Det(PlotBase):
     ''' Handles the plotting of DET '''
@@ -491,6 +485,8 @@ class Det(PlotBase):
         self._title = self._title or 'DET'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or 'False Negative Rate'
+        if self._far_at is not None:
+            self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
         #custom defaults here
         if self._x_rotation is None:
             self._x_rotation = 50
@@ -517,6 +513,14 @@ class Det(PlotBase):
                 linestyle=linestyle,
                 label=self._label('eval', eval_file, idx, **self._kwargs)
             )
+            if self._far_at is not None:
+                from .. import farfrr
+                for line in self._far_at:
+                    thres_line = far_threshold(dev_neg, dev_pos, line)
+                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, thres_line)
+                    eval_fmr, eval_fnmr = ppndf(eval_fmr), ppndf(eval_fnmr)
+                    mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
+                    self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
@@ -542,6 +546,7 @@ class Epc(PlotBase):
         self._eval = True #always eval data with EPC
         self._split = False
         self._nb_figs = 1
+        self._far_at = None
 
     def compute(self, idx, dev_score, dev_file, eval_score, eval_file=None):
         ''' Plot EPC using :py:func:`bob.measure.plot.epc` '''

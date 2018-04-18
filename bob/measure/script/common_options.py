@@ -106,13 +106,23 @@ def print_filenames_option(dflt=True, **kwargs):
 
 def const_layout_option(dflt=True, **kwargs):
     '''Option to set matplotlib constrained_layout'''
-    return bool_option('clayout', 'Y', '(De)Activate constrained layout', dflt)
+    def custom_layout_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['clayout'] = value
+            plt.rcParams['figure.constrained_layout.use'] = value
+            return value
+        return click.option(
+            '-Y', '--clayout/--no-clayout', default=dflt, show_default=True,
+            help='(De)Activate constrained layout',
+            callback=callback, **kwargs)(func)
+    return custom_layout_option
 
 def axes_val_option(dflt=None, **kwargs):
     ''' Option for setting min/max values on axes '''
     return list_float_option(
         name='axlim', short_name='L',
-        desc='min/max axes values separated by commas (min_x, max_x, min_y, max_y)',
+        desc='min/max axes values separated by commas (e.g. ``--axlim '
+        ' 0.1,100,0.1,100``)',
         nitems=4, dflt=dflt, **kwargs
     )
 
@@ -120,7 +130,8 @@ def thresholds_option(**kwargs):
     ''' Option to give a list of thresholds '''
     return list_float_option(
         name='thres', short_name='T',
-        desc='Given threshold for metrics computations',
+        desc='Given threshold for metrics computations, e.g. '
+        '0.005,0.001,0.056',
         nitems=None, dflt=None, **kwargs
     )
 
@@ -128,7 +139,7 @@ def lines_at_option(**kwargs):
     '''Get option to draw const far line'''
     return list_float_option(
         name='lines-at', short_name='la',
-        desc='If given, draw veritcal lines on ROC plots',
+        desc='If given, draw veritcal lines at the given axis positions',
         nitems=None, dflt=None, **kwargs
     )
 
@@ -291,11 +302,12 @@ def figsize_option(**kwargs):
         def callback(ctx, param, value):
             ctx.meta['figsize'] = value if value is None else \
                     [float(x) for x in value.split(',')]
-            plt.figure(figsize=ctx.meta['figsize'])
+            if value is not None:
+                plt.rcParams['figure.figsize'] = ctx.meta['figsize']
             return value
         return click.option(
             '--figsize', help='If given, will run '
-            '``plt.figure(figsize=figsize)``. Example: --fig-size 4,6',
+            '``plt.rcParams[\'figure.figsize\']=figsize)``. Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
 
