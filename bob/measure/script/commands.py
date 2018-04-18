@@ -57,7 +57,6 @@ def metrics(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
-@common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
 def roc(ctx, scores, evaluation, **kwargs):
@@ -96,7 +95,6 @@ def roc(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
-@common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
 def det(ctx, scores, evaluation, **kwargs):
@@ -130,7 +128,6 @@ def det(ctx, scores, evaluation, **kwargs):
 @common_options.y_label_option()
 @common_options.figsize_option()
 @common_options.style_option()
-@common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
 def epc(ctx, scores, **kwargs):
@@ -164,7 +161,6 @@ def epc(ctx, scores, **kwargs):
 @common_options.titles_option()
 @common_options.figsize_option()
 @common_options.style_option()
-@common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, evaluation, **kwargs):
@@ -175,9 +171,9 @@ def hist(ctx, scores, evaluation, **kwargs):
     You can also provide evaluation files along with dev files. If only dev scores
     are provided, you must use flag `--no-evaluation`.
 
-    By default, when eval-scores are given, only eval-scores histograms are 
+    By default, when eval-scores are given, only eval-scores histograms are
     displayed with threshold line
-    computed from dev-scores. If you want to display dev-scores distributions 
+    computed from dev-scores. If you want to display dev-scores distributions
     as well, use ``--show-dev`` option.
 
     Examples:
@@ -206,7 +202,6 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
-@common_options.const_layout_option()
 @verbosity_option()
 @click.pass_context
 def evaluate(ctx, scores, evaluation, **kwargs):
