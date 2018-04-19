@@ -20,7 +20,7 @@ def test_split():
 
     # Read test file
     test_file = bob.io.base.test_utils.datafile(
-        'data.txt', 'bob.measure')
+        'dev-1.txt', 'bob.measure')
     neg, pos = bob.measure.load.split(test_file)
     assert neg is not None
     assert_equal(len(neg), 521)

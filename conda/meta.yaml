@@ -34,6 +34,7 @@ requirements:
     - boost {{ boost }}
     - numpy {{ numpy }}
     - docopt {{ docopt }}
+    - tabulate {{ tabulate }}
     - scipy {{ scipy }}
   run:
     - python
@@ -43,6 +44,7 @@ requirements:
     - boost
     - {{ pin_compatible('numpy') }}
     - docopt
+    - tabulate
 
 test:
   imports:

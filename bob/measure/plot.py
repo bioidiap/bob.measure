@@ -89,9 +89,9 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   from . import roc as calc
   out = calc(negatives, positives, npoints)
   if not CAR:
-    return pyplot.plot(100.0 * out[0, :], 100.0 * out[1, :], **kwargs)
+    return pyplot.plot(out[0, :], out[1, :], **kwargs)
   else:
-    return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
+    return pyplot.semilogx(out[0, :],(1 - out[1, :]), **kwargs)
 
 
 def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
@@ -142,7 +142,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
   from matplotlib import pyplot
   from . import roc_for_far as calc
   out = calc(negatives, positives, far_values)
-  return pyplot.semilogx(100.0 * out[0, :], 100.0 * (1 - out[1, :]), **kwargs)
+  return pyplot.semilogx(out[0, :], (1 - out[1, :]), **kwargs)
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
@@ -260,7 +260,7 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   return pyplot.plot(out[0, :], 100.0 * out[1, :], **kwargs)
 
 
-def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
+def det(negatives, positives, npoints=100, **kwargs):
   """Plots Detection Error Trade-off (DET) curve as defined in the paper:
 
   Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
@@ -381,9 +381,9 @@ def det(negatives, positives, npoints=100, axisfontsize='x-small', **kwargs):
   pticks = [ppndf(float(v)) for v in desiredTicks]
   ax = pyplot.gca()  # and finally we set our own tick marks
   ax.set_xticks(pticks)
-  ax.set_xticklabels(desiredLabels, size=axisfontsize)
+  ax.set_xticklabels(desiredLabels)
   ax.set_yticks(pticks)
-  ax.set_yticklabels(desiredLabels, size=axisfontsize)
+  ax.set_yticklabels(desiredLabels)
 
   return retval
 
@@ -481,9 +481,9 @@ def cmc(cmc_scores, logx=True, **kwargs):
   out = calc(cmc_scores)
 
   if logx:
-    pyplot.semilogx(range(1, len(out) + 1), out * 100, **kwargs)
+    pyplot.semilogx(range(1, len(out) + 1), out, **kwargs)
   else:
-    pyplot.plot(range(1, len(out) + 1), out * 100, **kwargs)
+    pyplot.plot(range(1, len(out) + 1), out, **kwargs)
 
   return len(out)
 

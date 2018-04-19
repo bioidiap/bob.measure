@@ -1,0 +1,10 @@
+[Min. criterion: EER] Threshold on Development set `dev-1`: -8.025286e-03
+====  ===================
+..    Development dev-1
+====  ===================
+FMR   6.263% (31/495)
+FNMR  6.208% (28/451)
+FAR   5.924%
+FRR   11.273%
+HTER  8.599%
+====  ===================
