@@ -137,7 +137,7 @@ CLI options
    bob.measure.script.common_options.n_bins_option
    bob.measure.script.common_options.table_option
    bob.measure.script.common_options.output_plot_file_option
-   bob.measure.script.common_options.output_plot_metric_option
+   bob.measure.script.common_options.output_log_metric_option
    bob.measure.script.common_options.criterion_option
    bob.measure.script.common_options.far_option
    bob.measure.script.common_options.figsize_option
