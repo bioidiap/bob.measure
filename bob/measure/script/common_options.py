@@ -9,7 +9,7 @@ from bob.extension.scripts.click_helper import (bool_option, list_float_option)
 
 LOGGER = logging.getLogger(__name__)
 
-def scores_argument(min_arg=1, **kwargs):
+def scores_argument(min_arg=1, force_eval=False, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
     the context when `--evaluation` flag is on (default)
 
@@ -29,7 +29,7 @@ def scores_argument(min_arg=1, **kwargs):
             min_a = min_arg or 1
             mutli = 1
             error = ''
-            if 'evaluation' in ctx.meta and ctx.meta['evaluation']:
+            if ('evaluation' in ctx.meta and ctx.meta['evaluation']) or force_eval:
                 mutli += 1
                 error += '- %d evaluation file(s) \n' % min_a
             if 'train' in ctx.meta and ctx.meta['train']:
