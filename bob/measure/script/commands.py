@@ -37,7 +37,7 @@ def metrics(ctx, scores, evaluation, **kwargs):
 
         $ bob measure metrics {dev,eval}-scores1 {dev,eval}-scores2
     """
-    process = figure.Metrics(ctx, scores, evaluation, load.split_files)
+    process = figure.Metrics(ctx, scores, evaluation, load.split)
     process.run()
 
 @click.command()
@@ -76,7 +76,7 @@ def roc(ctx, scores, evaluation, **kwargs):
 
         $ bob measure roc -o my_roc.pdf dev-scores1 eval-scores1
     """
-    process = figure.Roc(ctx, scores, evaluation, load.split_files)
+    process = figure.Roc(ctx, scores, evaluation, load.split)
     process.run()
 
 @click.command()
@@ -114,11 +114,11 @@ def det(ctx, scores, evaluation, **kwargs):
 
         $ bob measure det -o my_det.pdf dev-scores1 eval-scores1
     """
-    process = figure.Det(ctx, scores, evaluation, load.split_files)
+    process = figure.Det(ctx, scores, evaluation, load.split)
     process.run()
 
 @click.command()
-@common_options.scores_argument(eval_mandatory=True, nargs=-1)
+@common_options.scores_argument(min_arg=2, nargs=-1)
 @common_options.output_plot_file_option(default_out='epc.pdf')
 @common_options.title_option()
 @common_options.titles_option()
@@ -144,7 +144,7 @@ def epc(ctx, scores, **kwargs):
 
         $ bob measure epc -o my_epc.pdf dev-scores1 eval-scores1
     """
-    process = figure.Epc(ctx, scores, True, load.split_files)
+    process = figure.Epc(ctx, scores, True, load.split)
     process.run()
 
 @click.command()
@@ -184,7 +184,7 @@ def hist(ctx, scores, evaluation, **kwargs):
 
         $ bob measure hist --criter hter --show-dev dev-scores1 eval-scores1
     """
-    process = figure.Hist(ctx, scores, evaluation, load.split_files)
+    process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
 
 @click.command()

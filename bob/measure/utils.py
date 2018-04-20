@@ -53,6 +53,37 @@ def get_fta(scores):
     fta_total += total
     return ((neg, pos), fta_sum / fta_total)
 
+def get_fta_list(scores):
+    """ Get FTAs for a list of scores
+
+    Parameters
+    ----------
+    scores: :any:`list`
+        list of scores
+
+    Returns
+    -------
+    neg_list: :any:`list`
+        list of negatives
+    pos_list: :any:`list`
+        list of positives
+    fta_list: :any:`list`
+        list of FTAs
+    """
+    neg_list = []
+    pos_list = []
+    fta_list = []
+    for score in scores:
+        neg = pos = fta = None
+        if score is not None:
+            (neg, pos), fta = get_fta(score)
+            if neg is None:
+                raise ValueError("While loading dev-score file")
+        neg_list.append(neg)
+        pos_list.append(pos)
+        fta_list.append(fta)
+    return (neg_list, pos_list, fta_list)
+
 def get_thres(criter, neg, pos, far=None):
     """Get threshold for the given positive/negatives scores and criterion
 

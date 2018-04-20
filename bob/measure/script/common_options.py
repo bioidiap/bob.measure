@@ -9,17 +9,15 @@ from bob.extension.scripts.click_helper import (bool_option, list_float_option)
 
 LOGGER = logging.getLogger(__name__)
 
-def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
+def scores_argument(min_arg=1, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
     the context when `--evaluation` flag is on (default)
 
     Parameters
     ----------
-    eval_mandatory :
-        If evaluation files are mandatory
-    min_len :
-        The min lenght of inputs files that are needed. If eval_mandatory is
-        True, this quantity is multiplied by 2.
+    min_arg : int
+        the minimum number of file needed to evaluate a system. For example,
+        PAD functionalities needs licit abd spoof and therefore min_arg = 2
 
     Returns
     -------
@@ -28,44 +26,27 @@ def scores_argument(eval_mandatory=False, min_len=1, **kwargs):
     """
     def custom_scores_argument(func):
         def callback(ctx, param, value):
-            length = len(value)
-            min_arg = min_len or 1
-            ctx.meta['min_arg'] = min_arg
-            if length < min_arg:
+            min_a = min_arg or 1
+            mutli = 1
+            error = ''
+            if 'evaluation' in ctx.meta and ctx.meta['evaluation']:
+                mutli += 1
+                error += '- %d evaluation file(s) \n' % min_a
+            if 'train' in ctx.meta and ctx.meta['train']:
+                mutli += 1
+                error += '- %d training file(s) \n' % min_a
+            #add more test here if other inputs are needed
+
+            min_a *= mutli
+            ctx.meta['min_arg'] = min_a
+            if len(value) < 1 or len(value) % ctx.meta['min_arg'] != 0:
                 raise click.BadParameter(
-                    'You must provide at least %d score files' % min_arg,
-                    ctx=ctx
+                    'The number of provided scores must be > 0 and a multiple of %d '
+                    'because the following files are required:\n'
+                    '- %d development file(s)\n' % (min_a, min_arg or 1) +
+                    error, ctx=ctx
                 )
-            else:
-                ctx.meta['scores'] = value
-                step = 1
-                if eval_mandatory or ctx.meta['evaluation']:
-                    step = 2
-                    if (length % (min_arg * 2)) != 0:
-                        pref = 'T' if eval_mandatory else \
-                                ('When `--evaluation` flag is on t')
-                        raise click.BadParameter(
-                            '%sest-score(s) must '
-                            'be provided along with dev-score(s). '
-                            'You must provide at least %d score files.' \
-                            % (pref, min_arg * 2), ctx=ctx
-                        )
-                for arg in range(min_arg):
-                    ctx.meta['dev_scores_%d' % arg] = [
-                        value[i] for i in range(arg * step, length,
-                                                min_arg * step)
-                    ]
-                    if step > 1:
-                        ctx.meta['eval_scores_%d' % arg] = [
-                            value[i] for i in range((arg * step + 1),
-                                                    length, min_arg * step)
-                        ]
-                ctx.meta['n_sys'] = len(ctx.meta['dev_scores_0'])
-                if 'titles' in ctx.meta and \
-                   len(ctx.meta['titles']) != ctx.meta['n_sys']:
-                    raise click.BadParameter(
-                        '#titles not equal to #sytems', ctx=ctx
-                    )
+            ctx.meta['scores'] = value
             return value
         return click.argument(
             'scores', type=click.Path(exists=True),
