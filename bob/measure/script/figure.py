@@ -162,11 +162,11 @@ class Metrics(MeasureBase):
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         if self._thres is not None :
             if len(self._thres) == 1:
-                self._thres = self._thres * len(self.dev_names)
-            elif len(self._thres) != len(self.dev_names):
+                self._thres = self._thres * self.n_systems
+            elif len(self._thres) != self.n_systems:
                 raise click.BadParameter(
                     '#thresholds must be the same as #systems (%d)' \
-                    % len(self.dev_names)
+                    % len(self.n_systems)
                 )
         self._far = None if 'far_value' not in ctx.meta else \
         ctx.meta['far_value']
@@ -525,13 +525,13 @@ class Hist(PlotBase):
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
                 ctx.meta['show_dev']) or not self._eval
-        if self._thres is not None and len(self._thres) != len(self.dev_names):
+        if self._thres is not None and len(self._thres) != self.n_systems:
             if len(self._thres) == 1:
-                self._thres = self._thres * len(self.dev_names)
+                self._thres = self._thres * self.n_systems
             else:
                 raise click.BadParameter(
                     '#thresholds must be the same as #systems (%d)' \
-                    % len(self.dev_names)
+                    % self.n_systems
                 )
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
         self._y_label = 'Dev. probability density' if self._eval else \
