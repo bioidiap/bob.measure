@@ -608,7 +608,6 @@ class Hist(PlotBase):
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         length = len(neg_list)
-        print (neg_list)
         #can have several files for one system
         dev_neg = [neg_list[x] for x in range(0, length, 2)]
         dev_pos = [pos_list[x] for x in range(0, length, 2)]
