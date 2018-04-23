@@ -296,7 +296,6 @@ class PlotBase(MeasureBase):
         self._grid_color = 'silver'
         self._pdf_page = None
         self._end_setup_plot = True
-        self._kwargs = {}
 
     def init_process(self):
         ''' Open pdf and set axis font size if provided '''
@@ -399,7 +398,7 @@ class Roc(PlotBase):
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
             linestyle = '--'
             if self._split:
@@ -409,7 +408,7 @@ class Roc(PlotBase):
             plot.roc_for_far(
                 eval_neg, eval_pos,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('eval', eval_file, idx, **self._kwargs)
+                label=self._label('eval', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -423,7 +422,7 @@ class Roc(PlotBase):
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
 
 class Det(PlotBase):
@@ -455,7 +454,7 @@ class Det(PlotBase):
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
             if self._split:
                 mpl.figure(2)
@@ -463,7 +462,7 @@ class Det(PlotBase):
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval', eval_file, idx, **self._kwargs)
+                label=self._label('eval', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -477,7 +476,7 @@ class Det(PlotBase):
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=LINESTYLES[idx % 14],
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
 
     def _set_axis(self):
@@ -513,7 +512,7 @@ class Epc(PlotBase):
             dev_neg, dev_pos, eval_neg, eval_pos, self._points,
             color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
             label=self._label(
-                'curve', dev_file + "_" + eval_file, idx, **self._kwargs
+                'curve', dev_file + "_" + eval_file, idx
             )
         )
 
@@ -609,18 +608,19 @@ class Hist(PlotBase):
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         length = len(neg_list)
+        print (neg_list)
         #can have several files for one system
         dev_neg = [neg_list[x] for x in range(0, length, 2)]
         dev_pos = [pos_list[x] for x in range(0, length, 2)]
         eval_neg = eval_pos = None
         if self._eval:
-            eval_neg = [neg_list[x] for x in range(1, length, 2)],
+            eval_neg = [neg_list[x] for x in range(1, length, 2)]
             eval_pos = [pos_list[x] for x in range(1, length, 2)]
 
         threshold = utils.get_thres(
             self._criter, dev_neg[0], dev_pos[0]
         ) if self._thres is None else self._thres[idx]
-        return (dev_neg, dev_pos, eval_neg, eval_pos, threshold)
+        return dev_neg, dev_pos, eval_neg, eval_pos, threshold
 
     def _density_hist(self, scores, **kwargs):
         n, bins, patches = mpl.hist(
@@ -639,8 +639,8 @@ class Hist(PlotBase):
     def _setup_hist(self, neg, pos):
         ''' This function can be overwritten in derived classes'''
         self._density_hist(
-            pos[0], label='Positives', alpha=0.5, color='C0', **self._kwargs
+            pos[0], label='Positives', alpha=0.5, color='C0'
         )
         self._density_hist(
-            neg[0], label='Negatives', alpha=0.5, color='C3', **self._kwargs
+            neg[0], label='Negatives', alpha=0.5, color='C3'
         )
