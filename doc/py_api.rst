@@ -114,6 +114,7 @@ Utilities
 .. autosummary::
    bob.measure.utils.remove_nan
    bob.measure.utils.get_fta
+   bob.measure.utils.get_fta_list
    bob.measure.utils.get_thres
    bob.measure.utils.get_colors
 

@@ -56,14 +56,17 @@ class MeasureBase(object):
         self._min_arg = 1 if 'min_arg' not in ctx.meta else ctx.meta['min_arg']
         self._ctx = ctx
         self.func_load = func_load
-        self.dev_names, self.eval_names, self.dev_scores, self.eval_scores = \
-                self._load_files()
-        self.n_sytem = len(self.dev_names[0]) # at least one set of dev scores
         self._titles = None if 'titles' not in ctx.meta else ctx.meta['titles']
-        if self._titles is not None and len(self._titles) != self.n_sytem:
+        self._eval = evaluation
+        self._min_arg = 1 if 'min_arg' not in ctx.meta else ctx.meta['min_arg']
+        if len(scores) < 1 or len(scores) % self._min_arg != 0:
+            raise click.BadParameter(
+                'Number of argument must be a non-zero multiple of %d' % self._min_arg
+            )
+        self.n_systems = int(len(scores) / self._min_arg)
+        if self._titles is not None and len(self._titles) != self.n_systems:
             raise click.BadParameter("Number of titles must be equal to the "
                                      "number of systems")
-        self._eval = evaluation
 
     def run(self):
         """ Generate outputs (e.g. metrics, files, pdf plots).
@@ -80,40 +83,24 @@ class MeasureBase(object):
         #with the dev (and eval) scores of each system
         # Note that more than one dev or eval scores score can be passed to
         # each system
-        for idx in range(self.n_sytem):
-            dev_score = []
-            eval_score = []
-            dev_file = []
-            eval_file = []
-            for arg in range(self._min_arg):
-                dev_score.append(self.dev_scores[arg][idx])
-                dev_file.append(self.dev_names[arg][idx])
-                eval_score.append(self.eval_scores[arg][idx] \
-                        if self.eval_scores[arg] is not None else None)
-                eval_file.append(self.eval_names[arg][idx] \
-                        if self.eval_names[arg] is not None else None)
-            if self._min_arg == 1: # most of measure only take one arg
-                                   # so do not pass a list of one arg
-                #does the main computations/plottings here
-                self.compute(idx, dev_score[0], dev_file[0], eval_score[0],
-                             eval_file[0])
-            else:
-                #does the main computations/plottings here
-                self.compute(idx, dev_score, dev_file, eval_score, eval_file)
+        for idx in range(self.n_systems):
+            input_scores, input_names = self._load_files(
+                self._scores[idx:(idx + self._min_arg)]
+            )
+            self.compute(idx, input_scores, input_names)
         #setup final configuration, plotting properties, ...
         self.end_process()
 
     #protected functions that need to be overwritten
     def init_process(self):
         """ Called in :py:func:`~bob.measure.script.figure.MeasureBase`.run
-        before iterating through the different sytems.
+        before iterating through the different systems.
         Should reimplemented in derived classes"""
         pass
 
     #Main computations are done here in the subclasses
     @abstractmethod
-    def compute(self, idx, dev_score, dev_file=None,
-                eval_score=None, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         """Compute metrics or plots from the given scores provided by
         :py:func:`~bob.measure.script.figure.MeasureBase.run`.
         Should reimplemented in derived classes
@@ -122,20 +109,10 @@ class MeasureBase(object):
         ----------
         idx : :obj:`int`
             index of the system
-        dev_score:
-            Development scores. Can be a tuple (neg, pos) of
-            :py:class:`numpy.ndarray` (e.g.
-            :py:func:`~bob.measure.script.figure.Roc.compute`) or
-            a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
-        dev_file : str
-            name of the dev file without extension
-        eval_score:
-            eval scores. Can be a tuple (neg, pos) of
-            :py:class:`numpy.ndarray` (e.g.
-            :py:func:`~bob.measure.script.figure.Roc.compute`) or
-            a :any:`list` of tuples of :py:class:`numpy.ndarray` (e.g. cmc)
-        eval_file : str
-            name of the eval file without extension
+        input_scores: :any:`list`
+            list of scores returned by the loading function
+        input_names: :any:`list`
+            list of base names for the input file of the system
         """
         pass
 
@@ -143,65 +120,29 @@ class MeasureBase(object):
     @abstractmethod
     def end_process(self):
         """ Called in :py:func:`~bob.measure.script.figure.MeasureBase`.run
-        after iterating through the different sytems.
+        after iterating through the different systems.
         Should reimplemented in derived classes"""
         pass
 
     #common protected functions
 
-    def _load_files(self):
-        ''' Load the input files and returns
+    def _load_files(self, filepaths):
+        ''' Load the input files and return the base names of the files
 
         Returns
         -------
-            dev_scores: :any:`list`: A list that contains, for each required
-            dev score file, the output of ``func_load``
-            eval_scores: :any:`list`: A list that contains, for each required
-            eval score file, the output of ``func_load``
+            scores: :any:`list`:
+                A list that contains the output of
+                ``func_load`` for the given files
+            basenames: :any:`list`:
+                A list of basenames for the given files
         '''
-
-        def _extract_file_names(filenames):
-            if filenames is None:
-                return None
-            res = []
-            for file_path in filenames:
-                name = os.path.basename(file_path)
-                res.append(name.split(".")[0])
-            return res
-
-        dev_scores = []
-        eval_scores = []
-        dev_files = []
-        eval_files = []
-        for arg in range(self._min_arg):
-            key = 'dev_scores_%d' % arg
-            dev_paths = self._scores if key not in self._ctx.meta else \
-                    self._ctx.meta[key]
-            key = 'eval_scores_%d' % arg
-            eval_paths = None if key not in self._ctx.meta else \
-                    self._ctx.meta[key]
-            dev_files.append(_extract_file_names(dev_paths))
-            eval_files.append(_extract_file_names(eval_paths))
-            dev_scores.append(self.func_load(dev_paths))
-            eval_scores.append(self.func_load(eval_paths))
-        return (dev_files, eval_files, dev_scores, eval_scores)
-
-    def _process_scores(self, dev_score, eval_score):
-        '''Process score files and return neg/pos/fta for eval and dev'''
-        dev_neg = dev_pos = dev_fta = eval_neg = eval_pos = eval_fta = None
-        if dev_score[0] is not None:
-            (dev_neg, dev_pos), dev_fta = utils.get_fta(dev_score)
-            if dev_neg is None:
-                raise click.UsageError("While loading dev-score file")
-
-        if self._eval and eval_score is not None and eval_score[0] is not None:
-            eval_score, eval_fta = utils.get_fta(eval_score)
-            eval_neg, eval_pos = eval_score
-            if eval_neg is None:
-                raise click.UsageError("While loading eval-score file")
-
-        return (dev_neg, dev_pos, dev_fta, eval_neg, eval_pos, eval_fta)
-
+        scores = []
+        basenames = []
+        for filename in filepaths:
+            basenames.append(os.path.basename(filename).split(".")[0])
+            scores.append(self.func_load(filename))
+        return scores, basenames
 
 class Metrics(MeasureBase):
     ''' Compute metrics from score files
@@ -221,11 +162,11 @@ class Metrics(MeasureBase):
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         if self._thres is not None :
             if len(self._thres) == 1:
-                self._thres = self._thres * len(self.dev_names)
-            elif len(self._thres) != len(self.dev_names):
+                self._thres = self._thres * self.n_systems
+            elif len(self._thres) != self.n_systems:
                 raise click.BadParameter(
                     '#thresholds must be the same as #systems (%d)' \
-                    % len(self.dev_names)
+                    % len(self.n_systems)
                 )
         self._far = None if 'far_value' not in ctx.meta else \
         ctx.meta['far_value']
@@ -234,12 +175,16 @@ class Metrics(MeasureBase):
         if self._log is not None:
             self.log_file = open(self._log, self._open_mode)
 
-    def compute(self, idx, dev_score, dev_file=None,
-                eval_score=None, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
-        dev_neg, dev_pos, dev_fta, eval_neg, eval_pos, eval_fta =\
-                self._process_scores(dev_score, eval_score)
+        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos, dev_fta = neg_list[0], pos_list[0], fta_list[0]
+        dev_file = input_names[0]
+        if self._eval:
+            eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
+            eval_file = input_names[1]
+
         threshold = utils.get_thres(self._criter, dev_neg, dev_pos, self._far) \
                 if self._thres is None else self._thres[idx]
         title = self._titles[idx] if self._titles is not None else None
@@ -281,7 +226,7 @@ class Metrics(MeasureBase):
                 ['FRR', dev_frr_str],
                 ['HTER', dev_hter_str]]
 
-        if self._eval and eval_neg is not None:
+        if self._eval:
             # computes statistics for the eval set based on the threshold a priori
             eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, threshold)
             eval_far = eval_fmr * (1 - eval_fta)
@@ -341,8 +286,7 @@ class PlotBase(MeasureBase):
         if 'style' in ctx.meta:
             mpl.style.use(ctx.meta['style'])
         self._nb_figs = 2 if self._eval and self._split else 1
-        self._multi_plots = len(self.dev_scores) > 1
-        self._colors = utils.get_colors(len(self.dev_scores))
+        self._colors = utils.get_colors(self.n_systems)
         self._states = ['Development', 'Evaluation']
         self._title = None if 'title' not in ctx.meta else ctx.meta['title']
         self._x_label = None if 'x_label' not in ctx.meta else\
@@ -352,7 +296,6 @@ class PlotBase(MeasureBase):
         self._grid_color = 'silver'
         self._pdf_page = None
         self._end_setup_plot = True
-        self._kwargs = {}
 
     def init_process(self):
         ''' Open pdf and set axis font size if provided '''
@@ -420,7 +363,7 @@ class PlotBase(MeasureBase):
     def _label(self, base, name, idx):
         if self._titles is not None and len(self._titles) > idx:
             return self._titles[idx]
-        if self._multi_plots:
+        if self.n_systems > 1:
             return base + (" %d (%s)" % (idx + 1, name))
         return base + (" (%s)" % name)
 
@@ -439,19 +382,23 @@ class Roc(PlotBase):
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 1e-4, 1.0]
 
-    def compute(self, idx, dev_score, dev_file=None,
-                eval_score=None, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
-        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
-                self._process_scores(dev_score, eval_score)
+        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        dev_file = input_names[0]
+        if self._eval:
+            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_file = input_names[1]
+
         mpl.figure(1)
         if self._eval:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
             linestyle = '--'
             if self._split:
@@ -461,7 +408,7 @@ class Roc(PlotBase):
             plot.roc_for_far(
                 eval_neg, eval_pos,
                 color=self._colors[idx], linestyle=linestyle,
-                label=self._label('eval', eval_file, idx, **self._kwargs)
+                label=self._label('eval', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -475,7 +422,7 @@ class Roc(PlotBase):
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
 
 class Det(PlotBase):
@@ -491,19 +438,23 @@ class Det(PlotBase):
         if self._x_rotation is None:
             self._x_rotation = 50
 
-    def compute(self, idx, dev_score, dev_file=None,
-                eval_score=None, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
-        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
-                self._process_scores(dev_score, eval_score)
+        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        dev_file = input_names[0]
+        if self._eval:
+            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_file = input_names[1]
+
         mpl.figure(1)
         if self._eval and eval_neg is not None:
             linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
             if self._split:
                 mpl.figure(2)
@@ -511,7 +462,7 @@ class Det(PlotBase):
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval', eval_file, idx, **self._kwargs)
+                label=self._label('eval', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -525,7 +476,7 @@ class Det(PlotBase):
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=LINESTYLES[idx % 14],
-                label=self._label('development', dev_file, idx, **self._kwargs)
+                label=self._label('development', dev_file, idx)
             )
 
     def _set_axis(self):
@@ -538,7 +489,7 @@ class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
-        if 'eval_scores_0' not in self._ctx.meta:
+        if self._min_arg != 2:
             raise click.UsageError("EPC requires dev and eval score files")
         self._title = self._title or 'EPC'
         self._x_label = self._x_label or r'$\alpha$'
@@ -548,15 +499,20 @@ class Epc(PlotBase):
         self._nb_figs = 1
         self._far_at = None
 
-    def compute(self, idx, dev_score, dev_file, eval_score, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         ''' Plot EPC using :py:func:`bob.measure.plot.epc` '''
-        dev_neg, dev_pos, _, eval_neg, eval_pos, _ =\
-                self._process_scores(dev_score, eval_score)
+        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        dev_file = input_names[0]
+        if self._eval:
+            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_file = input_names[1]
+
         plot.epc(
             dev_neg, dev_pos, eval_neg, eval_pos, self._points,
             color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
             label=self._label(
-                'curve', dev_file + "_" + eval_file, idx, **self._kwargs
+                'curve', dev_file + "_" + eval_file, idx
             )
         )
 
@@ -568,13 +524,13 @@ class Hist(PlotBase):
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
                 ctx.meta['show_dev']) or not self._eval
-        if self._thres is not None and len(self._thres) != len(self.dev_names):
+        if self._thres is not None and len(self._thres) != self.n_systems:
             if len(self._thres) == 1:
-                self._thres = self._thres * len(self.dev_names)
+                self._thres = self._thres * self.n_systems
             else:
                 raise click.BadParameter(
                     '#thresholds must be the same as #systems (%d)' \
-                    % len(self.dev_names)
+                    % self.n_systems
                 )
         self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
         self._y_label = 'Dev. probability density' if self._eval else \
@@ -583,11 +539,12 @@ class Hist(PlotBase):
         self._title_base = self._title or 'Scores'
         self._end_setup_plot = False
 
-    def compute(self, idx, dev_score, dev_file=None,
-                eval_score=None, eval_file=None):
+    def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
-        self._get_neg_pos_thres(idx, dev_score, eval_score)
+        self._get_neg_pos_thres(idx, input_scores, input_names)
+        dev_file = input_names[0]
+        eval_file = None if len(input_names) != 2 else input_names[1]
 
         fig = mpl.figure()
         if eval_neg is not None and self._show_dev:
@@ -648,15 +605,21 @@ class Hist(PlotBase):
             mpl.legend(lines, labels,
                        loc='best', fancybox=True, framealpha=0.5)
 
-    def _get_neg_pos_thres(self, idx, dev_score, eval_score):
-        dev_neg, dev_pos, _, eval_neg, eval_pos, _ = self._process_scores(
-            dev_score, eval_score
-        )
+    def _get_neg_pos_thres(self, idx, input_scores, input_names):
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        length = len(neg_list)
+        #can have several files for one system
+        dev_neg = [neg_list[x] for x in range(0, length, 2)]
+        dev_pos = [pos_list[x] for x in range(0, length, 2)]
+        eval_neg = eval_pos = None
+        if self._eval:
+            eval_neg = [neg_list[x] for x in range(1, length, 2)]
+            eval_pos = [pos_list[x] for x in range(1, length, 2)]
+
         threshold = utils.get_thres(
-            self._criter, dev_neg,
-            dev_pos
+            self._criter, dev_neg[0], dev_pos[0]
         ) if self._thres is None else self._thres[idx]
-        return (dev_neg, dev_pos, eval_neg, eval_pos, threshold)
+        return dev_neg, dev_pos, eval_neg, eval_pos, threshold
 
     def _density_hist(self, scores, **kwargs):
         n, bins, patches = mpl.hist(
@@ -675,8 +638,8 @@ class Hist(PlotBase):
     def _setup_hist(self, neg, pos):
         ''' This function can be overwritten in derived classes'''
         self._density_hist(
-            pos, label='Positives', alpha=0.5, color='C0', **self._kwargs
+            pos[0], label='Positives', alpha=0.5, color='C0'
         )
         self._density_hist(
-            neg, label='Negatives', alpha=0.5, color='C3', **self._kwargs
+            neg[0], label='Negatives', alpha=0.5, color='C3'
         )
