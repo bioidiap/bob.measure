@@ -607,14 +607,18 @@ class Hist(PlotBase):
                        loc='best', fancybox=True, framealpha=0.5)
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        length = len(neg_list)
+        #can have several files for one system
+        dev_neg = [neg_list[x] for x in range(0, length, 2)]
+        dev_pos = [pos_list[x] for x in range(0, length, 2)]
         eval_neg = eval_pos = None
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg = [neg_list[x] for x in range(1, length, 2)],
+            eval_pos = [pos_list[x] for x in range(1, length, 2)]
+
         threshold = utils.get_thres(
-            self._criter, dev_neg,
-            dev_pos
+            self._criter, dev_neg[0], dev_pos[0]
         ) if self._thres is None else self._thres[idx]
         return (dev_neg, dev_pos, eval_neg, eval_pos, threshold)
 
@@ -635,8 +639,8 @@ class Hist(PlotBase):
     def _setup_hist(self, neg, pos):
         ''' This function can be overwritten in derived classes'''
         self._density_hist(
-            pos, label='Positives', alpha=0.5, color='C0', **self._kwargs
+            pos[0], label='Positives', alpha=0.5, color='C0', **self._kwargs
         )
         self._density_hist(
-            neg, label='Negatives', alpha=0.5, color='C3', **self._kwargs
+            neg[0], label='Negatives', alpha=0.5, color='C3', **self._kwargs
         )
