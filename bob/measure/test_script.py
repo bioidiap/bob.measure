@@ -132,14 +132,14 @@ def test_hist():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--no-evaluation', '--criterion', 'hter',
                                                '--output', 'HISTO.pdf',  '-b', 
-                                               30, dev1, dev2])
+                                               '30,100', dev1, dev2])
         if result.output:
             click.echo(result.output)
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--criterion', 'eer','--output',
-                                               'HISTO.pdf',  '-b',  30,
+                                               'HISTO.pdf',  '-b',  '30,20',
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -159,7 +159,7 @@ def test_evaluate():
     with runner.isolated_filesystem():
         result = runner.invoke(
             commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf', '-b',
-                                30, '-n', 300, dev1, dev2])
+                                '30,69', '-n', 300, dev1, dev2])
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
