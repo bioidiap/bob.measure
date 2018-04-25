@@ -130,7 +130,7 @@ def test_hist():
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['--no-evaluation', '--criter', 'hter',
+        result = runner.invoke(commands.hist, ['--no-evaluation', '--criterion', 'hter',
                                                '--output', 'HISTO.pdf',  '-b', 
                                                30, dev1, dev2])
         if result.output:
@@ -138,7 +138,7 @@ def test_hist():
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['--criter', 'eer','--output',
+        result = runner.invoke(commands.hist, ['--criterion', 'eer','--output',
                                                'HISTO.pdf',  '-b',  30,
                                                dev1, test1, dev2, test2])
         if result.output:
