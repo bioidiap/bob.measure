@@ -520,7 +520,7 @@ class Hist(PlotBase):
     ''' Functional base class for histograms'''
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
-        self._nbins = None if 'nbins' not in ctx.meta else ctx.meta['nbins']
+        self._nbins = None if 'n_bins' not in ctx.meta else ctx.meta['n_bins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
                 ctx.meta['show_dev']) or not self._eval
