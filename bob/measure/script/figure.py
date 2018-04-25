@@ -520,7 +520,7 @@ class Hist(PlotBase):
     ''' Functional base class for histograms'''
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
-        self._nbins = None if 'n_bins' not in ctx.meta else ctx.meta['n_bins']
+        self._nbins = [] if 'n_bins' not in ctx.meta else ctx.meta['n_bins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
         self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
                 ctx.meta['show_dev']) or not self._eval
@@ -621,9 +621,11 @@ class Hist(PlotBase):
         ) if self._thres is None else self._thres[idx]
         return dev_neg, dev_pos, eval_neg, eval_pos, threshold
 
-    def _density_hist(self, scores, **kwargs):
+    def _density_hist(self, scores, n, **kwargs):
         n, bins, patches = mpl.hist(
-            scores, density=True, bins=self._nbins, **kwargs
+            scores, density=True,
+            bins='auto' if len(self._nbins) <= n else self._nbins[n],
+            **kwargs
         )
         return (n, bins, patches)
 
@@ -638,8 +640,11 @@ class Hist(PlotBase):
     def _setup_hist(self, neg, pos):
         ''' This function can be overwritten in derived classes'''
         self._density_hist(
-            pos[0], label='Positives', alpha=0.5, color='C0'
+            neg[0], n=0,
+            label='Negatives', alpha=0.5, color='C3'
         )
         self._density_hist(
-            neg[0], label='Negatives', alpha=0.5, color='C3'
+            pos[0], n=1,
+            label='Positives', alpha=0.5, color='C0'
         )
+

@@ -174,16 +174,19 @@ def n_bins_option(**kwargs):
         def callback(ctx, param, value):
             if value is None:
                 value = 'auto'
-            elif value < 2:
-                raise click.BadParameter(
-                    'Number of bins must be greater than 1'
-                    , ctx=ctx
-                )
+            else:
+                tmp = value.split(',')
+                try:
+                    value = [int(i) if i != 'auto' else i for i in tmp]
+                except Exception:
+                    raise click.BadParameter('Incorrect number of bins inputs')
             ctx.meta['n_bins'] = value
             return value
         return click.option(
-            '-b', '--nbins', type=INT, default=None,
-            help='The number of bins in the histogram(s). Default: `auto`',
+            '-b', '--nbins', type=click.STRING, default='auto',
+            help='The number of bins for the different histograms in the '
+            ' figure, seperated by commas. For example, if three histograms '
+            'are in the plots, input something like `100,auto,50`',
             callback=callback, **kwargs)(func)
     return custom_n_bins_option
 
