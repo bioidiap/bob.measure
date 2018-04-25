@@ -182,7 +182,7 @@ def hist(ctx, scores, evaluation, **kwargs):
         $ bob measure hist dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure hist --criter hter --show-dev dev-scores1 eval-scores1
+        $ bob measure hist --criterion hter --show-dev dev-scores1 eval-scores1
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()

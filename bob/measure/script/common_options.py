@@ -250,13 +250,13 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
             list_accepted_crit = lcriteria if lcriteria is not None else \
                     ['eer', 'hter', 'far']
             if value not in list_accepted_crit:
-                raise click.BadParameter('Incorrect value for `--criter`. '
+                raise click.BadParameter('Incorrect value for `--criterion`. '
                                          'Must be one of [`%s`]' %
                                          '`, `'.join(list_accepted_crit))
             ctx.meta['criter'] = value
             return value
         return click.option(
-            '--criter', default='eer', help='Criterion to compute plots and '
+            '--criterion', default='eer', help='Criterion to compute plots and '
             'metrics: `eer` (default), `hter`',
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
