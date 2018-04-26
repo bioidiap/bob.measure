@@ -156,7 +156,8 @@ class Metrics(MeasureBase):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self._tablefmt = None if 'tablefmt' not in ctx.meta else\
                 ctx.meta['tablefmt']
-        self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
+        self._criterion = None if 'criterion' not in ctx.meta else \
+        ctx.meta['criterion']
         self._open_mode = None if 'open_mode' not in ctx.meta else\
                 ctx.meta['open_mode']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
@@ -185,15 +186,17 @@ class Metrics(MeasureBase):
             eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
             eval_file = input_names[1]
 
-        threshold = utils.get_thres(self._criter, dev_neg, dev_pos, self._far) \
+        threshold = utils.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
                 if self._thres is None else self._thres[idx]
         title = self._titles[idx] if self._titles is not None else None
         if self._thres is None:
             far_str = ''
-            if self._criter == 'far' and self._far is not None:
+            if self._criterion == 'far' and self._far is not None:
                 far_str = str(self._far)
             click.echo("[Min. criterion: %s %s] Threshold on Development set `%s`: %e"\
-                       % (self._criter.upper(), far_str, title or dev_file, threshold),
+                       % (self._criterion.upper(),
+                          far_str, title or dev_file,
+                          threshold),
                        file=self.log_file)
         else:
             click.echo("[Min. criterion: user provider] Threshold on "
@@ -532,7 +535,8 @@ class Hist(PlotBase):
                     '#thresholds must be the same as #systems (%d)' \
                     % self.n_systems
                 )
-        self._criter = None if 'criter' not in ctx.meta else ctx.meta['criter']
+        self._criterion = None if 'criterion' not in ctx.meta else \
+        ctx.meta['criterion']
         self._y_label = 'Dev. probability density' if self._eval else \
                 'density' or self._y_label
         self._x_label = 'Scores' if not self._eval else ''
@@ -617,7 +621,7 @@ class Hist(PlotBase):
             eval_pos = [pos_list[x] for x in range(1, length, 2)]
 
         threshold = utils.get_thres(
-            self._criter, dev_neg[0], dev_pos[0]
+            self._criterion, dev_neg[0], dev_pos[0]
         ) if self._thres is None else self._thres[idx]
         return dev_neg, dev_pos, eval_neg, eval_pos, threshold
 
@@ -630,7 +634,7 @@ class Hist(PlotBase):
         return (n, bins, patches)
 
     def _lines(self, threshold, neg=None, pos=None, **kwargs):
-        label = 'Threshold' if self._criter is None else self._criter.upper()
+        label = 'Threshold' if self._criterion is None else self._criterion.upper()
         kwargs.setdefault('color', 'C3')
         kwargs.setdefault('linestyle', '--')
         kwargs.setdefault('label', label)
