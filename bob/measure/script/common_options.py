@@ -256,7 +256,7 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
                 raise click.BadParameter('Incorrect value for `--criterion`. '
                                          'Must be one of [`%s`]' %
                                          '`, `'.join(list_accepted_crit))
-            ctx.meta['criter'] = value
+            ctx.meta['criterion'] = value
             return value
         return click.option(
             '--criterion', default='eer', help='Criterion to compute plots and '

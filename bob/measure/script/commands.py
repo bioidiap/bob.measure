@@ -235,12 +235,12 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     # first time erase if existing file
     ctx.meta['open_mode'] = 'w'
     click.echo("Computing metrics with EER...")
-    ctx.meta['criter'] = 'eer'  # no criterion passed to evaluate
+    ctx.meta['criterion'] = 'eer'  # no criterion passed to evaluate
     ctx.invoke(metrics, scores=scores, evaluation=evaluation)
     # second time, appends the content
     ctx.meta['open_mode'] = 'a'
     click.echo("Computing metrics with HTER...")
-    ctx.meta['criter'] = 'hter'  # no criterion passed in evaluate
+    ctx.meta['criterion'] = 'hter'  # no criterion passed in evaluate
     ctx.invoke(metrics, scores=scores, evaluation=evaluation)
     if 'log' in ctx.meta:
         click.echo("[metrics] => %s" % ctx.meta['log'])
@@ -262,7 +262,7 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     # the last one closes the file
     ctx.meta['closef'] = True
     click.echo("Computing score histograms...")
-    ctx.meta['criter'] = 'eer'  # no criterion passed in evaluate
+    ctx.meta['criterion'] = 'eer'  # no criterion passed in evaluate
     ctx.forward(hist)
     click.echo("Evaluate successfully completed!")
     click.echo("[plots] => %s" % (ctx.meta['output']))
