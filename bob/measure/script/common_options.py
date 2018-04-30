@@ -288,7 +288,7 @@ def figsize_option(**kwargs):
                 plt.rcParams['figure.figsize'] = ctx.meta['figsize']
             return value
         return click.option(
-            '--figsize', help='If given, will run '
+            '--figsize', default='4,3', help='If given, will run '
             '``plt.rcParams[\'figure.figsize\']=figsize)``. Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
@@ -341,20 +341,20 @@ def marker_style_option(**kwargs):
             callback=callback, **kwargs)(func)
     return custom_marker_style_option
 
-def titles_option(**kwargs):
-    '''Get the titles option for the different systems'''
-    def custom_titles_option(func):
+def legends_option(**kwargs):
+    '''Get the legends option for the different systems'''
+    def custom_legends_option(func):
         def callback(ctx, param, value):
             if value is not None:
                 value = value.split(',')
-            ctx.meta['titles'] = value
+            ctx.meta['legends'] = value
             return value
         return click.option(
-            '-ts', '--titles', type=click.STRING, default=None,
+            '-ls', '--legends', type=click.STRING, default=None,
             help='The title for each system comma separated. '
-            'Example: --titles ISV,CNN',
+            'Example: --legends ISV,CNN',
             callback=callback, **kwargs)(func)
-    return custom_titles_option
+    return custom_legends_option
 
 def title_option(**kwargs):
     '''Get the title option for the different systems'''

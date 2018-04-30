@@ -30,7 +30,7 @@ def test_metrics():
         assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-ts',
+            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-ls',
                               'A,B']
         )
         assert result.exit_code == 0, (result.exit_code, result.output)
@@ -63,7 +63,7 @@ def test_roc():
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.roc, ['--output',
-                                              'test.pdf', '--titles', 'A,B', 
+                                              'test.pdf', '--legends', 'A,B', 
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -83,7 +83,7 @@ def test_det():
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     with runner.isolated_filesystem():
         result = runner.invoke(commands.det, ['--split', '--output',
-                                              'test.pdf', '--titles', 'A,B',
+                                              'test.pdf', '--legends', 'A,B',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -111,7 +111,7 @@ def test_epc():
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     with runner.isolated_filesystem():
         result = runner.invoke(commands.epc, ['--output', 'test.pdf',
-                                              '--titles', 'A,B',
+                                              '--legends', 'A,B',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
