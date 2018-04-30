@@ -278,8 +278,20 @@ def far_option(**kwargs):
             callback=callback, show_default=True,**kwargs)(func)
     return custom_far_option
 
-def figsize_option(**kwargs):
-    '''Get option for matplotlib figsize'''
+def figsize_option(dflt='4,3', **kwargs):
+    """Get option for matplotlib figsize
+
+    Parameters
+    ----------
+    dflt : str
+        matplotlib default figsize for the command. must be a a list of int
+        separated by commas.
+
+    Returns
+    -------
+    callable
+        A decorator to be used for adding score arguments for click commands
+    """
     def custom_figsize_option(func):
         def callback(ctx, param, value):
             ctx.meta['figsize'] = value if value is None else \
@@ -288,7 +300,7 @@ def figsize_option(**kwargs):
                 plt.rcParams['figure.figsize'] = ctx.meta['figsize']
             return value
         return click.option(
-            '--figsize', default='4,3', help='If given, will run '
+            '--figsize', default=dflt, help='If given, will run '
             '``plt.rcParams[\'figure.figsize\']=figsize)``. Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
