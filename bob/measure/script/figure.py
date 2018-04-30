@@ -56,7 +56,7 @@ class MeasureBase(object):
         self._min_arg = 1 if 'min_arg' not in ctx.meta else ctx.meta['min_arg']
         self._ctx = ctx
         self.func_load = func_load
-        self._titles = None if 'titles' not in ctx.meta else ctx.meta['titles']
+        self._legends = None if 'legends' not in ctx.meta else ctx.meta['legends']
         self._eval = evaluation
         self._min_arg = 1 if 'min_arg' not in ctx.meta else ctx.meta['min_arg']
         if len(scores) < 1 or len(scores) % self._min_arg != 0:
@@ -64,8 +64,8 @@ class MeasureBase(object):
                 'Number of argument must be a non-zero multiple of %d' % self._min_arg
             )
         self.n_systems = int(len(scores) / self._min_arg)
-        if self._titles is not None and len(self._titles) != self.n_systems:
-            raise click.BadParameter("Number of titles must be equal to the "
+        if self._legends is not None and len(self._legends) != self.n_systems:
+            raise click.BadParameter("Number of legends must be equal to the "
                                      "number of systems")
 
     def run(self):
@@ -85,7 +85,7 @@ class MeasureBase(object):
         # each system
         for idx in range(self.n_systems):
             input_scores, input_names = self._load_files(
-                self._scores[idx:(idx + self._min_arg)]
+                self._scores[idx * self._min_arg:(idx + 1) * self._min_arg]
             )
             self.compute(idx, input_scores, input_names)
         #setup final configuration, plotting properties, ...
@@ -188,7 +188,7 @@ class Metrics(MeasureBase):
 
         threshold = utils.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
                 if self._thres is None else self._thres[idx]
-        title = self._titles[idx] if self._titles is not None else None
+        title = self._legends[idx] if self._legends is not None else None
         if self._thres is None:
             far_str = ''
             if self._criterion == 'far' and self._far is not None:
@@ -364,8 +364,8 @@ class PlotBase(MeasureBase):
     #common protected functions
 
     def _label(self, base, name, idx):
-        if self._titles is not None and len(self._titles) > idx:
-            return self._titles[idx]
+        if self._legends is not None and len(self._legends) > idx:
+            return self._legends[idx]
         if self.n_systems > 1:
             return base + (" %d (%s)" % (idx + 1, name))
         return base + (" (%s)" % name)
@@ -584,7 +584,7 @@ class Hist(PlotBase):
         self._pdf_page.savefig(fig)
 
     def _get_title(self, idx, dev_file, eval_file):
-        title = self._titles[idx] if self._titles is not None else None
+        title = self._legends[idx] if self._legends is not None else None
         if title is None:
             title = self._title_base if not self._print_fn else \
                     ('%s \n (%s)' % (
