@@ -146,7 +146,7 @@ CLI options
    bob.measure.script.common_options.legend_loc_option
    bob.measure.script.common_options.line_width_option
    bob.measure.script.common_options.marker_style_option
-   bob.measure.script.common_options.titles_option
+   bob.measure.script.common_options.legends_option
    bob.measure.script.common_options.title_option
    bob.measure.script.common_options.x_label_option
    bob.measure.script.common_options.y_label_option
