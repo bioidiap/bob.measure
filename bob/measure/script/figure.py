@@ -545,10 +545,9 @@ class Hist(PlotBase):
                 )
         self._criterion = None if 'criterion' not in ctx.meta else \
         ctx.meta['criterion']
-        self._y_label = 'Dev. probability density' if self._eval else \
-                'density' or self._y_label
-        self._x_label = 'Scores' if not self._eval else ''
-        self._title_base = self._title or 'Scores'
+        self._title_base = 'Scores'
+        self._y_label = 'Probability Density'
+        self._x_label = 'Scores values'
         self._end_setup_plot = False
 
     def compute(self, idx, input_scores, input_names):
@@ -565,14 +564,16 @@ class Hist(PlotBase):
             self._setup_hist(dev_neg, dev_pos)
             mpl.title(self._get_title(idx, dev_file, eval_file))
             mpl.ylabel(self._y_label)
-            mpl.xlabel(self._x_label)
+            if not self._eval:
+                mpl.xlabel(self._x_label)
             if eval_neg is not None and self._show_dev:
                 ax = mpl.gca()
                 ax.axes.get_xaxis().set_ticklabels([])
             #Setup lines, corresponding axis and legends
-            self._lines(threshold, dev_neg, dev_pos)
-            if self._eval:
-                self._plot_legends()
+            label = "%s threshold" % ('' if self._criterion is None else
+                                      self._criterion.upper())
+            self._lines(threshold, label, dev_neg, dev_pos)
+            self._plot_legends()
 
         if eval_neg is not None:
             if self._show_dev:
@@ -582,10 +583,12 @@ class Hist(PlotBase):
             )
             if not self._show_dev:
                 mpl.title(self._get_title(idx, dev_file, eval_file))
-            mpl.ylabel('Eval. probability density')
+            mpl.ylabel('Probability density')
             mpl.xlabel(self._x_label)
             #Setup lines, corresponding axis and legends
-            self._lines(threshold, eval_neg, eval_pos)
+            label = "%s threshold (dev)" % ('' if self._criterion is None else
+                                            self._criterion.upper())
+            self._lines(threshold, label, eval_neg, eval_pos)
             if not self._show_dev:
                 self._plot_legends()
 
@@ -593,13 +596,9 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dev_file, eval_file):
         title = self._legends[idx] if self._legends is not None else None
-        if title is None:
-            title = self._title_base if not self._print_fn else \
-                    ('%s \n (%s)' % (
-                        self._title_base,
-                        str(dev_file) + (" / %s" % str(eval_file) if self._eval else "")
-                    ))
-        return title
+        title = title or self._title or self._title_base
+        title = '' if self._title is not None and not self._title.replace(' ', '') else title
+        return title or ''
 
     def _plot_legends(self):
         lines = []
@@ -641,8 +640,8 @@ class Hist(PlotBase):
         )
         return (n, bins, patches)
 
-    def _lines(self, threshold, neg=None, pos=None, **kwargs):
-        label = 'Threshold' if self._criterion is None else self._criterion.upper()
+    def _lines(self, threshold, label=None, neg=None, pos=None, **kwargs):
+        label = label or 'Threshold'
         kwargs.setdefault('color', 'C3')
         kwargs.setdefault('linestyle', '--')
         kwargs.setdefault('label', label)

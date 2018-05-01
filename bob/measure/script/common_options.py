@@ -130,7 +130,7 @@ def lines_at_option(**kwargs):
     return list_float_option(
         name='lines-at', short_name='la',
         desc='If given, draw veritcal lines at the given axis positions',
-        nitems=None, dflt=None, **kwargs
+        nitems=None, dflt='1e-3', **kwargs
     )
 
 def x_rotation_option(dflt=0, **kwargs):
@@ -268,7 +268,8 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
             ctx.meta['criterion'] = value
             return value
         return click.option(
-            '--criterion', default='eer', help='Criterion to compute plots and '
+            '-c', '--criterion', default='eer',
+            help='Criterion to compute plots and '
             'metrics: `eer` (default), `hter`',
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
