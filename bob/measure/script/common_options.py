@@ -69,21 +69,30 @@ def sep_dev_eval_option(dflt=True, **kwargs):
         dflt
     )
 
+def linestyles_option(dflt=False, **kwargs):
+    ''' Get option flag to turn on/off linestyles'''
+    return bool_option('line-linestyles', 'S', 'If given, applies a different '
+                       'linestyles to each line.', dflt, **kwargs)
+
 def cmc_option(**kwargs):
     '''Get option flag to say if cmc scores'''
-    return bool_option('cmc', 'C', 'If set, CMC score files are provided')
+    return bool_option('cmc', 'C', 'If set, CMC score files are provided',
+                       **kwargs)
 
 def semilogx_option(dflt=False, **kwargs):
     '''Option to use semilog X-axis'''
-    return bool_option('semilogx', 'G', 'If set, use semilog on X axis', dflt)
+    return bool_option('semilogx', 'G', 'If set, use semilog on X axis', dflt,
+                       **kwargs)
 
 def show_dev_option(dflt=False, **kwargs):
     '''Option to tell if should show dev histo'''
-    return bool_option('show-dev', 'D', 'If set, show dev histograms', dflt)
+    return bool_option('show-dev', 'D', 'If set, show dev histograms', dflt,
+                       **kwargs)
 
 def print_filenames_option(dflt=True, **kwargs):
     '''Option to tell if filenames should be in the title'''
-    return bool_option('show-fn', 'P', 'If set, show filenames in title', dflt)
+    return bool_option('show-fn', 'P', 'If set, show filenames in title', dflt,
+                       **kwargs)
 
 def const_layout_option(dflt=True, **kwargs):
     '''Option to set matplotlib constrained_layout'''
@@ -278,6 +287,21 @@ def far_option(**kwargs):
             callback=callback, show_default=True,**kwargs)(func)
     return custom_far_option
 
+def min_far_option(dflt=1e-4, **kwargs):
+    '''Get option to get min far value'''
+    def custom_min_far_option(func):
+        def callback(ctx, param, value):
+            if value is not None and (value > 1 or value < 0):
+                raise click.BadParameter("FAR value should be between 0 and 1")
+            ctx.meta['min_far_value'] = value
+            return value
+        return click.option(
+            '-M', '--min-far-value', type=click.FLOAT, default=dflt,
+            help='Select the minimum FAR value used in ROC and DET plots; '
+            'should be a power of 10.',
+            callback=callback, show_default=True,**kwargs)(func)
+    return custom_min_far_option
+
 def figsize_option(dflt='4,3', **kwargs):
     """Get option for matplotlib figsize
 
@@ -362,7 +386,7 @@ def legends_option(**kwargs):
             ctx.meta['legends'] = value
             return value
         return click.option(
-            '-l', '--legends', type=click.STRING, default=None,
+            '-Z', '--legends', type=click.STRING, default=None,
             help='The title for each system comma separated. '
             'Example: --legends ISV,CNN',
             callback=callback, **kwargs)(func)
