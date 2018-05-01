@@ -362,7 +362,7 @@ def legends_option(**kwargs):
             ctx.meta['legends'] = value
             return value
         return click.option(
-            '-ls', '--legends', type=click.STRING, default=None,
+            '-l', '--legends', type=click.STRING, default=None,
             help='The title for each system comma separated. '
             'Example: --legends ISV,CNN',
             callback=callback, **kwargs)(func)
