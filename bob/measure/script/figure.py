@@ -2,6 +2,7 @@
 
 from __future__ import division, print_function
 from abc import ABCMeta, abstractmethod
+import math
 import sys
 import os.path
 import click
@@ -10,22 +11,6 @@ import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
 from .. import (far_threshold, plot, utils, ppndf)
-
-LINESTYLES = [
-    (0, ()),                    #solid
-    (0, (4, 4)),                #dashed
-    (0, (1, 5)),                #dotted
-    (0, (3, 5, 1, 5)),          #dashdotted
-    (0, (3, 5, 1, 5, 1, 5)),    #dashdotdotted
-    (0, (5, 1)),                #densely dashed
-    (0, (1, 1)),                #densely dotted
-    (0, (3, 1, 1, 1)),          #densely dashdotted
-    (0, (3, 1, 1, 1, 1, 1)),    #densely dashdotdotted
-    (0, (5, 10)),               #loosely dashed
-    (0, (3, 10, 1, 10)),        #loosely dashdotted
-    (0, (3, 10, 1, 10, 1, 10)), #loosely dashdotdotted
-    (0, (1, 10))                #loosely dotted
-]
 
 class MeasureBase(object):
     """Base class for metrics and plots.
@@ -77,28 +62,36 @@ class MeasureBase(object):
         systems) and :py:func:`~bob.measure.script.figure.MeasureBase.end_process`
         (after the loop).
         """
-        #init matplotlib, log files, ...
+        # init matplotlib, log files, ...
         self.init_process()
-        #iterates through the different systems and feed `compute`
-        #with the dev (and eval) scores of each system
+        # iterates through the different systems and feed `compute`
+        # with the dev (and eval) scores of each system
         # Note that more than one dev or eval scores score can be passed to
         # each system
         for idx in range(self.n_systems):
+            # load scores for each system: get the corresponding arrays and 
+            # base-name of files
             input_scores, input_names = self._load_files(
+                # Scores are given as followed:
+                # SysA-dev SysA-eval ... SysA-XX  SysB-dev SysB-eval ... SysB-XX
+                # ------------------------------  ------------------------------
+                #   First set of `self._min_arg`     Second set of input files
+                #     input files starting at               for SysB
+                #    index idx * self._min_arg
                 self._scores[idx * self._min_arg:(idx + 1) * self._min_arg]
             )
             self.compute(idx, input_scores, input_names)
-        #setup final configuration, plotting properties, ...
+        # setup final configuration, plotting properties, ...
         self.end_process()
 
-    #protected functions that need to be overwritten
+    # protected functions that need to be overwritten
     def init_process(self):
         """ Called in :py:func:`~bob.measure.script.figure.MeasureBase`.run
         before iterating through the different systems.
         Should reimplemented in derived classes"""
         pass
 
-    #Main computations are done here in the subclasses
+    # Main computations are done here in the subclasses
     @abstractmethod
     def compute(self, idx, input_scores, input_names):
         """Compute metrics or plots from the given scores provided by
@@ -116,7 +109,7 @@ class MeasureBase(object):
         """
         pass
 
-    #Things to do after the main iterative computations are done
+    # Things to do after the main iterative computations are done
     @abstractmethod
     def end_process(self):
         """ Called in :py:func:`~bob.measure.script.figure.MeasureBase`.run
@@ -124,7 +117,7 @@ class MeasureBase(object):
         Should reimplemented in derived classes"""
         pass
 
-    #common protected functions
+    # common protected functions
 
     def _load_files(self, filepaths):
         ''' Load the input files and return the base names of the files
@@ -274,6 +267,12 @@ class PlotBase(MeasureBase):
         self._points = 100 if 'points' not in ctx.meta else ctx.meta['points']
         self._split = None if 'split' not in ctx.meta else ctx.meta['split']
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
+        self._min_dig = None
+        if 'min_far_value' in ctx.meta:
+            self._min_dig = int(math.log10(ctx.meta['min_far_value']))
+        elif self._axlim is not None:
+            self._min_dig = int(math.log10(self._axlim[0])
+                                if self._axlim[0] != 0 else 0)
         self._clayout = None if 'clayout' not in ctx.meta else\
         ctx.meta['clayout']
         self._far_at = None if 'lines_at' not in ctx.meta else\
@@ -290,6 +289,9 @@ class PlotBase(MeasureBase):
             mpl.style.use(ctx.meta['style'])
         self._nb_figs = 2 if self._eval and self._split else 1
         self._colors = utils.get_colors(self.n_systems)
+        self._line_linestyles = False if 'line_linestyles' not in ctx.meta else \
+                ctx.meta['line_linestyles']
+        self._linestyles = utils.get_linestyles(self.n_systems, self._line_linestyles)
         self._states = ['Development', 'Evaluation']
         self._title = None if 'title' not in ctx.meta else ctx.meta['title']
         self._x_label = None if 'x_label' not in ctx.meta else\
@@ -383,7 +385,10 @@ class Roc(PlotBase):
         self._y_label = self._y_label or "1 - False Negative Rate"
         #custom defaults
         if self._axlim is None:
-            self._axlim = [1e-4, 1.0, 1e-4, 1.0]
+            self._axlim = [1e-4, 1.0, 0, 1.0]
+
+        if self._min_dig is not None:
+            self._axlim[0] = math.pow(10, self._min_dig)
 
     def compute(self, idx, input_scores, input_names):
         ''' Plot ROC for dev and eval data using
@@ -397,20 +402,20 @@ class Roc(PlotBase):
 
         mpl.figure(1)
         if self._eval:
-            linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.roc_for_far(
                 dev_neg, dev_pos,
-                color=self._colors[idx], linestyle=linestyle,
+                far_values=plot.log_values(self._min_dig or -4),
+                color=self._colors[idx], linestyle=self._linestyles[idx],
                 label=self._label('development', dev_file, idx)
             )
-            linestyle = '--'
             if self._split:
                 mpl.figure(2)
-                linestyle = LINESTYLES[idx % 14]
 
+            linestyle = '--' if not self._split else self._linestyles[idx]
             plot.roc_for_far(
-                eval_neg, eval_pos,
-                color=self._colors[idx], linestyle=linestyle,
+                eval_neg, eval_pos, linestyle=linestyle,
+                far_values=plot.log_values(self._min_dig or -4),
+                color=self._colors[idx],
                 label=self._label('eval', eval_file, idx)
             )
             if self._far_at is not None:
@@ -424,7 +429,8 @@ class Roc(PlotBase):
         else:
             plot.roc_for_far(
                 dev_neg, dev_pos,
-                color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
+                far_values=plot.log_values(self._min_dig or -4),
+                color=self._colors[idx], linestyle=self._linestyles[idx],
                 label=self._label('development', dev_file, idx)
             )
 
@@ -441,6 +447,12 @@ class Det(PlotBase):
         if self._x_rotation is None:
             self._x_rotation = 50
 
+        if self._axlim is None:
+            self._axlim = [0.01, 99, 0.01, 99]
+
+        if self._min_dig is not None:
+            self._axlim[0] = math.pow(10, self._min_dig) * 100
+
     def compute(self, idx, input_scores, input_names):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
@@ -453,15 +465,14 @@ class Det(PlotBase):
 
         mpl.figure(1)
         if self._eval and eval_neg is not None:
-            linestyle = '-' if not self._split else LINESTYLES[idx % 14]
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
-                linestyle=linestyle,
+                linestyle=self._linestyles[idx],
                 label=self._label('development', dev_file, idx)
             )
             if self._split:
                 mpl.figure(2)
-            linestyle = '--' if not self._split else LINESTYLES[idx % 14]
+            linestyle = '--' if not self._split else self._linestyles[idx]
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
@@ -478,15 +489,12 @@ class Det(PlotBase):
         else:
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
-                linestyle=LINESTYLES[idx % 14],
+                linestyle=self._linestyles[idx],
                 label=self._label('development', dev_file, idx)
             )
 
     def _set_axis(self):
-        if self._axlim is not None and None not in self._axlim:
-            plot.det_axis(self._axlim)
-        else:
-            plot.det_axis([0.01, 99, 0.01, 99])
+        plot.det_axis(self._axlim)
 
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
@@ -513,7 +521,7 @@ class Epc(PlotBase):
 
         plot.epc(
             dev_neg, dev_pos, eval_neg, eval_pos, self._points,
-            color=self._colors[idx], linestyle=LINESTYLES[idx % 14],
+            color=self._colors[idx], linestyle=self._linestyles[idx],
             label=self._label(
                 'curve', dev_file + "_" + eval_file, idx
             )

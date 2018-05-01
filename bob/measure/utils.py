@@ -137,6 +137,41 @@ def get_colors(n):
 
     return ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9']
 
+def get_linestyles(n, on=True):
+    """Get a list of matplotlib linestyles
+
+    Parameters
+    ----------
+    n : :obj:`int`
+        Number of linestyles to output
+
+    Returns
+    -------
+    :any:`list`
+        list of linestyles
+    """
+    if not on:
+        return [None] * n
+
+    list_linestyles = [
+        (0, ()),                    #solid
+        (0, (1, 1)),                #densely dotted
+        (0, (5, 5)),                #dashed
+        (0, (5, 1)),                #densely dashed
+        (0, (3, 1, 1, 1, 1, 1)),    #densely dashdotdotted
+        (0, (3, 10, 1, 10, 1, 10)), #loosely dashdotdotted
+        (0, (3, 5, 1, 5, 1, 5)),    #dashdotdotted
+        (0, (3, 1, 1, 1)),          #densely dashdotted
+        (0, (1, 5)),                #dotted
+        (0, (3, 5, 1, 5)),          #dashdotted
+        (0, (5, 10)),               #loosely dashed
+        (0, (3, 10, 1, 10)),        #loosely dashdotted
+        (0, (1, 10))                #loosely dotted
+    ]
+    while n > len(list_linestyles):
+        list_linestyles += list_linestyles
+    return list_linestyles
+
 def confidence_for_indicator_variable(x, n, alpha=0.05):
     '''Calculates the confidence interval for proportion estimates
     The Clopper-Pearson interval method is used for estimating the confidence

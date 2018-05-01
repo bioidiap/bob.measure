@@ -49,6 +49,7 @@ def metrics(ctx, scores, evaluation, **kwargs):
 @common_options.eval_option()
 @common_options.points_curve_option()
 @common_options.axes_val_option(dflt=[1e-4, 1, 1e-4, 1])
+@common_options.min_far_option()
 @common_options.x_rotation_option()
 @common_options.x_label_option()
 @common_options.y_label_option()
@@ -56,6 +57,7 @@ def metrics(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
+@common_options.linestyles_option()
 @verbosity_option()
 @click.pass_context
 def roc(ctx, scores, evaluation, **kwargs):
@@ -87,6 +89,7 @@ def roc(ctx, scores, evaluation, **kwargs):
 @common_options.sep_dev_eval_option()
 @common_options.eval_option()
 @common_options.axes_val_option(dflt=[0.01, 95, 0.01, 95])
+@common_options.min_far_option()
 @common_options.x_rotation_option(dflt=45)
 @common_options.x_label_option()
 @common_options.y_label_option()
@@ -95,6 +98,7 @@ def roc(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
+@common_options.linestyles_option()
 @verbosity_option()
 @click.pass_context
 def det(ctx, scores, evaluation, **kwargs):
@@ -128,6 +132,7 @@ def det(ctx, scores, evaluation, **kwargs):
 @common_options.y_label_option()
 @common_options.figsize_option()
 @common_options.style_option()
+@common_options.linestyles_option()
 @verbosity_option()
 @click.pass_context
 def epc(ctx, scores, **kwargs):
@@ -161,6 +166,7 @@ def epc(ctx, scores, **kwargs):
 @common_options.legends_option()
 @common_options.figsize_option()
 @common_options.style_option()
+@common_options.linestyles_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, evaluation, **kwargs):
@@ -201,6 +207,7 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
+@common_options.linestyles_option()
 @verbosity_option()
 @click.pass_context
 def evaluate(ctx, scores, evaluation, **kwargs):

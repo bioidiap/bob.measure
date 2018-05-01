@@ -30,7 +30,7 @@ def test_metrics():
         assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-ls',
+            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-Z',
                               'A,B']
         )
         assert result.exit_code == 0, (result.exit_code, result.output)
