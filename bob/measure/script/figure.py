@@ -349,7 +349,7 @@ class PlotBase(MeasureBase):
                     title += (" (%s)" % self._states[0])
                 elif self._split:
                     title += (" (%s)" % self._states[i])
-                mpl.title(title)
+                mpl.title(title if self._title.replace(' ', '') else '')
                 mpl.xlabel(self._x_label)
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
