@@ -126,7 +126,6 @@ CLI options
    bob.measure.script.common_options.eval_option
    bob.measure.script.common_options.sep_dev_eval_option
    bob.measure.script.common_options.cmc_option
-   bob.measure.script.common_options.show_dev_option
    bob.measure.script.common_options.print_filenames_option
    bob.measure.script.common_options.const_layout_option
    bob.measure.script.common_options.axes_val_option
@@ -151,6 +150,8 @@ CLI options
    bob.measure.script.common_options.x_label_option
    bob.measure.script.common_options.y_label_option
    bob.measure.script.common_options.style_option
+   bob.measure.script.common_options.subplot_option
+   bob.measure.script.common_options.legend_ncols_option
 
 Details
 -------

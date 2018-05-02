@@ -84,11 +84,6 @@ def semilogx_option(dflt=False, **kwargs):
     return bool_option('semilogx', 'G', 'If set, use semilog on X axis', dflt,
                        **kwargs)
 
-def show_dev_option(dflt=False, **kwargs):
-    '''Option to tell if should show dev histo'''
-    return bool_option('show-dev', 'D', 'If set, show dev histograms', dflt,
-                       **kwargs)
-
 def print_filenames_option(dflt=True, **kwargs):
     '''Option to tell if filenames should be in the title'''
     return bool_option('show-fn', 'P', 'If set, show filenames in title', dflt,
@@ -129,7 +124,7 @@ def lines_at_option(**kwargs):
     '''Get option to draw const far line'''
     return list_float_option(
         name='lines-at', short_name='la',
-        desc='If given, draw veritcal lines at the given axis positions',
+        desc='If given, draw vertical lines at the given axis positions',
         nitems=None, dflt='1e-3', **kwargs
     )
 
@@ -145,6 +140,35 @@ def x_rotation_option(dflt=0, **kwargs):
             help='X axis labels ration',
             callback=callback, **kwargs)(func)
     return custom_x_rotation_option
+
+def legend_ncols_option(dflt=10, **kwargs):
+    '''Get option for number of columns for legends'''
+    def custom_legend_ncols_option(func):
+        def callback(ctx, param, value):
+            value = abs(value)
+            ctx.meta['legends_ncol'] = value
+            return value
+        return click.option(
+            '-lc', '--legends-ncol', type=click.INT, default=dflt, show_default=True,
+            help='The number of columns of the legend layout.',
+            callback=callback, **kwargs)(func)
+    return custom_legend_ncols_option
+
+def subplot_option(dflt=111, **kwargs):
+    '''Get option to set subplots'''
+    def custom_subplot_option(func):
+        def callback(ctx, param, value):
+            value = abs(value)
+            nrows = value // 10
+            nrows, ncols = divmod(nrows, 10)
+            ctx.meta['n_col'] = ncols
+            ctx.meta['n_row'] = nrows
+            return value
+        return click.option(
+            '-sp', '--subplot', type=click.INT, default=dflt, show_default=True,
+            help='The order of subplots.',
+            callback=callback, **kwargs)(func)
+    return custom_subplot_option
 
 def cost_option(**kwargs):
     '''Get option to get cost for FAR'''
@@ -329,18 +353,6 @@ def figsize_option(dflt='4,3', **kwargs):
             '``plt.rcParams[\'figure.figsize\']=figsize)``. Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
-
-def legend_ncols_option(**kwargs):
-    '''Get the number of columns to set in the legend of the plot'''
-    def custom_legend_ncols_option(func):
-        def callback(ctx, param, value):
-            ctx.meta['legend_ncol'] = value
-            return value
-        return click.option(
-            '--legend-ncol', default=3, show_default=True,
-            type=INT, help='The number of columns of the legend layout.',
-            callback=callback, **kwargs)(func)
-    return custom_legend_ncols_option
 
 def legend_loc_option(**kwargs):
     '''Get tthe legend location of the plot'''

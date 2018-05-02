@@ -533,8 +533,6 @@ class Hist(PlotBase):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
         self._nbins = [] if 'n_bins' not in ctx.meta else ctx.meta['n_bins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
-        self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
-                ctx.meta['show_dev']) or not self._eval
         if self._thres is not None and len(self._thres) != self.n_systems:
             if len(self._thres) == 1:
                 self._thres = self._thres * self.n_systems
@@ -545,8 +543,13 @@ class Hist(PlotBase):
                 )
         self._criterion = None if 'criterion' not in ctx.meta else \
         ctx.meta['criterion']
+        self._nrows = 1 if 'n_row' not in ctx.meta else ctx.meta['n_row']
+        self._ncols = 1 if 'n_col' not in ctx.meta else ctx.meta['n_col']
+        self._nlegends = 10 if 'legends_ncol' not in ctx.meta else \
+                ctx.meta['legends_ncol']
+        self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
-        self._y_label = 'Probability Density'
+        self._y_label = 'Probability density'
         self._x_label = 'Scores values'
         self._end_setup_plot = False
 
@@ -556,43 +559,30 @@ class Hist(PlotBase):
         self._get_neg_pos_thres(idx, input_scores, input_names)
         dev_file = input_names[0]
         eval_file = None if len(input_names) != 2 else input_names[1]
-
-        fig = mpl.figure()
-        if eval_neg is not None and self._show_dev:
-            mpl.subplot(2, 1, 1)
-        if self._show_dev:
-            self._setup_hist(dev_neg, dev_pos)
-            mpl.title(self._get_title(idx, dev_file, eval_file))
-            mpl.ylabel(self._y_label)
-            if not self._eval:
-                mpl.xlabel(self._x_label)
-            if eval_neg is not None and self._show_dev:
-                ax = mpl.gca()
-                ax.axes.get_xaxis().set_ticklabels([])
-            #Setup lines, corresponding axis and legends
-            label = "%s threshold" % ('' if self._criterion is None else
-                                      self._criterion.upper())
-            self._lines(threshold, label, dev_neg, dev_pos)
+        n = idx % self._step_print
+        col = n % self._ncols
+        sub_plot_idx = n + 1
+        axis = mpl.subplot(self._nrows, self._ncols, sub_plot_idx)
+        neg = eval_neg if eval_neg is not None else dev_neg
+        pos = eval_pos if eval_pos is not None else dev_pos
+        self._setup_hist(neg, pos)
+        if col == 0:
+            axis.set_ylabel(self._y_label)
+        if n + self._ncols >= min(self._step_print, self.n_systems):
+            axis.set_xlabel(self._x_label)
+        axis.set_title(self._get_title(idx, dev_file, eval_file))
+        label = "%s threshold%s" % (
+            '' if self._criterion is None else\
+            self._criterion.upper(), ' (dev)' if self._eval else ''
+        )
+        self._lines(threshold, label, neg, pos)
+        if sub_plot_idx == 1:
             self._plot_legends()
-
-        if eval_neg is not None:
-            if self._show_dev:
-                mpl.subplot(2, 1, 2)
-            self._setup_hist(
-                eval_neg, eval_pos
-            )
-            if not self._show_dev:
-                mpl.title(self._get_title(idx, dev_file, eval_file))
-            mpl.ylabel('Probability density')
-            mpl.xlabel(self._x_label)
-            #Setup lines, corresponding axis and legends
-            label = "%s threshold (dev)" % ('' if self._criterion is None else
-                                            self._criterion.upper())
-            self._lines(threshold, label, eval_neg, eval_pos)
-            if not self._show_dev:
-                self._plot_legends()
-
-        self._pdf_page.savefig(fig)
+        if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
+            mpl.tight_layout()
+            self._pdf_page.savefig(mpl.gcf(), bbox_inches="tight")
+            mpl.clf()
+            mpl.figure()
 
     def _get_title(self, idx, dev_file, eval_file):
         title = self._legends[idx] if self._legends is not None else None
@@ -607,14 +597,10 @@ class Hist(PlotBase):
             li, la = ax.get_legend_handles_labels()
             lines += li
             labels += la
-        if self._show_dev and self._eval:
-            mpl.legend(
-                lines, labels, loc='upper center', ncol=6,
-                bbox_to_anchor=(0.5, -0.01), fontsize=6
-            )
-        else:
-            mpl.legend(lines, labels,
-                       loc='best', fancybox=True, framealpha=0.5)
+        mpl.gcf().legend(
+            lines, labels, fontsize=6, loc='lower center', fancybox=True,
+            framealpha=0.5, ncol=self._nlegends,
+        )
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
@@ -658,4 +644,3 @@ class Hist(PlotBase):
             pos[0], n=1,
             label='Positives', alpha=0.5, color='C0'
         )
-

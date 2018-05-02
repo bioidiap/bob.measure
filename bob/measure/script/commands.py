@@ -160,13 +160,14 @@ def epc(ctx, scores, **kwargs):
 @common_options.criterion_option()
 @common_options.thresholds_option()
 @common_options.const_layout_option()
-@common_options.show_dev_option()
 @common_options.print_filenames_option()
 @common_options.title_option()
 @common_options.legends_option()
-@common_options.figsize_option()
+@common_options.figsize_option(dflt=None)
 @common_options.style_option()
 @common_options.linestyles_option()
+@common_options.subplot_option()
+@common_options.legend_ncols_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, evaluation, **kwargs):

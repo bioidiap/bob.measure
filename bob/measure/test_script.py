@@ -140,6 +140,7 @@ def test_hist():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--criterion', 'eer','--output',
                                                'HISTO.pdf',  '-b',  '30,20',
+                                               '-sp', 221,
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
