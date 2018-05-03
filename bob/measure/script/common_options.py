@@ -273,7 +273,7 @@ def output_log_metric_option(**kwargs):
             callback=callback, **kwargs)(func)
     return custom_output_log_file_option
 
-def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
+def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
     """Get option flag to tell which criteriom is used (default:eer)
 
     Parameters
@@ -284,7 +284,7 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
     def custom_criterion_option(func):
         def callback(ctx, param, value):
             list_accepted_crit = lcriteria if lcriteria is not None else \
-                    ['eer', 'hter', 'far']
+                    ['eer', 'min-hter', 'far']
             if value not in list_accepted_crit:
                 raise click.BadParameter('Incorrect value for `--criterion`. '
                                          'Must be one of [`%s`]' %
@@ -294,7 +294,7 @@ def criterion_option(lcriteria=['eer', 'hter', 'far'], **kwargs):
         return click.option(
             '-c', '--criterion', default='eer',
             help='Criterion to compute plots and '
-            'metrics: `eer` (default), `hter`',
+            'metrics: `eer`, `min-hter` or `far`',
             callback=callback, is_eager=True ,**kwargs)(func)
     return custom_criterion_option
 

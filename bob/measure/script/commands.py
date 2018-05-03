@@ -22,7 +22,7 @@ from bob.extension.scripts.click_helper import (verbosity_option,
 @click.pass_context
 def metrics(ctx, scores, evaluation, **kwargs):
     """Prints a table that contains FtA, FAR, FRR, FMR, FMNR, HTER for a given
-    threshold criterion (eer or hter).
+    threshold criterion (eer or min-hter).
 
     You need to provide one or more development score file(s) for each experiment.
     You can also provide evaluation files along with dev files. If only dev scores
@@ -189,7 +189,7 @@ def hist(ctx, scores, evaluation, **kwargs):
         $ bob measure hist dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure hist --criterion hter --show-dev dev-scores1 eval-scores1
+        $ bob measure hist --criterion min-hter --show-dev dev-scores1 eval-scores1
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
@@ -247,8 +247,8 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     ctx.invoke(metrics, scores=scores, evaluation=evaluation)
     # second time, appends the content
     ctx.meta['open_mode'] = 'a'
-    click.echo("Computing metrics with HTER...")
-    ctx.meta['criterion'] = 'hter'  # no criterion passed in evaluate
+    click.echo("Computing metrics with min-HTER...")
+    ctx.meta['criterion'] = 'min-hter'  # no criterion passed in evaluate
     ctx.invoke(metrics, scores=scores, evaluation=evaluation)
     if 'log' in ctx.meta:
         click.echo("[metrics] => %s" % ctx.meta['log'])

@@ -588,7 +588,7 @@ Evaluate
 
 A convenient command ``evaluate`` is provided to generate multiple metrics and
 plots for a list of experiments. It generates two ``metrics`` outputs with ERR
-and HTER criteria along with ``roc``, ``det``, ``epc``, ``hist`` plots for each
+and min-HTER criteria along with ``roc``, ``det``, ``epc``, ``hist`` plots for each
 experiment. For example:
 
 .. code-block:: sh

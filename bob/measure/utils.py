@@ -90,7 +90,7 @@ def get_thres(criter, neg, pos, far=None):
     Parameters
     ----------
     criter :
-        Criterion (`eer` or `hter`)
+        Criterion (`eer` or `hter` or `far`)
     neg : :py:class:`numpy.ndarray`:
         array of negative scores
         pos : :py:class:`numpy.ndarray`::
@@ -104,7 +104,7 @@ def get_thres(criter, neg, pos, far=None):
     if criter == 'eer':
         from . import eer_threshold
         return eer_threshold(neg, pos)
-    elif criter == 'hter':
+    elif criter == 'min-hter':
         from . import min_hter_threshold
         return min_hter_threshold(neg, pos)
     elif criter == 'far':
