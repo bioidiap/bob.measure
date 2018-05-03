@@ -30,7 +30,7 @@ def test_metrics():
         assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-Z',
+            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-lg',
                               'A,B']
         )
         assert result.exit_code == 0, (result.exit_code, result.output)
@@ -160,8 +160,8 @@ def test_evaluate():
 
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf', '-b',
-                                '30,69', '-n', 300, dev1, dev2])
+            commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf',
+                                '-n', 300, dev1, dev2])
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
