@@ -404,11 +404,11 @@ class Roc(PlotBase):
     def compute(self, idx, input_scores, input_names):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         mpl.figure(1)
@@ -470,11 +470,11 @@ class Det(PlotBase):
     def compute(self, idx, input_scores, input_names):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         mpl.figure(1)
@@ -529,11 +529,11 @@ class Epc(PlotBase):
 
     def compute(self, idx, input_scores, input_names):
         ''' Plot EPC using :py:func:`bob.measure.plot.epc` '''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         plot.epc(

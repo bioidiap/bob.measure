@@ -375,7 +375,8 @@ def figsize_option(dflt='4,3', **kwargs):
                 plt.rcParams['figure.figsize'] = ctx.meta['figsize']
             return value
         return click.option(
-            '--figsize', default=dflt, help='If given, will run '
+            '--figsize', default=dflt, show_default=True,
+            help='If given, will run '
             '``plt.rcParams[\'figure.figsize\']=figsize)``. '
             'Example: --fig-size 4,6',
             callback=callback, **kwargs)(func)
@@ -430,7 +431,7 @@ def legends_option(**kwargs):
             ctx.meta['legends'] = value
             return value
         return click.option(
-            '-Z', '--legends', type=click.STRING, default=None,
+            '-lg', '--legends', type=click.STRING, default=None,
             help='The title for each system comma separated. '
             'Example: --legends ISV,CNN',
             callback=callback, **kwargs)(func)
