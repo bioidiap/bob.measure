@@ -577,7 +577,7 @@ class Hist(PlotBase):
             '' if self._criterion is None else\
             self._criterion.upper(), ' (dev)' if self._eval else ''
         )
-        self._lines(threshold, label, neg, pos)
+        self._lines(threshold, label, neg, pos, idx)
         if sub_plot_idx == 1:
             self._plot_legends()
         if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
@@ -628,7 +628,8 @@ class Hist(PlotBase):
         )
         return (n, bins, patches)
 
-    def _lines(self, threshold, label=None, neg=None, pos=None, **kwargs):
+    def _lines(self, threshold, label=None, neg=None, pos=None,
+               idx=None, **kwargs):
         label = label or 'Threshold'
         kwargs.setdefault('color', 'C3')
         kwargs.setdefault('linestyle', '--')
