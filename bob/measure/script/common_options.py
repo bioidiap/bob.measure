@@ -57,6 +57,14 @@ def scores_argument(min_arg=1, force_eval=False, **kwargs):
     return custom_scores_argument
 
 
+def no_legend_option(dflt=True, **kwargs):
+    '''Get option flag to say if legend should be displayed or not'''
+    return bool_option(
+        'disp-legend', 'dl', 'If set, no legend will be printed.',
+        dflt=dflt
+    )
+
+
 def eval_option(**kwargs):
     '''Get option flag to say if eval-scores are provided'''
     return bool_option(
@@ -380,14 +388,14 @@ def figsize_option(dflt='4,3', **kwargs):
     return custom_figsize_option
 
 
-def legend_loc_option(**kwargs):
+def legend_loc_option(dflt=0, **kwargs):
     '''Get the legend location of the plot'''
     def custom_legend_loc_option(func):
         def callback(ctx, param, value):
             ctx.meta['legend_loc'] = value
             return value
         return click.option(
-            '--legend-location', default=0, show_default=True,
+            '-lc', '--legend-loc', default=dflt, show_default=True,
             type=INT, help='The legend location code',
             callback=callback, **kwargs)(func)
     return custom_legend_loc_option

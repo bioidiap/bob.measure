@@ -275,6 +275,10 @@ class PlotBase(MeasureBase):
         self._points = 100 if 'points' not in ctx.meta else ctx.meta['points']
         self._split = None if 'split' not in ctx.meta else ctx.meta['split']
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
+        self._disp_legend = True if 'disp_legend' not in ctx.meta else\
+            ctx.meta['disp_legend']
+        self._legend_loc = None if 'legend_loc' not in ctx.meta else\
+            ctx.meta['legend_loc']
         self._min_dig = None
         if 'min_far_value' in ctx.meta:
             self._min_dig = int(math.log10(ctx.meta['min_far_value']))
@@ -291,7 +295,7 @@ class PlotBase(MeasureBase):
             self._lines_val = []
         self._print_fn = True if 'show_fn' not in ctx.meta else\
             ctx.meta['show_fn']
-        self._x_rotation = None if 'x_rotation' not in ctx.meta else \
+        self._x_rotation = None if 'x_rotation' not in ctx.meta else\
             ctx.meta['x_rotation']
         if 'style' in ctx.meta:
             mpl.style.use(ctx.meta['style'])
@@ -362,7 +366,8 @@ class PlotBase(MeasureBase):
                 mpl.xlabel(self._x_label)
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
-                mpl.legend(loc='best')
+                if self._disp_legend:
+                    mpl.legend(loc=self._legend_loc)
                 self._set_axis()
                 mpl.xticks(rotation=self._x_rotation)
                 self._pdf_page.savefig(fig)
@@ -394,6 +399,7 @@ class Roc(PlotBase):
         self._title = self._title or 'ROC'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
+        self._legend_loc = self._legend_loc or 4
         # custom defaults
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 0, 1.0]
@@ -455,6 +461,7 @@ class Det(PlotBase):
         self._title = self._title or 'DET'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or 'False Negative Rate'
+        self._legend_loc = self._legend_loc or 1
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
         # custom defaults here
@@ -522,6 +529,7 @@ class Epc(PlotBase):
         self._title = self._title or 'EPC'
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or 'HTER (%)'
+        self._legend_loc = self._legend_loc or 9
         self._eval = True  # always eval data with EPC
         self._split = False
         self._nb_figs = 1
@@ -620,10 +628,11 @@ class Hist(PlotBase):
             li, la = ax.get_legend_handles_labels()
             lines += li
             labels += la
-        mpl.gcf().legend(
-            lines, labels, fontsize=6, loc='upper center', fancybox=True,
-            framealpha=0.5, ncol=self._nlegends,
-        )
+        if self._disp_legend:
+            mpl.gcf().legend(
+                lines, labels, fontsize=6, loc=self._legend_loc, fancybox=True,
+                framealpha=0.5, ncol=self._nlegends,
+            )
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
