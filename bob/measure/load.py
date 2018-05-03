@@ -10,6 +10,7 @@ import numpy
 
 LOGGER = logging.getLogger('bob.measure')
 
+
 def split(filename):
     """split(filename) -> negatives, positives
 
@@ -36,7 +37,7 @@ def split(filename):
         columns = numpy.loadtxt(filename)
         neg_pos = columns[:, 0]
         scores = columns[:, 1]
-    except:
+    except Exception:
         LOGGER.error('''Cannot read {}. This file must be a two columns file with
                    the first column containing -1 or 1 (i.e. negative or
                    positive) and the second the scores
@@ -44,6 +45,7 @@ def split(filename):
         raise
     return (scores[numpy.where(neg_pos == -1)],
             scores[numpy.where(neg_pos == 1)])
+
 
 def split_files(filenames):
     """split_files

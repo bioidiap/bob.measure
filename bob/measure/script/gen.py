@@ -1,6 +1,5 @@
 """Generate random scores.
 """
-import pkg_resources  # to make sure bob gets imported properly
 import os
 import logging
 import numpy
@@ -14,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 NUM_NEG = 5000
 NUM_POS = 5000
+
 
 def gen_score_distr(mean_neg, mean_pos, sigma_neg=1, sigma_pos=1):
     """Generate scores from normal distributions
@@ -47,17 +47,17 @@ def gen_score_distr(mean_neg, mean_pos, sigma_neg=1, sigma_pos=1):
     return neg_scores, pos_scores
 
 
-def write_scores_to_file(pos, neg, filename):
+def write_scores_to_file(neg, pos, filename):
     """Writes score distributions into 2-column score files. For the format of
     the 2-column score files, please refer to Bob's documentation. See
     :py:func:`bob.measure.load.split`.
 
     Parameters
     ----------
-    pos : :py:class:`numpy.ndarray`
-        Scores for positive samples.
     neg : :py:class:`numpy.ndarray`
         Scores for negative samples.
+    pos : :py:class:`numpy.ndarray`
+        Scores for positive samples.
     filename : str
         The path to write the score to.
     """
@@ -71,6 +71,7 @@ def write_scores_to_file(pos, neg, filename):
         for i in neg:
             text = '-1 %f\n' % i if nan_dist(mt) > 0.01 else '1 nan\n'
             f.write(text)
+
 
 @click.command()
 @click.argument('outdir')

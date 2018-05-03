@@ -196,7 +196,7 @@ class Metrics(MeasureBase):
                           threshold),
                        file=self.log_file)
         else:
-            click.echo("[Min. criterion: user provider] Threshold on "
+            click.echo("[Min. criterion: user provided] Threshold on "
                        "Development set `%s`: %e"
                        % (dev_file or title, threshold), file=self.log_file)
 
