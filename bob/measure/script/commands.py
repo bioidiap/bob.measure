@@ -8,6 +8,7 @@ from . import common_options
 from bob.extension.scripts.click_helper import (verbosity_option,
                                                 open_file_mode_option)
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.eval_option()
@@ -24,9 +25,9 @@ def metrics(ctx, scores, evaluation, **kwargs):
     """Prints a table that contains FtA, FAR, FRR, FMR, FMNR, HTER for a given
     threshold criterion (eer or min-hter).
 
-    You need to provide one or more development score file(s) for each experiment.
-    You can also provide evaluation files along with dev files. If only dev scores
-    are provided, you must use flag `--no-evaluation`.
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    only dev scores are provided, you must use flag `--no-evaluation`.
 
     Resulting table format can be changed using the `--tablefmt`.
 
@@ -39,6 +40,7 @@ def metrics(ctx, scores, evaluation, **kwargs):
     """
     process = figure.Metrics(ctx, scores, evaluation, load.split)
     process.run()
+
 
 @click.command()
 @common_options.scores_argument(nargs=-1)
@@ -66,9 +68,9 @@ def roc(ctx, scores, evaluation, **kwargs):
     false non match rate on the vertical axis.  The values for the axis will be
     computed using :py:func:`bob.measure.roc`.
 
-    You need to provide one or more development score file(s) for each experiment.
-    You can also provide evaluation files along with dev files. If only dev scores
-    are provided, you must use flag `--no-evaluation`.
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    only dev scores are provided, you must use flag `--no-evaluation`.
 
     Examples:
         $ bob measure roc dev-scores
@@ -80,6 +82,7 @@ def roc(ctx, scores, evaluation, **kwargs):
     """
     process = figure.Roc(ctx, scores, evaluation, load.split)
     process.run()
+
 
 @click.command()
 @common_options.scores_argument(nargs=-1)
@@ -106,9 +109,9 @@ def det(ctx, scores, evaluation, **kwargs):
     modified ROC curve which plots error rates on both axes
     (false positives on the x-axis and false negatives on the y-axis)
 
-    You need to provide one or more development score file(s) for each experiment.
-    You can also provide evaluation files along with dev files. If only dev scores
-    are provided, you must use flag `--no-evaluation`.
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    only dev scores are provided, you must use flag `--no-evaluation`.
 
     Examples:
         $ bob measure det dev-scores
@@ -120,6 +123,7 @@ def det(ctx, scores, evaluation, **kwargs):
     """
     process = figure.Det(ctx, scores, evaluation, load.split)
     process.run()
+
 
 @click.command()
 @common_options.scores_argument(min_arg=1, force_eval=True, nargs=-1)
@@ -152,6 +156,7 @@ def epc(ctx, scores, **kwargs):
     process = figure.Epc(ctx, scores, True, load.split)
     process.run()
 
+
 @click.command()
 @common_options.scores_argument(nargs=-1)
 @common_options.output_plot_file_option(default_out='hist.pdf')
@@ -174,9 +179,9 @@ def hist(ctx, scores, evaluation, **kwargs):
     """ Plots histograms of positive and negatives along with threshold
     criterion.
 
-    You need to provide one or more development score file(s) for each experiment.
-    You can also provide evaluation files along with dev files. If only dev scores
-    are provided, you must use flag `--no-evaluation`.
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    only dev scores are provided, you must use flag `--no-evaluation`.
 
     By default, when eval-scores are given, only eval-scores histograms are
     displayed with threshold line
@@ -193,6 +198,7 @@ def hist(ctx, scores, evaluation, **kwargs):
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
+
 
 @click.command()
 @common_options.scores_argument(nargs=-1)
@@ -217,8 +223,8 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     \b
     1. Computes the threshold using either EER or min. HTER criteria on
        development set scores
-    2. Applies the above threshold on evaluation set scores to compute the HTER, if a
-       eval-score set is provided
+    2. Applies the above threshold on evaluation set scores to compute the
+       HTER, if a eval-score set is provided
     3. Reports error rates on the console
     4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
        file
@@ -261,12 +267,12 @@ def evaluate(ctx, scores, evaluation, **kwargs):
         click.echo("Starting evaluate with dev scores only...")
     click.echo("Computing ROC...")
     # set axes limits for ROC
-    ctx.forward(roc) # use class defaults plot settings
+    ctx.forward(roc)  # use class defaults plot settings
     click.echo("Computing DET...")
-    ctx.forward(det) # use class defaults plot settings
+    ctx.forward(det)  # use class defaults plot settings
     if evaluation:
         click.echo("Computing EPC...")
-        ctx.forward(epc) # use class defaults plot settings
+        ctx.forward(epc)  # use class defaults plot settings
     # the last one closes the file
     ctx.meta['closef'] = True
     click.echo("Computing score histograms...")
