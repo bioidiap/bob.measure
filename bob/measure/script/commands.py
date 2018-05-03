@@ -73,12 +73,12 @@ def roc(ctx, scores, evaluation, **kwargs):
     only dev scores are provided, you must use flag `--no-evaluation`.
 
     Examples:
-        $ bob measure roc dev-scores
+        $ bob measure roc -v dev-scores
 
-        $ bob measure roc dev-scores1 eval-scores1 dev-scores2
+        $ bob measure roc -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure roc -o my_roc.pdf dev-scores1 eval-scores1
+        $ bob measure roc -v -o my_roc.pdf dev-scores1 eval-scores1
     """
     process = figure.Roc(ctx, scores, evaluation, load.split)
     process.run()
@@ -114,12 +114,12 @@ def det(ctx, scores, evaluation, **kwargs):
     only dev scores are provided, you must use flag `--no-evaluation`.
 
     Examples:
-        $ bob measure det dev-scores
+        $ bob measure det -v dev-scores
 
-        $ bob measure det dev-scores1 eval-scores1 dev-scores2
+        $ bob measure det -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure det -o my_det.pdf dev-scores1 eval-scores1
+        $ bob measure det -v -o my_det.pdf dev-scores1 eval-scores1
     """
     process = figure.Det(ctx, scores, evaluation, load.split)
     process.run()
@@ -149,9 +149,9 @@ def epc(ctx, scores, **kwargs):
     for each experiment.
 
     Examples:
-        $ bob measure epc dev-scores eval-scores
+        $ bob measure epc -v dev-scores eval-scores
 
-        $ bob measure epc -o my_epc.pdf dev-scores1 eval-scores1
+        $ bob measure epc -v -o my_epc.pdf dev-scores1 eval-scores1
     """
     process = figure.Epc(ctx, scores, True, load.split)
     process.run()
@@ -189,12 +189,12 @@ def hist(ctx, scores, evaluation, **kwargs):
     as well, use ``--show-dev`` option.
 
     Examples:
-        $ bob measure hist dev-scores
+        $ bob measure hist -v dev-scores
 
-        $ bob measure hist dev-scores1 eval-scores1 dev-scores2
+        $ bob measure hist -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure hist --criterion min-hter --show-dev dev-scores1 eval-scores1
+        $ bob measure hist -v --criterion min-hter --show-dev dev-scores1 eval-scores1
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
@@ -209,7 +209,6 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.output_log_metric_option()
 @common_options.output_plot_file_option(default_out='eval_plots.pdf')
 @common_options.points_curve_option()
-@common_options.n_bins_option()
 @common_options.lines_at_option()
 @common_options.const_layout_option()
 @common_options.figsize_option()
@@ -237,14 +236,14 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     * evaluation scores
 
     Examples:
-        $ bob measure evaluate dev-scores
+        $ bob measure evaluate -v dev-scores
 
-        $ bob measure evaluate scores-dev1 scores-eval1 scores-dev2
+        $ bob measure evaluate -v scores-dev1 scores-eval1 scores-dev2
         scores-eval2
 
-        $ bob measure evaluate /path/to/sys-{1,2,3}/scores-{dev,eval}
+        $ bob measure evaluate -v /path/to/sys-{1,2,3}/scores-{dev,eval}
 
-        $ bob measure evaluate -l metrics.txt -o my_plots.pdf dev-scores eval-scores
+        $ bob measure evaluate -v -l metrics.txt -o my_plots.pdf dev-scores eval-scores
     '''
     # first time erase if existing file
     ctx.meta['open_mode'] = 'w'

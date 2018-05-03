@@ -4,6 +4,7 @@ import logging
 import click
 from click.types import INT, FLOAT
 import matplotlib.pyplot as plt
+import tabulate
 from matplotlib.backends.backend_pdf import PdfPages
 from bob.extension.scripts.click_helper import (bool_option, list_float_option)
 
@@ -245,19 +246,15 @@ def n_bins_option(**kwargs):
 
 def table_option(**kwargs):
     '''Get table option for tabulate package
-    More informnations: https://pypi.python.org/pypi/tabulate
+    More informnations: https://pypi.org/project/tabulate/
     '''
     def custom_table_option(func):
         def callback(ctx, param, value):
             ctx.meta['tablefmt'] = value
             return value
         return click.option(
-            '--tablefmt', type=click.STRING, default='rst',
-            show_default=True, help='Format for table display: `plain`, '
-            '`simple`, `grid`, `fancy_grid`, `pipe`, `orgtbl`, '
-            '`jira`, `presto`, `psql`, `rst`, `mediawiki`, `moinmoin`, '
-            '`youtrack`, `html`, `latex`, '
-            '`latex_raw`, `latex_booktabs`, `textile`',
+            '--tablefmt', type=click.Choice(tabulate.tabulate_formats),
+            default='rst', show_default=True, help='Format of printed tables.',
             callback=callback, **kwargs)(func)
     return custom_table_option
 
@@ -460,7 +457,7 @@ def x_label_option(dflt=None, **kwargs):
             return value
         return click.option(
             '-xl', '--x-lable', type=click.STRING, default=dflt,
-            help='Label for x-axis',
+            show_default=True, help='Label for x-axis',
             callback=callback, **kwargs)(func)
     return custom_x_label_option
 

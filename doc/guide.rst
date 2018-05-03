@@ -470,6 +470,8 @@ look at the implementations at :py:mod:`bob.measure.plot` to understand how to
 use the |project| methods to compute the curves and interlace that in the way
 that best suits you.
 
+.. _bob.measure.command_line:
+
 Full applications
 -----------------
 
@@ -582,6 +584,11 @@ where `my_det.pdf` will contain DET plots for the two experiments.
     By default, ``det`` and ``roc`` plot development and evaluation curves on
     different plots. You can force gather everything in the same plot using
     ``--no-split`` option.
+
+.. note::
+    The ``--figsize`` and ``--style`` options are two powerful options that can
+    dramatically change the appearance of your figures. Try them! (e.g.
+    ``--figsize 12,10 --style grayscale``)
 
 Evaluate
 ========
