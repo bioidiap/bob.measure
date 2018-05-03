@@ -568,7 +568,9 @@ class Hist(PlotBase):
         self._setup_hist(neg, pos)
         if col == 0:
             axis.set_ylabel(self._y_label)
-        if n + self._ncols >= min(self._step_print, self.n_systems):
+        # rest to be printed
+        rest_print = self.n_systems - int(idx / self._step_print) * self._step_print
+        if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
         axis.set_title(self._get_title(idx, dev_file, eval_file))
         label = "%s threshold%s" % (
@@ -598,7 +600,7 @@ class Hist(PlotBase):
             lines += li
             labels += la
         mpl.gcf().legend(
-            lines, labels, fontsize=6, loc='lower center', fancybox=True,
+            lines, labels, fontsize=6, loc='upper center', fancybox=True,
             framealpha=0.5, ncol=self._nlegends,
         )
 
