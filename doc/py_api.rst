@@ -152,6 +152,7 @@ CLI options
    bob.measure.script.common_options.style_option
    bob.measure.script.common_options.subplot_option
    bob.measure.script.common_options.legend_ncols_option
+   bob.measure.script.common_options.no_legend_option
 
 Details
 -------

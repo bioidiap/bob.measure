@@ -84,6 +84,7 @@ def test_det():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.det, ['--split', '--output',
                                               'test.pdf', '--legends', 'A,B',
+                                              '-lc', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -112,6 +113,7 @@ def test_epc():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.epc, ['--output', 'test.pdf',
                                               '--legends', 'A,B',
+                                              '-lc', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)

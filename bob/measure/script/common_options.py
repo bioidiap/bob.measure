@@ -388,15 +388,19 @@ def figsize_option(dflt='4,3', **kwargs):
     return custom_figsize_option
 
 
-def legend_loc_option(dflt=0, **kwargs):
+def legend_loc_option(dflt='best', **kwargs):
     '''Get the legend location of the plot'''
     def custom_legend_loc_option(func):
         def callback(ctx, param, value):
-            ctx.meta['legend_loc'] = value
+            ctx.meta['legend_loc'] = value.replace('-', ' ')
             return value
         return click.option(
             '-lc', '--legend-loc', default=dflt, show_default=True,
-            type=INT, help='The legend location code',
+            type=click.Choice(['best', 'upper-right', 'upper-left',
+                               'lower-left', 'lower-right', 'right',
+                               'center-left', 'center-right', 'lower-center',
+                               'upper-center', 'center']),
+            help='The legend location code',
             callback=callback, **kwargs)(func)
     return custom_legend_loc_option
 
