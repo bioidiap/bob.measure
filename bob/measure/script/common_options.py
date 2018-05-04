@@ -140,13 +140,13 @@ def thresholds_option(**kwargs):
     )
 
 
-def lines_at_option(**kwargs):
+def lines_at_option(dflt='1e-3', **kwargs):
     '''Get option to draw const far line'''
     return list_float_option(
         name='lines-at', short_name='la',
         desc='If given, draw vertical lines at the given axis positions. '
-        'You can provide multiple values separated with a comma (,).',
-        nitems=None, dflt='1e-3', **kwargs
+        'You cdfltple values separated with a comma (,).',
+        nitems=None, dflt=dflt, **kwargs
     )
 
 
