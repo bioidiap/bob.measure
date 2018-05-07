@@ -30,7 +30,7 @@ def test_metrics():
         assert result.exit_code == 0
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-Z',
+            commands.metrics, ['-l', 'tmp', dev1, test1, dev2, test2, '-lg',
                               'A,B']
         )
         assert result.exit_code == 0, (result.exit_code, result.output)
@@ -84,6 +84,7 @@ def test_det():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.det, ['--split', '--output',
                                               'test.pdf', '--legends', 'A,B',
+                                              '-lc', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -112,6 +113,7 @@ def test_epc():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.epc, ['--output', 'test.pdf',
                                               '--legends', 'A,B',
+                                              '-lc', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -130,7 +132,8 @@ def test_hist():
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['--no-evaluation', '--criterion', 'hter',
+        result = runner.invoke(commands.hist, ['--no-evaluation', '--criterion',
+                                               'min-hter',
                                                '--output', 'HISTO.pdf',  '-b', 
                                                '30,100', dev1, dev2])
         if result.output:
@@ -140,6 +143,7 @@ def test_hist():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--criterion', 'eer','--output',
                                                'HISTO.pdf',  '-b',  '30,20',
+                                               '-sp', 221,
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -158,8 +162,8 @@ def test_evaluate():
 
     with runner.isolated_filesystem():
         result = runner.invoke(
-            commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf', '-b',
-                                '30,69', '-n', 300, dev1, dev2])
+            commands.evaluate, ['--no-evaluation', '--output', 'my_plots.pdf',
+                                '-n', 300, dev1, dev2])
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():

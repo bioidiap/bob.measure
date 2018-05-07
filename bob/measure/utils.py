@@ -4,6 +4,7 @@ import numpy
 import scipy.stats
 import bob.core
 
+
 def remove_nan(scores):
     """remove_nan
 
@@ -27,6 +28,7 @@ def remove_nan(scores):
         logger = bob.core.log.setup("bob.measure")
         logger.warning('Found {} NaNs in {} scores'.format(sum_nans, total))
     return scores[numpy.where(~nans)], sum_nans, total
+
 
 def get_fta(scores):
     """get_fta
@@ -52,6 +54,7 @@ def get_fta(scores):
     fta_sum += sum_nans
     fta_total += total
     return ((neg, pos), fta_sum / fta_total)
+
 
 def get_fta_list(scores):
     """ Get FTAs for a list of scores
@@ -84,13 +87,14 @@ def get_fta_list(scores):
         fta_list.append(fta)
     return (neg_list, pos_list, fta_list)
 
+
 def get_thres(criter, neg, pos, far=None):
     """Get threshold for the given positive/negatives scores and criterion
 
     Parameters
     ----------
     criter :
-        Criterion (`eer` or `hter`)
+        Criterion (`eer` or `hter` or `far`)
     neg : :py:class:`numpy.ndarray`:
         array of negative scores
         pos : :py:class:`numpy.ndarray`::
@@ -104,7 +108,7 @@ def get_thres(criter, neg, pos, far=None):
     if criter == 'eer':
         from . import eer_threshold
         return eer_threshold(neg, pos)
-    elif criter == 'hter':
+    elif criter == 'min-hter':
         from . import min_hter_threshold
         return min_hter_threshold(neg, pos)
     elif criter == 'far':
@@ -115,6 +119,7 @@ def get_thres(criter, neg, pos, far=None):
         return far_threshold(neg, pos, far)
     else:
         raise ValueError("Incorrect plotting criterion: ``%s``" % criter)
+
 
 def get_colors(n):
     """get_colors
@@ -135,7 +140,8 @@ def get_colors(n):
         cmap = pyplot.cm.get_cmap(name='magma')
         return [cmap(i) for i in numpy.linspace(0, 1.0, n + 1)]
 
-    return ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9']
+    return ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
+
 
 def get_linestyles(n, on=True):
     """Get a list of matplotlib linestyles
@@ -154,23 +160,24 @@ def get_linestyles(n, on=True):
         return [None] * n
 
     list_linestyles = [
-        (0, ()),                    #solid
-        (0, (1, 1)),                #densely dotted
-        (0, (5, 5)),                #dashed
-        (0, (5, 1)),                #densely dashed
-        (0, (3, 1, 1, 1, 1, 1)),    #densely dashdotdotted
-        (0, (3, 10, 1, 10, 1, 10)), #loosely dashdotdotted
-        (0, (3, 5, 1, 5, 1, 5)),    #dashdotdotted
-        (0, (3, 1, 1, 1)),          #densely dashdotted
-        (0, (1, 5)),                #dotted
-        (0, (3, 5, 1, 5)),          #dashdotted
-        (0, (5, 10)),               #loosely dashed
-        (0, (3, 10, 1, 10)),        #loosely dashdotted
-        (0, (1, 10))                #loosely dotted
+        (0, ()),  # solid
+        (0, (1, 1)),  # densely dotted
+        (0, (5, 5)),  # dashed
+        (0, (5, 1)),  # densely dashed
+        (0, (3, 1, 1, 1, 1, 1)),  # densely dashdotdotted
+        (0, (3, 10, 1, 10, 1, 10)),  # loosely dashdotdotted
+        (0, (3, 5, 1, 5, 1, 5)),  # dashdotdotted
+        (0, (3, 1, 1, 1)),  # densely dashdotted
+        (0, (1, 5)),  # dotted
+        (0, (3, 5, 1, 5)),  # dashdotted
+        (0, (5, 10)),  # loosely dashed
+        (0, (3, 10, 1, 10)),  # loosely dashdotted
+        (0, (1, 10))  # loosely dotted
     ]
     while n > len(list_linestyles):
         list_linestyles += list_linestyles
     return list_linestyles
+
 
 def confidence_for_indicator_variable(x, n, alpha=0.05):
     '''Calculates the confidence interval for proportion estimates

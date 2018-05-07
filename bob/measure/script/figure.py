@@ -12,6 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
 from .. import (far_threshold, plot, utils, ppndf)
 
+
 class MeasureBase(object):
     """Base class for metrics and plots.
     This abstract class define the framework to plot or compute metrics from a
@@ -22,7 +23,8 @@ class MeasureBase(object):
     func_load:
         Function that is used to load the input files
     """
-    __metaclass__ = ABCMeta #for python 2.7 compatibility
+    __metaclass__ = ABCMeta  # for python 2.7 compatibility
+
     def __init__(self, ctx, scores, evaluation, func_load):
         """
         Parameters
@@ -69,7 +71,7 @@ class MeasureBase(object):
         # Note that more than one dev or eval scores score can be passed to
         # each system
         for idx in range(self.n_systems):
-            # load scores for each system: get the corresponding arrays and 
+            # load scores for each system: get the corresponding arrays and
             # base-name of files
             input_scores, input_names = self._load_files(
                 # Scores are given as followed:
@@ -137,6 +139,7 @@ class MeasureBase(object):
             scores.append(self.func_load(filename))
         return scores, basenames
 
+
 class Metrics(MeasureBase):
     ''' Compute metrics from score files
 
@@ -145,25 +148,26 @@ class Metrics(MeasureBase):
     log_file: str
         output stream
     '''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self._tablefmt = None if 'tablefmt' not in ctx.meta else\
-                ctx.meta['tablefmt']
+            ctx.meta['tablefmt']
         self._criterion = None if 'criterion' not in ctx.meta else \
-        ctx.meta['criterion']
+            ctx.meta['criterion']
         self._open_mode = None if 'open_mode' not in ctx.meta else\
-                ctx.meta['open_mode']
+            ctx.meta['open_mode']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
-        if self._thres is not None :
+        if self._thres is not None:
             if len(self._thres) == 1:
                 self._thres = self._thres * self.n_systems
             elif len(self._thres) != self.n_systems:
                 raise click.BadParameter(
-                    '#thresholds must be the same as #systems (%d)' \
+                    '#thresholds must be the same as #systems (%d)'
                     % len(self.n_systems)
                 )
         self._far = None if 'far_value' not in ctx.meta else \
-        ctx.meta['far_value']
+            ctx.meta['far_value']
         self._log = None if 'log' not in ctx.meta else ctx.meta['log']
         self.log_file = sys.stdout
         if self._log is not None:
@@ -180,22 +184,21 @@ class Metrics(MeasureBase):
             eval_file = input_names[1]
 
         threshold = utils.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
-                if self._thres is None else self._thres[idx]
+            if self._thres is None else self._thres[idx]
         title = self._legends[idx] if self._legends is not None else None
         if self._thres is None:
             far_str = ''
             if self._criterion == 'far' and self._far is not None:
                 far_str = str(self._far)
-            click.echo("[Min. criterion: %s %s] Threshold on Development set `%s`: %e"\
+            click.echo("[Min. criterion: %s %s] Threshold on Development set `%s`: %e"
                        % (self._criterion.upper(),
                           far_str, title or dev_file,
                           threshold),
                        file=self.log_file)
         else:
-            click.echo("[Min. criterion: user provider] Threshold on "
-                       "Development set `%s`: %e"\
+            click.echo("[Min. criterion: user provided] Threshold on "
+                       "Development set `%s`: %e"
                        % (dev_file or title, threshold), file=self.log_file)
-
 
         from .. import farfrr
         dev_fmr, dev_fnmr = farfrr(dev_neg, dev_pos, threshold)
@@ -232,11 +235,14 @@ class Metrics(MeasureBase):
             eval_ni = eval_neg.shape[0]  # number of impostors
             eval_fm = int(round(eval_fmr * eval_ni))  # number of false accepts
             eval_nc = eval_pos.shape[0]  # number of clients
-            eval_fnm = int(round(eval_fnmr * eval_nc))  # number of false rejects
+            # number of false rejects
+            eval_fnm = int(round(eval_fnmr * eval_nc))
 
             eval_fta_str = "%.1f%%" % (100 * eval_fta)
-            eval_fmr_str = "%.1f%% (%d/%d)" % (100 * eval_fmr, eval_fm, eval_ni)
-            eval_fnmr_str = "%.1f%% (%d/%d)" % (100 * eval_fnmr, eval_fnm, eval_nc)
+            eval_fmr_str = "%.1f%% (%d/%d)" % (100 *
+                                               eval_fmr, eval_fm, eval_ni)
+            eval_fnmr_str = "%.1f%% (%d/%d)" % (100 *
+                                                eval_fnmr, eval_fnm, eval_nc)
 
             eval_far_str = "%.1f%%" % (100 * eval_far)
             eval_frr_str = "%.1f%%" % (100 * eval_frr)
@@ -257,16 +263,22 @@ class Metrics(MeasureBase):
         if self._log is not None:
             self.log_file.close()
 
+
 class PlotBase(MeasureBase):
     ''' Base class for plots. Regroup several options and code
     shared by the different plots
     '''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(PlotBase, self).__init__(ctx, scores, evaluation, func_load)
         self._output = None if 'output' not in ctx.meta else ctx.meta['output']
         self._points = 100 if 'points' not in ctx.meta else ctx.meta['points']
         self._split = None if 'split' not in ctx.meta else ctx.meta['split']
         self._axlim = None if 'axlim' not in ctx.meta else ctx.meta['axlim']
+        self._disp_legend = True if 'disp_legend' not in ctx.meta else\
+            ctx.meta['disp_legend']
+        self._legend_loc = None if 'legend_loc' not in ctx.meta else\
+            ctx.meta['legend_loc']
         self._min_dig = None
         if 'min_far_value' in ctx.meta:
             self._min_dig = int(math.log10(ctx.meta['min_far_value']))
@@ -274,30 +286,31 @@ class PlotBase(MeasureBase):
             self._min_dig = int(math.log10(self._axlim[0])
                                 if self._axlim[0] != 0 else 0)
         self._clayout = None if 'clayout' not in ctx.meta else\
-        ctx.meta['clayout']
+            ctx.meta['clayout']
         self._far_at = None if 'lines_at' not in ctx.meta else\
-        ctx.meta['lines_at']
+            ctx.meta['lines_at']
         self._trans_far_val = self._far_at
         if self._far_at is not None:
             self._eval_points = {line: [] for line in self._far_at}
             self._lines_val = []
         self._print_fn = True if 'show_fn' not in ctx.meta else\
-        ctx.meta['show_fn']
-        self._x_rotation = None if 'x_rotation' not in ctx.meta else \
-                ctx.meta['x_rotation']
+            ctx.meta['show_fn']
+        self._x_rotation = None if 'x_rotation' not in ctx.meta else\
+            ctx.meta['x_rotation']
         if 'style' in ctx.meta:
             mpl.style.use(ctx.meta['style'])
         self._nb_figs = 2 if self._eval and self._split else 1
         self._colors = utils.get_colors(self.n_systems)
         self._line_linestyles = False if 'line_linestyles' not in ctx.meta else \
-                ctx.meta['line_linestyles']
-        self._linestyles = utils.get_linestyles(self.n_systems, self._line_linestyles)
+            ctx.meta['line_linestyles']
+        self._linestyles = utils.get_linestyles(
+            self.n_systems, self._line_linestyles)
         self._states = ['Development', 'Evaluation']
         self._title = None if 'title' not in ctx.meta else ctx.meta['title']
         self._x_label = None if 'x_label' not in ctx.meta else\
-        ctx.meta['x_label']
+            ctx.meta['x_label']
         self._y_label = None if 'y_label' not in ctx.meta else\
-        ctx.meta['y_label']
+            ctx.meta['y_label']
         self._grid_color = 'silver'
         self._pdf_page = None
         self._end_setup_plot = True
@@ -308,11 +321,11 @@ class PlotBase(MeasureBase):
             matplotlib.use('pdf')
 
         self._pdf_page = self._ctx.meta['PdfPages'] if 'PdfPages'in \
-        self._ctx.meta else PdfPages(self._output)
+            self._ctx.meta else PdfPages(self._output)
 
         for i in range(self._nb_figs):
             fs = None if 'figsize' not in self._ctx.meta else\
-                    self._ctx.meta['figsize']
+                self._ctx.meta['figsize']
             fig = mpl.figure(i + 1, figsize=fs)
             fig.set_constrained_layout(self._clayout)
             fig.clear()
@@ -320,7 +333,7 @@ class PlotBase(MeasureBase):
     def end_process(self):
         ''' Set title, legend, axis labels, grid colors, save figures, drow
         lines and close pdf if needed '''
-        #draw vertical lines
+        # draw vertical lines
         if self._far_at is not None:
             for (line, line_trans) in zip(self._far_at, self._trans_far_val):
                 mpl.figure(1)
@@ -340,7 +353,7 @@ class PlotBase(MeasureBase):
                     mpl.plot(x_values,
                              y_values, '--',
                              color='black')
-        #only for plots
+        # only for plots
         if self._end_setup_plot:
             for i in range(self._nb_figs):
                 fig = mpl.figure(i + 1)
@@ -349,21 +362,22 @@ class PlotBase(MeasureBase):
                     title += (" (%s)" % self._states[0])
                 elif self._split:
                     title += (" (%s)" % self._states[i])
-                mpl.title(title)
+                mpl.title(title if self._title.replace(' ', '') else '')
                 mpl.xlabel(self._x_label)
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
-                mpl.legend(loc='best')
+                if self._disp_legend:
+                    mpl.legend(loc=self._legend_loc)
                 self._set_axis()
                 mpl.xticks(rotation=self._x_rotation)
                 self._pdf_page.savefig(fig)
 
-        #do not want to close PDF when running evaluate
+        # do not want to close PDF when running evaluate
         if 'PdfPages' in self._ctx.meta and \
            ('closef' not in self._ctx.meta or self._ctx.meta['closef']):
             self._pdf_page.close()
 
-    #common protected functions
+    # common protected functions
 
     def _label(self, base, name, idx):
         if self._legends is not None and len(self._legends) > idx:
@@ -376,14 +390,17 @@ class PlotBase(MeasureBase):
         if self._axlim is not None and None not in self._axlim:
             mpl.axis(self._axlim)
 
+
 class Roc(PlotBase):
     ''' Handles the plotting of ROC'''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
         self._title = self._title or 'ROC'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
-        #custom defaults
+        self._legend_loc = self._legend_loc or 4
+        # custom defaults
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 0, 1.0]
 
@@ -393,11 +410,11 @@ class Roc(PlotBase):
     def compute(self, idx, input_scores, input_names):
         ''' Plot ROC for dev and eval data using
         :py:func:`bob.measure.plot.roc`'''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         mpl.figure(1)
@@ -422,7 +439,8 @@ class Roc(PlotBase):
                 from .. import farfrr
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
-                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, thres_line)
+                    eval_fmr, eval_fnmr = farfrr(
+                        eval_neg, eval_pos, thres_line)
                     eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
@@ -434,16 +452,19 @@ class Roc(PlotBase):
                 label=self._label('development', dev_file, idx)
             )
 
+
 class Det(PlotBase):
     ''' Handles the plotting of DET '''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
         self._title = self._title or 'DET'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or 'False Negative Rate'
+        self._legend_loc = self._legend_loc or 1
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
-        #custom defaults here
+        # custom defaults here
         if self._x_rotation is None:
             self._x_rotation = 50
 
@@ -456,11 +477,11 @@ class Det(PlotBase):
     def compute(self, idx, input_scores, input_names):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         mpl.figure(1)
@@ -482,7 +503,8 @@ class Det(PlotBase):
                 from .. import farfrr
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
-                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, thres_line)
+                    eval_fmr, eval_fnmr = farfrr(
+                        eval_neg, eval_pos, thres_line)
                     eval_fmr, eval_fnmr = ppndf(eval_fmr), ppndf(eval_fnmr)
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
@@ -496,8 +518,10 @@ class Det(PlotBase):
     def _set_axis(self):
         plot.det_axis(self._axlim)
 
+
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
@@ -505,18 +529,19 @@ class Epc(PlotBase):
         self._title = self._title or 'EPC'
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or 'HTER (%)'
-        self._eval = True #always eval data with EPC
+        self._legend_loc = self._legend_loc or 9
+        self._eval = True  # always eval data with EPC
         self._split = False
         self._nb_figs = 1
         self._far_at = None
 
     def compute(self, idx, input_scores, input_names):
         ''' Plot EPC using :py:func:`bob.measure.plot.epc` '''
-        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
-        dev_neg, dev_pos, _ = neg_list[0], pos_list[0], fta_list[0]
+        neg_list, pos_list, _ = utils.get_fta_list(input_scores)
+        dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
         if self._eval:
-            eval_neg, eval_pos, _ = neg_list[1], pos_list[1], fta_list[1]
+            eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
         plot.epc(
@@ -527,79 +552,74 @@ class Epc(PlotBase):
             )
         )
 
+
 class Hist(PlotBase):
     ''' Functional base class for histograms'''
+
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
         self._nbins = [] if 'n_bins' not in ctx.meta else ctx.meta['n_bins']
         self._thres = None if 'thres' not in ctx.meta else ctx.meta['thres']
-        self._show_dev = ((not self._eval) if 'show_dev' not in ctx.meta else\
-                ctx.meta['show_dev']) or not self._eval
         if self._thres is not None and len(self._thres) != self.n_systems:
             if len(self._thres) == 1:
                 self._thres = self._thres * self.n_systems
             else:
                 raise click.BadParameter(
-                    '#thresholds must be the same as #systems (%d)' \
+                    '#thresholds must be the same as #systems (%d)'
                     % self.n_systems
                 )
         self._criterion = None if 'criterion' not in ctx.meta else \
-        ctx.meta['criterion']
-        self._y_label = 'Dev. probability density' if self._eval else \
-                'density' or self._y_label
-        self._x_label = 'Scores' if not self._eval else ''
-        self._title_base = self._title or 'Scores'
+            ctx.meta['criterion']
+        self._nrows = 1 if 'n_row' not in ctx.meta else ctx.meta['n_row']
+        self._ncols = 1 if 'n_col' not in ctx.meta else ctx.meta['n_col']
+        self._nlegends = 10 if 'legends_ncol' not in ctx.meta else \
+            ctx.meta['legends_ncol']
+        self._step_print = int(self._nrows * self._ncols)
+        self._title_base = 'Scores'
+        self._y_label = 'Probability density'
+        self._x_label = 'Scores values'
         self._end_setup_plot = False
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
-        self._get_neg_pos_thres(idx, input_scores, input_names)
+            self._get_neg_pos_thres(idx, input_scores, input_names)
         dev_file = input_names[0]
         eval_file = None if len(input_names) != 2 else input_names[1]
-
-        fig = mpl.figure()
-        if eval_neg is not None and self._show_dev:
-            mpl.subplot(2, 1, 1)
-        if self._show_dev:
-            self._setup_hist(dev_neg, dev_pos)
-            mpl.title(self._get_title(idx, dev_file, eval_file))
-            mpl.ylabel(self._y_label)
-            mpl.xlabel(self._x_label)
-            if eval_neg is not None and self._show_dev:
-                ax = mpl.gca()
-                ax.axes.get_xaxis().set_ticklabels([])
-            #Setup lines, corresponding axis and legends
-            self._lines(threshold, dev_neg, dev_pos)
-            if self._eval:
-                self._plot_legends()
-
-        if eval_neg is not None:
-            if self._show_dev:
-                mpl.subplot(2, 1, 2)
-            self._setup_hist(
-                eval_neg, eval_pos
-            )
-            if not self._show_dev:
-                mpl.title(self._get_title(idx, dev_file, eval_file))
-            mpl.ylabel('Eval. probability density')
-            mpl.xlabel(self._x_label)
-            #Setup lines, corresponding axis and legends
-            self._lines(threshold, eval_neg, eval_pos)
-            if not self._show_dev:
-                self._plot_legends()
-
-        self._pdf_page.savefig(fig)
+        n = idx % self._step_print
+        col = n % self._ncols
+        sub_plot_idx = n + 1
+        axis = mpl.subplot(self._nrows, self._ncols, sub_plot_idx)
+        neg = eval_neg if eval_neg is not None else dev_neg
+        pos = eval_pos if eval_pos is not None else dev_pos
+        self._setup_hist(neg, pos)
+        if col == 0:
+            axis.set_ylabel(self._y_label)
+        # rest to be printed
+        rest_print = self.n_systems - \
+            int(idx / self._step_print) * self._step_print
+        if n + self._ncols >= min(self._step_print, rest_print):
+            axis.set_xlabel(self._x_label)
+        axis.set_title(self._get_title(idx, dev_file, eval_file))
+        label = "%s threshold%s" % (
+            '' if self._criterion is None else
+            self._criterion.upper(), ' (dev)' if self._eval else ''
+        )
+        self._lines(threshold, label, neg, pos, idx)
+        if sub_plot_idx == 1:
+            self._plot_legends()
+        if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
+            mpl.tight_layout()
+            self._pdf_page.savefig(mpl.gcf(), bbox_inches="tight")
+            mpl.clf()
+            mpl.figure()
 
     def _get_title(self, idx, dev_file, eval_file):
         title = self._legends[idx] if self._legends is not None else None
-        if title is None:
-            title = self._title_base if not self._print_fn else \
-                    ('%s \n (%s)' % (
-                        self._title_base,
-                        str(dev_file) + (" / %s" % str(eval_file) if self._eval else "")
-                    ))
-        return title
+        title = title or self._title or self._title_base
+        title = '' if self._title is not None and not self._title.replace(
+            ' ', '') else title
+        return title or ''
 
     def _plot_legends(self):
         lines = []
@@ -608,19 +628,16 @@ class Hist(PlotBase):
             li, la = ax.get_legend_handles_labels()
             lines += li
             labels += la
-        if self._show_dev and self._eval:
-            mpl.legend(
-                lines, labels, loc='upper center', ncol=6,
-                bbox_to_anchor=(0.5, -0.01), fontsize=6
+        if self._disp_legend:
+            mpl.gcf().legend(
+                lines, labels, fontsize=6, loc=self._legend_loc, fancybox=True,
+                framealpha=0.5, ncol=self._nlegends,
             )
-        else:
-            mpl.legend(lines, labels,
-                       loc='best', fancybox=True, framealpha=0.5)
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         length = len(neg_list)
-        #can have several files for one system
+        # can have several files for one system
         dev_neg = [neg_list[x] for x in range(0, length, 2)]
         dev_pos = [pos_list[x] for x in range(0, length, 2)]
         eval_neg = eval_pos = None
@@ -641,8 +658,9 @@ class Hist(PlotBase):
         )
         return (n, bins, patches)
 
-    def _lines(self, threshold, neg=None, pos=None, **kwargs):
-        label = 'Threshold' if self._criterion is None else self._criterion.upper()
+    def _lines(self, threshold, label=None, neg=None, pos=None,
+               idx=None, **kwargs):
+        label = label or 'Threshold'
         kwargs.setdefault('color', 'C3')
         kwargs.setdefault('linestyle', '--')
         kwargs.setdefault('label', label)
@@ -659,4 +677,3 @@ class Hist(PlotBase):
             pos[0], n=1,
             label='Positives', alpha=0.5, color='C0'
         )
-
