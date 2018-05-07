@@ -145,7 +145,7 @@ def lines_at_option(dflt='1e-3', **kwargs):
     return list_float_option(
         name='lines-at', short_name='la',
         desc='If given, draw vertical lines at the given axis positions. '
-        'You cdfltple values separated with a comma (,).',
+        'Your values must be separated with a comma (,) without space.',
         nitems=None, dflt=dflt, **kwargs
     )
 
