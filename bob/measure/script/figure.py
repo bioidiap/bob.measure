@@ -399,7 +399,7 @@ class Roc(PlotBase):
         self._title = self._title or 'ROC'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
-        self._legend_loc = self._legend_loc or 4
+        self._legend_loc = self._legend_loc or 'lower right'
         # custom defaults
         if self._axlim is None:
             self._axlim = [1e-4, 1.0, 0, 1.0]
@@ -461,7 +461,7 @@ class Det(PlotBase):
         self._title = self._title or 'DET'
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or 'False Negative Rate'
-        self._legend_loc = self._legend_loc or 1
+        self._legend_loc = self._legend_loc or 'upper right'
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
         # custom defaults here
@@ -529,7 +529,7 @@ class Epc(PlotBase):
         self._title = self._title or 'EPC'
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or 'HTER (%)'
-        self._legend_loc = self._legend_loc or 9
+        self._legend_loc = self._legend_loc or 'upper center'
         self._eval = True  # always eval data with EPC
         self._split = False
         self._nb_figs = 1
@@ -574,6 +574,7 @@ class Hist(PlotBase):
         self._ncols = 1 if 'n_col' not in ctx.meta else ctx.meta['n_col']
         self._nlegends = 10 if 'legends_ncol' not in ctx.meta else \
             ctx.meta['legends_ncol']
+        self._legend_loc = self._legend_loc or 'upper center'
         self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
         self._y_label = 'Probability density'
@@ -610,7 +611,7 @@ class Hist(PlotBase):
             self._plot_legends()
         if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
             mpl.tight_layout()
-            self._pdf_page.savefig(mpl.gcf(), bbox_inches="tight")
+            self._pdf_page.savefig(mpl.gcf(), bbox_inches='tight')
             mpl.clf()
             mpl.figure()
 
@@ -630,8 +631,9 @@ class Hist(PlotBase):
             labels += la
         if self._disp_legend:
             mpl.gcf().legend(
-                lines, labels, fontsize=6, loc=self._legend_loc, fancybox=True,
+                lines, labels, loc=self._legend_loc, fancybox=True,
                 framealpha=0.5, ncol=self._nlegends,
+                bbox_to_anchor=(0.55, 1.06),
             )
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
