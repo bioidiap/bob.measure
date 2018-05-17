@@ -392,7 +392,7 @@ def legend_loc_option(dflt='best', **kwargs):
     '''Get the legend location of the plot'''
     def custom_legend_loc_option(func):
         def callback(ctx, param, value):
-            ctx.meta['legend_loc'] = value.replace('-', ' ')
+            ctx.meta['legend_loc'] = value.replace('-', ' ') if value else value
             return value
         return click.option(
             '-lc', '--legend-loc', default=dflt, show_default=True,
