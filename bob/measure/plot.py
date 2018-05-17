@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Mon 23 May 2011 14:36:14 CEST
+import numpy
 
 
 def log_values(min_step=-4, counts_per_step=4):
@@ -38,6 +39,7 @@ def log_values(min_step=-4, counts_per_step=4):
 
 def _semilogx(x, y, **kwargs):
   # remove points were x is 0
+  x, y = numpy.asarray(x), numpy.asarray(y)
   zero_index = x == 0
   x = x[~zero_index]
   y = y[~zero_index]
