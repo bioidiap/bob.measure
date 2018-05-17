@@ -447,8 +447,8 @@ class Det(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
         self._title = self._title or 'DET'
-        self._x_label = self._x_label or 'False Positive Rate'
-        self._y_label = self._y_label or 'False Negative Rate'
+        self._x_label = self._x_label or 'False Positive Rate (%)'
+        self._y_label = self._y_label or 'False Negative Rate (%)'
         self._legend_loc = self._legend_loc or 'upper right'
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
