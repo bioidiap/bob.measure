@@ -36,6 +36,15 @@ def log_values(min_step=-4, counts_per_step=4):
   return [math.pow(10., i * 1. / counts_per_step) for i in range(min_step * counts_per_step, 0)] + [1.]
 
 
+def _semilogx(x, y, **kwargs):
+  # remove points were x is 0
+  zero_index = x == 0
+  x = x[~zero_index]
+  y = y[~zero_index]
+  from matplotlib import pyplot
+  return pyplot.semilogx(x, y, **kwargs)
+
+
 def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   """Plots Receiver Operating Characteristic (ROC) curve.
 
@@ -91,10 +100,11 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
   if not CAR:
     return pyplot.plot(out[0, :], out[1, :], **kwargs)
   else:
-    return pyplot.semilogx(out[0, :],(1 - out[1, :]), **kwargs)
+    return _semilogx(out[0, :], (1 - out[1, :]), **kwargs)
 
 
-def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
+def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
+                **kwargs):
   """Plots the ROC curve for the given list of False Acceptance Rates (FAR).
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
@@ -127,6 +137,10 @@ def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
     far_values (:py:class:`list`, optional): The values for the FAR, where the
       CAR should be plotted; each value should be in range [0,1].
 
+    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
+      over FAR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+      FAR over FRR linearly using :py:func:`matplotlib.pyplot.plot`.
+
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
 
@@ -142,7 +156,10 @@ def roc_for_far(negatives, positives, far_values=log_values(), **kwargs):
   from matplotlib import pyplot
   from . import roc_for_far as calc
   out = calc(negatives, positives, far_values)
-  return pyplot.semilogx(out[0, :], (1 - out[1, :]), **kwargs)
+  if not CAR:
+    return pyplot.plot(out[0, :], out[1, :], **kwargs)
+  else:
+    return _semilogx(out[0, :], (1 - out[1, :]), **kwargs)
 
 
 def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
@@ -453,7 +470,7 @@ def det_axis(v, **kwargs):
 def cmc(cmc_scores, logx=True, **kwargs):
   """Plots the (cumulative) match characteristics and returns the maximum rank.
 
-  This function plots a CMC curve using the given CMC scores (:py:class:`list`: 
+  This function plots a CMC curve using the given CMC scores (:py:class:`list`:
       A list of tuples, where each tuple contains the
       ``negative`` and ``positive`` scores for one probe of the database).
 
@@ -483,7 +500,7 @@ def cmc(cmc_scores, logx=True, **kwargs):
   out = calc(cmc_scores)
 
   if logx:
-    pyplot.semilogx(range(1, len(out) + 1), out, **kwargs)
+    _semilogx(range(1, len(out) + 1), out, **kwargs)
   else:
     pyplot.plot(range(1, len(out) + 1), out, **kwargs)
 
@@ -557,6 +574,6 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
 
   # plot curve
   if logx:
-    return pyplot.semilogx(far_values, rates, **kwargs)
+    return _semilogx(far_values, rates, **kwargs)
   else:
     return pyplot.plot(far_values, rates, **kwargs)
