@@ -310,9 +310,9 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
         List of possible criteria
     """
     def custom_criterion_option(func):
+        list_accepted_crit = lcriteria if lcriteria is not None else \
+        ['eer', 'min-hter', 'far']
         def callback(ctx, param, value):
-            list_accepted_crit = lcriteria if lcriteria is not None else \
-                ['eer', 'min-hter', 'far']
             if value not in list_accepted_crit:
                 raise click.BadParameter('Incorrect value for `--criterion`. '
                                          'Must be one of [`%s`]' %
@@ -322,7 +322,7 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
         return click.option(
             '-c', '--criterion', default='eer',
             help='Criterion to compute plots and '
-            'metrics: `eer`, `min-hter` or `far`',
+            'metrics: %s)' % ', '.join(list_accepted_crit),
             callback=callback, is_eager=True, **kwargs)(func)
     return custom_criterion_option
 
