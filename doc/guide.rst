@@ -575,8 +575,8 @@ For example, to generate a DET curve from development and evaluation datasets:
 
 .. code-block:: sh
 
-    $bob measure det -v --output 'my_det.pdf' dev-1.txt eval-1.txt
-    dev-2.txt eval-2.txt
+    $bob measure det -v --output "my_det.pdf" -ts "DetDev1,DetEval1,DetDev2,DetEval2"
+    dev-1.txt eval-1.txt dev-2.txt eval-2.txt
 
 where `my_det.pdf` will contain DET plots for the two experiments.
 

@@ -461,6 +461,25 @@ def title_option(**kwargs):
     return custom_title_option
 
 
+def titles_option(**kwargs):
+    '''Get the titles option for the different plots'''
+    def custom_title_option(func):
+        def callback(ctx, param, value):
+            if value is not None:
+                value = value.split(',')
+            ctx.meta['titles'] = value or []
+            return value or []
+        return click.option(
+            '-ts', '--titles', type=click.STRING, default=None,
+            help='The titles of the plots seperated by commas. '
+            'For example, if the figure has two plots, \"MyTitleA,MyTitleB\" '
+            'is a possible input'
+            'Provide just a space (-t ' ') to '
+            'remove the titles from figures.',
+            callback=callback, **kwargs)(func)
+    return custom_title_option
+
+
 def x_label_option(dflt=None, **kwargs):
     '''Get the label option for X axis '''
     def custom_x_label_option(func):
