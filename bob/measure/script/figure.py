@@ -294,8 +294,8 @@ class PlotBase(MeasureBase):
         self._line_linestyles = ctx.meta.get('line_linestyles', False)
         self._linestyles = utils.get_linestyles(
             self.n_systems, self._line_linestyles)
-        self._states = ['Development', 'Evaluation']
-        self._title = ctx.meta.get('title')
+        self._titles = ctx.meta.get('titles', []) * 2
+
         self._x_label = ctx.meta.get('x_label')
         self._y_label = ctx.meta.get('y_label')
         self._grid_color = 'silver'
@@ -343,12 +343,8 @@ class PlotBase(MeasureBase):
         if self._end_setup_plot:
             for i in range(self._nb_figs):
                 fig = mpl.figure(i + 1)
-                title = self._title
-                if not self._eval:
-                    title += (" (%s)" % self._states[0])
-                elif self._split:
-                    title += (" (%s)" % self._states[i])
-                mpl.title(title if self._title.replace(' ', '') else '')
+                title = '' if not self._titles else self._titles[i]
+                mpl.title(title if title.replace(' ', '') else '')
                 mpl.xlabel(self._x_label)
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
@@ -382,7 +378,7 @@ class Roc(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
-        self._title = self._title or 'ROC'
+        self._titles = self._titles or ['ROC dev', 'ROC eval']
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
         self._semilogx = ctx.meta.get('semilogx', True)
@@ -409,7 +405,7 @@ class Roc(PlotBase):
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev', dev_file, idx)
             )
             if self._split:
                 mpl.figure(2)
@@ -437,7 +433,7 @@ class Roc(PlotBase):
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev', dev_file, idx)
             )
 
 
@@ -446,7 +442,7 @@ class Det(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
-        self._title = self._title or 'DET'
+        self._titles = self._titles or ['DET dev', 'DET eval']
         self._x_label = self._x_label or 'False Positive Rate (%)'
         self._y_label = self._y_label or 'False Negative Rate (%)'
         self._legend_loc = self._legend_loc or 'upper right'
@@ -514,7 +510,7 @@ class Epc(PlotBase):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
             raise click.UsageError("EPC requires dev and eval score files")
-        self._title = self._title or 'EPC'
+        self._titles = self._titles or ['EPC'] * 2
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or 'HTER (%)'
         self._legend_loc = self._legend_loc or 'upper center'
@@ -603,9 +599,8 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dev_file, eval_file):
         title = self._legends[idx] if self._legends is not None else None
-        title = title or self._title or self._title_base
-        title = '' if self._title is not None and not self._title.replace(
-            ' ', '') else title
+        title = title or self._title_base
+        title = '' if title is not None and not title.replace(' ', '') else title
         return title or ''
 
     def _plot_legends(self):
