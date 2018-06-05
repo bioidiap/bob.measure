@@ -295,6 +295,11 @@ class PlotBase(MeasureBase):
         self._linestyles = utils.get_linestyles(
             self.n_systems, self._line_linestyles)
         self._titles = ctx.meta.get('titles', []) * 2
+        # for compatibility
+        self._title = ctx.meta.get('title')
+        if not self._titles and self._title is not None:
+            self._titles = [self._title] * 2
+
 
         self._x_label = ctx.meta.get('x_label')
         self._y_label = ctx.meta.get('y_label')
