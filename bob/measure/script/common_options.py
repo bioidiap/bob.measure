@@ -337,7 +337,7 @@ def far_option(**kwargs):
             return value
         return click.option(
             '-f', '--far-value', type=click.FLOAT, default=None,
-            help='The FAR value for which to compute metrics',
+            help='The FAR value for which to compute threshold',
             callback=callback, show_default=True, **kwargs)(func)
     return custom_far_option
 
