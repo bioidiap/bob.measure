@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 def scores_argument(min_arg=1, force_eval=False, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
-    the context when `--evaluation` flag is on (default)
+    the context when `--eval` flag is on (default)
 
     Parameters
     ----------
@@ -67,10 +67,18 @@ def no_legend_option(dflt=True, **kwargs):
 
 def eval_option(**kwargs):
     '''Get option flag to say if eval-scores are provided'''
-    return bool_option(
-        'evaluation', 'e', 'If set, evaluation scores must be provided',
-        dflt=True
-    )
+    def custom_eval_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['evaluation'] = value
+            return value
+        return click.option(
+            '-e', '--eval', 'evaluation', is_flag=True, default=False,
+            show_default=True,
+            help='If set, evaluation scores must be provided',
+            callback=callback, **kwargs)(func)
+    return custom_eval_option
+
+
 
 
 def sep_dev_eval_option(dflt=True, **kwargs):
@@ -299,6 +307,20 @@ def output_log_metric_option(**kwargs):
             'this file instead of the standard output.',
             callback=callback, **kwargs)(func)
     return custom_output_log_file_option
+
+
+def no_line_option(**kwargs):
+    '''Get option flag to say if no line should be displayed'''
+    def custom_no_line_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['no_line'] = value
+            return value
+        return click.option(
+            '--no-line', is_flag=True, default=False,
+            show_default=True,
+            help='If set does not display vertical lines',
+            callback=callback, **kwargs)(func)
+    return custom_no_line_option
 
 
 def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
