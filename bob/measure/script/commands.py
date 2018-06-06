@@ -169,13 +169,13 @@ def epc(ctx, scores, **kwargs):
 @common_options.eval_option()
 @common_options.n_bins_option()
 @common_options.criterion_option()
+@common_options.far_option()
 @common_options.thresholds_option()
 @common_options.const_layout_option()
 @common_options.print_filenames_option()
 @common_options.legends_option()
 @common_options.figsize_option(dflt=None)
 @common_options.style_option()
-@common_options.linestyles_option()
 @common_options.subplot_option()
 @common_options.legend_ncols_option()
 @common_options.no_legend_option()
@@ -191,8 +191,7 @@ def hist(ctx, scores, evaluation, **kwargs):
 
     By default, when eval-scores are given, only eval-scores histograms are
     displayed with threshold line
-    computed from dev-scores. If you want to display dev-scores distributions
-    as well, use ``--show-dev`` option.
+    computed from dev-scores.
 
     Examples:
         $ bob measure hist -v dev-scores
@@ -200,7 +199,7 @@ def hist(ctx, scores, evaluation, **kwargs):
         $ bob measure hist -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure hist -v --criterion min-hter --show-dev dev-scores1 eval-scores1
+        $ bob measure hist -v --criterion min-hter dev-scores1 eval-scores1
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
