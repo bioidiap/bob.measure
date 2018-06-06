@@ -508,7 +508,7 @@ and FRs are also displayed between parenthesis.
 .. note::
     Several scores files can be given at once and the metrics will be computed
     for each of them separatly. Development and evaluation files must be given by
-    pairs. When only Development file are provided, ``--no-evaluation`` flag
+    pairs. When evaluation files are provided, ``--eval`` flag
     must be given.
 
 
@@ -535,7 +535,7 @@ on an evaluation set:
 
 .. code-block:: sh
 
-  $ bob measure metrics dev-1.txt eval-1.txt
+  $ bob measure metrics -e dev-1.txt eval-1.txt
   [Min. criterion: EER] Threshold on Development set `dev-1`: -8.025286e-03
   ====  ===================  ===============
   ..    Development dev-1    Eval. eval-1
@@ -575,7 +575,7 @@ For example, to generate a DET curve from development and evaluation datasets:
 
 .. code-block:: sh
 
-    $bob measure det -v --output "my_det.pdf" -ts "DetDev1,DetEval1,DetDev2,DetEval2"
+    $bob measure det -e -v --output "my_det.pdf" -ts "DetDev1,DetEval1,DetDev2,DetEval2"
     dev-1.txt eval-1.txt dev-2.txt eval-2.txt
 
 where `my_det.pdf` will contain DET plots for the two experiments.
@@ -600,7 +600,7 @@ experiment. For example:
 
 .. code-block:: sh
 
-    $bob measure evaluate -v -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1,sys2}/{dev,eval}
+    $bob measure evaluate -e -v -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1,sys2}/{dev,eval}
 
 will output metrics and plots for the two experiments (dev and eval pairs) in
 `my_metrics.txt` and `my_plots.pdf`, respectively.
