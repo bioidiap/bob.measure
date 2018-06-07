@@ -23,6 +23,7 @@ Single point measurements
 +++++++++++++++++++++++++
 
 .. autosummary::
+   bob.measure.eer
    bob.measure.farfrr
    bob.measure.f_score
    bob.measure.precision_recall

@@ -168,7 +168,7 @@ def recognition_rate(cmc_scores, threshold = None, rank = 1):
   Parameters:
 
     cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`: 
+      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`:
       A list of tuples, where each tuple contains the
       ``negative`` and ``positive`` scores for one probe of the database).
 
@@ -395,7 +395,7 @@ def false_alarm_rate(cmc_scores, threshold):
   Parameters:
 
     cmc_scores (:py:class:`list`): A list in the format ``[(negatives,
-      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`: 
+      positives), ...]`` containing the CMC scores (i.e. :py:class:`list`:
       A list of tuples, where each tuple contains the
       ``negative`` and ``positive`` scores for one probe of the database).
 
@@ -429,6 +429,42 @@ def false_alarm_rate(cmc_scores, threshold):
     return 0.
 
   return float(incorrect) / float(counter)
+
+
+def eer(negatives, positives, is_sorted=False, also_farfrr=False):
+  """Calculates the Equal Error Rate (EER).
+
+  Please note that it is possible that eer != far != frr.
+  This function returns (far + frr) / 2 as eer.
+  If you also need the far and frr values, set ``also_farfrr`` to ``True``.
+
+  Parameters
+  ----------
+  negatives : ``array_like (1D, float)``
+      The scores for comparisons of objects of different classes.
+  positives : ``array_like (1D, float)``
+      The scores for comparisons of objects of the same class.
+  is_sorted : bool
+      Are both sets of scores already in ascendantly sorted order?
+  also_farfrr : bool
+      If True, it will also return far and frr.
+
+  Returns
+  -------
+  eer : float
+      The Equal Error Rate (EER).
+  far : float
+      The False Accept Rate (FAR). Returned only when ``also_farfrr`` is
+      ``True``.
+  frr : float
+      The False Reject Rate (FAR). Returned only when ``also_farfrr`` is
+      ``True``.
+  """
+  threshold = eer_threshold(negatives, positives, is_sorted)
+  far, frr = farfrr(negatives, positives, threshold)
+  if also_farfrr:
+    return (far + frr) / 2.0, far, frr
+  return (far + frr) / 2.0
 
 
 def get_config():
