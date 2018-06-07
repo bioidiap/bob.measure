@@ -27,16 +27,16 @@ def metrics(ctx, scores, evaluation, **kwargs):
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
-    only dev scores are provided, you must use flag `--no-evaluation`.
+    evaluation scores are provided, you must use flag `--eval`.
 
     Resulting table format can be changed using the `--tablefmt`.
 
     Examples:
         $ bob measure metrics dev-scores
 
-        $ bob measure metrics -l results.txt dev-scores1 eval-scores1
+        $ bob measure metrics -e -l results.txt dev-scores1 eval-scores1
 
-        $ bob measure metrics {dev,eval}-scores1 {dev,eval}-scores2
+        $ bob measure metrics -e {dev,eval}-scores1 {dev,eval}-scores2
     """
     process = figure.Metrics(ctx, scores, evaluation, load.split)
     process.run()
@@ -72,15 +72,15 @@ def roc(ctx, scores, evaluation, **kwargs):
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
-    only dev scores are provided, you must use flag `--no-evaluation`.
+    evaluation scores are provided, you must use flag `--eval`.
 
     Examples:
         $ bob measure roc -v dev-scores
 
-        $ bob measure roc -v dev-scores1 eval-scores1 dev-scores2
+        $ bob measure roc -e -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure roc -v -o my_roc.pdf dev-scores1 eval-scores1
+        $ bob measure roc -e -v -o my_roc.pdf dev-scores1 eval-scores1
     """
     process = figure.Roc(ctx, scores, evaluation, load.split)
     process.run()
@@ -115,15 +115,15 @@ def det(ctx, scores, evaluation, **kwargs):
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
-    only dev scores are provided, you must use flag `--no-evaluation`.
+    evaluation scores are provided, you must use flag `--eval`.
 
     Examples:
         $ bob measure det -v dev-scores
 
-        $ bob measure det -v dev-scores1 eval-scores1 dev-scores2
+        $ bob measure det -e -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure det -v -o my_det.pdf dev-scores1 eval-scores1
+        $ bob measure det -e -v -o my_det.pdf dev-scores1 eval-scores1
     """
     process = figure.Det(ctx, scores, evaluation, load.split)
     process.run()
@@ -168,14 +168,16 @@ def epc(ctx, scores, **kwargs):
 @common_options.output_plot_file_option(default_out='hist.pdf')
 @common_options.eval_option()
 @common_options.n_bins_option()
+@common_options.no_legend_option()
 @common_options.criterion_option()
+@common_options.no_line_option()
+@common_options.far_option()
 @common_options.thresholds_option()
 @common_options.const_layout_option()
 @common_options.print_filenames_option()
 @common_options.legends_option()
 @common_options.figsize_option(dflt=None)
 @common_options.style_option()
-@common_options.linestyles_option()
 @common_options.subplot_option()
 @common_options.legend_ncols_option()
 @common_options.no_legend_option()
@@ -187,20 +189,19 @@ def hist(ctx, scores, evaluation, **kwargs):
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
-    only dev scores are provided, you must use flag `--no-evaluation`.
+    evaluation scores are provided, you must use flag `--eval`.
 
     By default, when eval-scores are given, only eval-scores histograms are
     displayed with threshold line
-    computed from dev-scores. If you want to display dev-scores distributions
-    as well, use ``--show-dev`` option.
+    computed from dev-scores.
 
     Examples:
         $ bob measure hist -v dev-scores
 
-        $ bob measure hist -v dev-scores1 eval-scores1 dev-scores2
+        $ bob measure hist -e -v dev-scores1 eval-scores1 dev-scores2
         eval-scores2
 
-        $ bob measure hist -v --criterion min-hter --show-dev dev-scores1 eval-scores1
+        $ bob measure hist -e -v --criterion min-hter dev-scores1 eval-scores1
     """
     process = figure.Hist(ctx, scores, evaluation, load.split)
     process.run()
@@ -244,12 +245,12 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     Examples:
         $ bob measure evaluate -v dev-scores
 
-        $ bob measure evaluate -v scores-dev1 scores-eval1 scores-dev2
+        $ bob measure evaluate -e -v scores-dev1 scores-eval1 scores-dev2
         scores-eval2
 
-        $ bob measure evaluate -v /path/to/sys-{1,2,3}/scores-{dev,eval}
+        $ bob measure evaluate -e -v /path/to/sys-{1,2,3}/scores-{dev,eval}
 
-        $ bob measure evaluate -v -l metrics.txt -o my_plots.pdf dev-scores eval-scores
+        $ bob measure evaluate -e -v -l metrics.txt -o my_plots.pdf dev-scores eval-scores
     '''
     # first time erase if existing file
     ctx.meta['open_mode'] = 'w'

@@ -558,6 +558,7 @@ class Hist(PlotBase):
                     % self.n_systems
                 )
         self._criterion = ctx.meta.get('criterion')
+        self._no_line = ctx.meta.get('no_line', False)
         self._nrows = ctx.meta.get('n_row', 1)
         self._ncols = ctx.meta.get('n_col', 1)
         self._nlegends = ctx.meta.get('legends_ncol', 10)
@@ -593,7 +594,8 @@ class Hist(PlotBase):
             '' if self._criterion is None else
             self._criterion.upper(), ' (dev)' if self._eval else ''
         )
-        self._lines(threshold, label, neg, pos, idx)
+        if self._eval and not self._no_line:
+            self._lines(threshold, label, neg, pos, idx)
         if sub_plot_idx == 1:
             self._plot_legends()
         if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
