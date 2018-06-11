@@ -164,6 +164,20 @@ calculation of the threshold:
      By setting cost to 0.5 is equivalent to use
      :py:func:`bob.measure.min_hter_threshold`.
 
+
+.. important::
+   Often, it is not numerically possible to match the requested criteria for
+   calculating the threshold based on the provided scores. Instead, the closest
+   possible threshold is returned. For example, using
+   :any:`bob.measure.eer_threshold` **will not** give you a threshold where
+   :math:`FAR == FRR`. Hence, you cannot report :math:`FAR` or :math:`FRR`
+   instead of :math:`EER`; you should report :math:`(FAR+FRR)/2` instead. This
+   is also true for :any:`bob.measure.far_threshold` and
+   :any:`bob.measure.frr_threshold`. The threshold returned by those functions
+   does not guarantee that using that threshold you will get the requested
+   :math:`FAR` or :math:`FRR` value. Instead, you should recalculate using
+   :any:`bob.measure.farfrr`.
+
 .. note::
    Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which defaults to ``False``, throughout.
    However, these functions need sorted ``positive`` and/or ``negative`` scores.
