@@ -165,7 +165,8 @@ def lines_at_option(dflt='1e-3', **kwargs):
     return list_float_option(
         name='lines-at', short_name='la',
         desc='If given, draw vertical lines at the given axis positions. '
-        'Your values must be separated with a comma (,) without space.',
+        'Your values must be separated with a comma (,) without space. '
+        'This option works in ROC and DET curves.',
         nitems=None, dflt=dflt, **kwargs
     )
 
@@ -353,7 +354,8 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
     """
     def custom_criterion_option(func):
         list_accepted_crit = lcriteria if lcriteria is not None else \
-        ['eer', 'min-hter', 'far']
+            ['eer', 'min-hter', 'far']
+
         def callback(ctx, param, value):
             if value not in list_accepted_crit:
                 raise click.BadParameter('Incorrect value for `--criterion`. '
@@ -365,7 +367,8 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
             '-c', '--criterion', default='eer',
             help='Criterion to compute plots and '
             'metrics: %s)' % ', '.join(list_accepted_crit),
-            callback=callback, is_eager=True, **kwargs)(func)
+            callback=callback, is_eager=True, show_default=True,
+            **kwargs)(func)
     return custom_criterion_option
 
 
@@ -379,7 +382,8 @@ def far_option(**kwargs):
             return value
         return click.option(
             '-f', '--far-value', type=click.FLOAT, default=None,
-            help='The FAR value for which to compute threshold',
+            help='The FAR value for which to compute threshold. This option '
+            'must be used alongside `--criterion far`.',
             callback=callback, show_default=True, **kwargs)(func)
     return custom_far_option
 
@@ -434,7 +438,8 @@ def legend_loc_option(dflt='best', **kwargs):
     '''Get the legend location of the plot'''
     def custom_legend_loc_option(func):
         def callback(ctx, param, value):
-            ctx.meta['legend_loc'] = value.replace('-', ' ') if value else value
+            ctx.meta['legend_loc'] = value.replace(
+                '-', ' ') if value else value
             return value
         return click.option(
             '-lc', '--legend-loc', default=dflt, show_default=True,

@@ -52,7 +52,6 @@ class MeasureBase(object):
         func_load : Function that is used to load the input files
         """
         self._scores = scores
-        self._min_arg = ctx.meta.get('min_arg', 1)
         self._ctx = ctx
         self.func_load = func_load
         self._legends = ctx.meta.get('legends')

@@ -168,20 +168,19 @@ def epc(ctx, scores, **kwargs):
 @common_options.output_plot_file_option(default_out='hist.pdf')
 @common_options.eval_option()
 @common_options.n_bins_option()
+@common_options.legends_option()
 @common_options.no_legend_option()
+@common_options.legend_ncols_option()
 @common_options.criterion_option()
-@common_options.no_line_option()
 @common_options.hide_dev_option()
 @common_options.far_option()
+@common_options.no_line_option()
 @common_options.thresholds_option()
+@common_options.subplot_option()
 @common_options.const_layout_option()
 @common_options.print_filenames_option()
-@common_options.legends_option()
 @common_options.figsize_option(dflt=None)
 @common_options.style_option()
-@common_options.subplot_option()
-@common_options.legend_ncols_option()
-@common_options.no_legend_option()
 @verbosity_option()
 @click.pass_context
 def hist(ctx, scores, evaluation, **kwargs):
@@ -190,13 +189,11 @@ def hist(ctx, scores, evaluation, **kwargs):
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
-    evaluation scores are provided, you must use flag `--eval`.
-
-    By default, when eval-scores are given, only eval-scores histograms are
-    displayed with threshold line
-    computed from dev-scores.
+    evaluation scores are provided, you must use the `--eval` flag. The
+    threshold is always computed from development score files.
 
     Examples:
+
         $ bob measure hist -v dev-scores
 
         $ bob measure hist -e -v dev-scores1 eval-scores1 dev-scores2
@@ -215,10 +212,11 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.table_option()
 @common_options.eval_option()
 @common_options.criterion_option()
+@common_options.far_option()
 @common_options.output_log_metric_option()
 @common_options.output_plot_file_option(default_out='eval_plots.pdf')
-@common_options.points_curve_option()
 @common_options.lines_at_option()
+@common_options.points_curve_option()
 @common_options.const_layout_option()
 @common_options.figsize_option()
 @common_options.style_option()
@@ -229,22 +227,23 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     '''Runs error analysis on score sets
 
     \b
-    1. Computes the threshold using either EER or min. HTER criteria on
+    1. Computes the threshold using a criteria (EER by default) on
        development set scores
     2. Applies the above threshold on evaluation set scores to compute the
-       HTER, if a eval-score set is provided
-    3. Reports error rates on the console
+       HTER if a eval-score (use --eval) set is provided.
+    3. Reports error rates on the console or in a log file.
     4. Plots ROC, EPC, DET curves and score distributions to a multi-page PDF
        file
 
-
-    You need to provide 2 score files for each biometric system in this order:
+    You need to provide 1 or 2 score files for each biometric system in this
+    order:
 
     \b
     * development scores
     * evaluation scores
 
     Examples:
+
         $ bob measure evaluate -v dev-scores
 
         $ bob measure evaluate -e -v scores-dev1 scores-eval1 scores-dev2
@@ -252,9 +251,9 @@ def evaluate(ctx, scores, evaluation, **kwargs):
 
         $ bob measure evaluate -e -v /path/to/sys-{1,2,3}/scores-{dev,eval}
 
-        $ bob measure evaluate -e -v -l metrics.txt -o my_plots.pdf dev-scores eval-scores
+        $ bob measure evaluate -v -l metrics.txt -o my_plots.pdf dev-scores
     '''
-    # first time erase if existing file
+    # open_mode is always write in this command.
     ctx.meta['open_mode'] = 'w'
     criterion = ctx.meta.get('criterion')
     if criterion is not None:
