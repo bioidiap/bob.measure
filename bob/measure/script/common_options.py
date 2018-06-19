@@ -239,23 +239,31 @@ def points_curve_option(**kwargs):
 
 def n_bins_option(**kwargs):
     '''Get the number of bins in the histograms'''
+    possible_strings = ['auto', 'fd', 'doane',
+                        'scott', 'rice', 'sturges', 'sqrt']
+
     def custom_n_bins_option(func):
         def callback(ctx, param, value):
             if value is None:
-                value = 'auto'
+                value = ['doane']
             else:
                 tmp = value.split(',')
                 try:
-                    value = [int(i) if i != 'auto' else i for i in tmp]
+                    value = [int(i) if i not in possible_strings
+                             else i for i in tmp]
                 except Exception:
                     raise click.BadParameter('Incorrect number of bins inputs')
             ctx.meta['n_bins'] = value
             return value
         return click.option(
-            '-b', '--nbins', type=click.STRING, default='auto',
+            '-b', '--nbins', type=click.STRING, default='doane',
             help='The number of bins for the different histograms in the '
-            ' figure, seperated by commas. For example, if three histograms '
-            'are in the plots, input something like `100,auto,50`',
+            'figure, seperated by commas. For example, if three histograms '
+            'are in the plots, input something like `100,doane,50`. All the '
+            'possible bin options can be found in https://docs.scipy.org/doc/'
+            'numpy/reference/generated/numpy.histogram.html. Be aware that '
+            'for some corner cases, the option `auto` and `fd` can lead to '
+            'MemoryError.',
             callback=callback, **kwargs)(func)
     return custom_n_bins_option
 

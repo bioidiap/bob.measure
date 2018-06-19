@@ -63,7 +63,7 @@ def test_roc():
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.roc, ['-e', '--output',
-                                              'test.pdf', '--legends', 'A,B', 
+                                              'test.pdf', '--legends', 'A,B',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -130,20 +130,20 @@ def test_hist():
         result = runner.invoke(commands.hist, [dev1])
         if result.output:
             click.echo(result.output)
-        assert result.exit_code == 0, (result.exit_code, result.output)
+        assert result.exit_code == 0, (result.exit_code, result.output, result.exception)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['--criterion',
                                                'min-hter', '--no-line',
-                                               '--output', 'HISTO.pdf',  '-b', 
-                                               '30,100', dev1, dev2])
+                                               '--output', 'HISTO.pdf',  '-b',
+                                               '30,100,30,100', dev1, dev2])
         if result.output:
             click.echo(result.output)
         assert result.exit_code == 0, (result.exit_code, result.output)
 
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['-e', '--criterion', 'eer','--output',
-                                               'HISTO.pdf',  '-b',  '30,20',
+                                               'HISTO.pdf',  '-b',  '30,20,30,20',
                                                '-sp', 221, '-lg', 'A,B',
                                                dev1, test1, dev2, test2])
         if result.output:
@@ -159,7 +159,7 @@ def test_evaluate():
     runner = CliRunner()
     with runner.isolated_filesystem():
         result = runner.invoke(commands.evaluate, [dev1])
-        assert result.exit_code == 0, (result.exit_code, result.output)
+        assert result.exit_code == 0, (result.exit_code, result.output, result.exception)
 
     with runner.isolated_filesystem():
         result = runner.invoke(
