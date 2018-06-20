@@ -13,6 +13,18 @@ from tabulate import tabulate
 from .. import (far_threshold, plot, utils, ppndf)
 
 
+def check_list_value(values, desired_number, name, name2='systems'):
+    if values is not None and len(values) != desired_number:
+        if len(values) == 1:
+            values = values * desired_number
+        else:
+            raise click.BadParameter(
+                '#{} ({}) must be either 1 value or the same as '
+                '#{} ({} values)'.format(name, values, name2, desired_number))
+
+    return values
+
+
 class MeasureBase(object):
     """Base class for metrics and plots.
     This abstract class define the framework to plot or compute metrics from a
@@ -300,7 +312,6 @@ class PlotBase(MeasureBase):
         if not self._titles and self._title is not None:
             self._titles = [self._title] * 2
 
-
         self._x_label = ctx.meta.get('x_label')
         self._y_label = ctx.meta.get('y_label')
         self._grid_color = 'silver'
@@ -545,18 +556,16 @@ class Epc(PlotBase):
 class Hist(PlotBase):
     ''' Functional base class for histograms'''
 
-    def __init__(self, ctx, scores, evaluation, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load, nhist_per_system=2):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
-        self._nbins = ctx.meta.get('n_bins', [])
+        self._nbins = ctx.meta.get('n_bins', ['doane'])
+        self._nhist_per_system = nhist_per_system
+        self._nbins = check_list_value(
+            self._nbins, self.n_systems * nhist_per_system, 'n_bins',
+            'histograms')
         self._thres = ctx.meta.get('thres')
-        if self._thres is not None and len(self._thres) != self.n_systems:
-            if len(self._thres) == 1:
-                self._thres = self._thres * self.n_systems
-            else:
-                raise click.BadParameter(
-                    '#thresholds must be the same as #systems (%d)'
-                    % self.n_systems
-                )
+        self._thres = check_list_value(
+            self._thres, self.n_systems, 'thresholds')
         self._criterion = ctx.meta.get('criterion')
         self._no_line = ctx.meta.get('no_line', False)
         self._nrows = ctx.meta.get('n_row', 1)
@@ -607,7 +616,8 @@ class Hist(PlotBase):
     def _get_title(self, idx, dev_file, eval_file):
         title = self._legends[idx] if self._legends is not None else None
         title = title or self._title_base
-        title = '' if title is not None and not title.replace(' ', '') else title
+        title = '' if title is not None and not title.replace(
+            ' ', '') else title
         return title or ''
 
     def _plot_legends(self):
@@ -643,7 +653,7 @@ class Hist(PlotBase):
     def _density_hist(self, scores, n, **kwargs):
         n, bins, patches = mpl.hist(
             scores, density=True,
-            bins='auto' if len(self._nbins) <= n else self._nbins[n],
+            bins=self._nbins[n],
             **kwargs
         )
         return (n, bins, patches)
