@@ -192,6 +192,9 @@ def hist(ctx, scores, evaluation, **kwargs):
     evaluation scores are provided, you must use the `--eval` flag. The
     threshold is always computed from development score files.
 
+    By default, when eval-scores are given, only eval-scores histograms are
+    displayed with threshold line computed from dev-scores.
+
     Examples:
 
         $ bob measure hist -v dev-scores
