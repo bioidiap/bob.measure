@@ -171,6 +171,7 @@ def epc(ctx, scores, **kwargs):
 @common_options.no_legend_option()
 @common_options.criterion_option()
 @common_options.no_line_option()
+@common_options.hide_dev_option()
 @common_options.far_option()
 @common_options.thresholds_option()
 @common_options.const_layout_option()
@@ -259,6 +260,7 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     if criterion is not None:
         click.echo("Computing metrics with %s..." % criterion)
         ctx.invoke(metrics, scores=scores, evaluation=evaluation)
+
     if 'log' in ctx.meta:
         click.echo("[metrics] => %s" % ctx.meta['log'])
 
