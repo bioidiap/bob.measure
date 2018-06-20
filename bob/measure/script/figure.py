@@ -52,7 +52,6 @@ class MeasureBase(object):
         func_load : Function that is used to load the input files
         """
         self._scores = scores
-        self._min_arg = ctx.meta.get('min_arg', 1)
         self._ctx = ctx
         self.func_load = func_load
         self._legends = ctx.meta.get('legends')
@@ -161,8 +160,10 @@ class Metrics(MeasureBase):
         output stream
     '''
 
-    def __init__(self, ctx, scores, evaluation, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load,
+                 names=('FtA', 'FMR', 'FNMR', 'FAR', 'FRR', 'HTER')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
+        self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
         self._criterion = ctx.meta.get('criterion')
         self._open_mode = ctx.meta.get('open_mode')
@@ -181,6 +182,9 @@ class Metrics(MeasureBase):
         if self._log is not None:
             self.log_file = open(self._log, self._open_mode)
 
+    def get_thres(self, criterion, dev_neg, dev_pos, far):
+        return utils.get_thres(criterion, dev_neg, dev_pos, far)
+
     def compute(self, idx, input_scores, input_names):
         ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
@@ -191,7 +195,7 @@ class Metrics(MeasureBase):
             eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
             eval_file = input_names[1]
 
-        threshold = utils.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
+        threshold = self.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
             if self._thres is None else self._thres[idx]
         title = self._legends[idx] if self._legends is not None else None
         if self._thres is None:
@@ -226,12 +230,12 @@ class Metrics(MeasureBase):
         dev_frr_str = "%.1f%%" % (100 * dev_frr)
         dev_hter_str = "%.1f%%" % (100 * dev_hter)
         headers = ['' or title, 'Development %s' % dev_file]
-        raws = [['FtA', dev_fta_str],
-                ['FMR', dev_fmr_str],
-                ['FNMR', dev_fnmr_str],
-                ['FAR', dev_far_str],
-                ['FRR', dev_frr_str],
-                ['HTER', dev_hter_str]]
+        raws = [[self.names[0], dev_fta_str],
+                [self.names[1], dev_fmr_str],
+                [self.names[2], dev_fnmr_str],
+                [self.names[3], dev_far_str],
+                [self.names[4], dev_frr_str],
+                [self.names[5], dev_hter_str]]
 
         if self._eval:
             # computes statistics for the eval set based on the threshold a priori
@@ -522,13 +526,13 @@ class Det(PlotBase):
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
 
-    def __init__(self, ctx, scores, evaluation, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load, hter='HTER'):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
             raise click.UsageError("EPC requires dev and eval score files")
         self._titles = self._titles or ['EPC'] * 2
         self._x_label = self._x_label or r'$\alpha$'
-        self._y_label = self._y_label or 'HTER (%)'
+        self._y_label = self._y_label or hter + ' (%)'
         self._legend_loc = self._legend_loc or 'upper center'
         self._eval = True  # always eval data with EPC
         self._split = False
@@ -596,7 +600,6 @@ class Hist(PlotBase):
             self._print_subplot(idx, eval_neg, eval_pos, threshold,
                                 not self._no_line, dflt_title="Eval scores")
 
-
     def _print_subplot(self, idx, neg, pos, threshold, draw_line, dflt_title):
         n = idx % self._step_print
         col = n % self._ncols
@@ -628,7 +631,7 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dflt=None):
         title = self._legends[idx] if self._legends is not None \
-        and idx < len(self._legends) else dflt
+            and idx < len(self._legends) else dflt
         title = title or self._title_base
         title = '' if title is not None and not title.replace(
             ' ', '') else title

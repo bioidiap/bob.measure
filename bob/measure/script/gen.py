@@ -93,4 +93,4 @@ def gen(outdir, mean_neg, mean_pos):
     write_scores_to_file(neg_dev, pos_dev,
                          os.path.join(outdir, 'scores-dev'))
     write_scores_to_file(neg_eval, pos_eval,
-                         os.path.join(outdir,  'scores-eval'))
+                         os.path.join(outdir, 'scores-eval'))
