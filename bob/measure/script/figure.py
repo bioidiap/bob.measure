@@ -570,6 +570,9 @@ class Hist(PlotBase):
         self._no_line = ctx.meta.get('no_line', False)
         self._nrows = ctx.meta.get('n_row', 1)
         self._ncols = ctx.meta.get('n_col', 1)
+        self._hide_dev = ctx.meta.get('hide_dev', False)
+        # dev hist are displayed next to eval hist
+        self._ncols *= 1 if self._hide_dev else 2
         self._nlegends = ctx.meta.get('legends_ncol', 10)
         self._legend_loc = self._legend_loc or 'upper center'
         self._step_print = int(self._nrows * self._ncols)
@@ -582,14 +585,23 @@ class Hist(PlotBase):
         ''' Draw histograms of negative and positive scores.'''
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
             self._get_neg_pos_thres(idx, input_scores, input_names)
-        dev_file = input_names[0]
-        eval_file = None if len(input_names) != 2 else input_names[1]
+        idx *= 1 if self._hide_dev or not self._eval else 2
+
+        if not self._hide_dev or not self._eval:
+            self._print_subplot(idx, dev_neg, dev_pos, threshold, False,
+                                dflt_title="Dev scores")
+
+        idx += 1 if self._eval and not self._hide_dev else 0
+        if self._eval:
+            self._print_subplot(idx, eval_neg, eval_pos, threshold,
+                                not self._no_line, dflt_title="Eval scores")
+
+
+    def _print_subplot(self, idx, neg, pos, threshold, draw_line, dflt_title):
         n = idx % self._step_print
         col = n % self._ncols
         sub_plot_idx = n + 1
         axis = mpl.subplot(self._nrows, self._ncols, sub_plot_idx)
-        neg = eval_neg if eval_neg is not None else dev_neg
-        pos = eval_pos if eval_pos is not None else dev_pos
         self._setup_hist(neg, pos)
         if col == 0:
             axis.set_ylabel(self._y_label)
@@ -598,23 +610,25 @@ class Hist(PlotBase):
             int(idx / self._step_print) * self._step_print
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
-        axis.set_title(self._get_title(idx, dev_file, eval_file))
+        axis.set_title(self._get_title(idx, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
             self._criterion.upper(), ' (dev)' if self._eval else ''
         )
-        if self._eval and not self._no_line:
+        if draw_line:
             self._lines(threshold, label, neg, pos, idx)
         if sub_plot_idx == 1:
             self._plot_legends()
-        if self._step_print == sub_plot_idx or idx == self.n_systems - 1:
+        mult = 2 if self._eval and not self._hide_dev else 1
+        if self._step_print == sub_plot_idx or idx == self.n_systems * mult - 1:
             mpl.tight_layout()
             self._pdf_page.savefig(mpl.gcf(), bbox_inches='tight')
             mpl.clf()
             mpl.figure()
 
-    def _get_title(self, idx, dev_file, eval_file):
-        title = self._legends[idx] if self._legends is not None else None
+    def _get_title(self, idx, dflt=None):
+        title = self._legends[idx] if self._legends is not None \
+        and idx < len(self._legends) else dflt
         title = title or self._title_base
         title = '' if title is not None and not title.replace(
             ' ', '') else title
