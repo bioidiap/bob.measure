@@ -7,7 +7,7 @@ from . import common_options
 
 SCORE_FORMAT = (
     "The command takes as input generic 2-column data format as "
-    "specified in the documentation of "":py:func:`bob.measure.load.split`")
+    "specified in the documentation of "":py:func:`bob.measure.load.split`.")
 CRITERIA = ('eer', 'min-hter', 'far')
 
 

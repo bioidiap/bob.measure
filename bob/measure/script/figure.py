@@ -182,6 +182,9 @@ class Metrics(MeasureBase):
         if self._log is not None:
             self.log_file = open(self._log, self._open_mode)
 
+    def get_thres(self, criterion, dev_neg, dev_pos, far):
+        return utils.get_thres(criterion, dev_neg, dev_pos, far)
+
     def compute(self, idx, input_scores, input_names):
         ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
@@ -192,7 +195,7 @@ class Metrics(MeasureBase):
             eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
             eval_file = input_names[1]
 
-        threshold = utils.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
+        threshold = self.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
             if self._thres is None else self._thres[idx]
         title = self._legends[idx] if self._legends is not None else None
         if self._thres is None:
@@ -523,13 +526,13 @@ class Det(PlotBase):
 class Epc(PlotBase):
     ''' Handles the plotting of EPC '''
 
-    def __init__(self, ctx, scores, evaluation, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load, hter='HTER'):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
             raise click.UsageError("EPC requires dev and eval score files")
         self._titles = self._titles or ['EPC'] * 2
         self._x_label = self._x_label or r'$\alpha$'
-        self._y_label = self._y_label or 'HTER (%)'
+        self._y_label = self._y_label or hter + ' (%)'
         self._legend_loc = self._legend_loc or 'upper center'
         self._eval = True  # always eval data with EPC
         self._split = False
@@ -597,7 +600,6 @@ class Hist(PlotBase):
             self._print_subplot(idx, eval_neg, eval_pos, threshold,
                                 not self._no_line, dflt_title="Eval scores")
 
-
     def _print_subplot(self, idx, neg, pos, threshold, draw_line, dflt_title):
         n = idx % self._step_print
         col = n % self._ncols
@@ -629,7 +631,7 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dflt=None):
         title = self._legends[idx] if self._legends is not None \
-        and idx < len(self._legends) else dflt
+            and idx < len(self._legends) else dflt
         title = title or self._title_base
         title = '' if title is not None and not title.replace(
             ' ', '') else title
