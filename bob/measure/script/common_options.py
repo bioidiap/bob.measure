@@ -79,6 +79,18 @@ def eval_option(**kwargs):
     return custom_eval_option
 
 
+def hide_dev_option(dflt=False, **kwargs):
+    '''Get option flag to say if dev plot should be hidden'''
+    def custom_hide_dev_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['hide_dev'] = value
+            return value
+        return click.option(
+            '--hide-dev', is_flag=True, default=dflt,
+            show_default=True,
+            help='If set, hide dev related plots',
+            callback=callback, **kwargs)(func)
+    return custom_hide_dev_option
 
 
 def sep_dev_eval_option(dflt=True, **kwargs):
