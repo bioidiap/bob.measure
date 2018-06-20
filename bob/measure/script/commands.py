@@ -213,6 +213,7 @@ def hist(ctx, scores, evaluation, **kwargs):
 @common_options.sep_dev_eval_option()
 @common_options.table_option()
 @common_options.eval_option()
+@common_options.criterion_option()
 @common_options.output_log_metric_option()
 @common_options.output_plot_file_option(default_out='eval_plots.pdf')
 @common_options.points_curve_option()
@@ -254,14 +255,10 @@ def evaluate(ctx, scores, evaluation, **kwargs):
     '''
     # first time erase if existing file
     ctx.meta['open_mode'] = 'w'
-    click.echo("Computing metrics with EER...")
-    ctx.meta['criterion'] = 'eer'  # no criterion passed to evaluate
-    ctx.invoke(metrics, scores=scores, evaluation=evaluation)
-    # second time, appends the content
-    ctx.meta['open_mode'] = 'a'
-    click.echo("Computing metrics with min-HTER...")
-    ctx.meta['criterion'] = 'min-hter'  # no criterion passed in evaluate
-    ctx.invoke(metrics, scores=scores, evaluation=evaluation)
+    criterion = ctx.meta.get('criterion')
+    if criterion is not None:
+        click.echo("Computing metrics with %s..." % criterion)
+        ctx.invoke(metrics, scores=scores, evaluation=evaluation)
     if 'log' in ctx.meta:
         click.echo("[metrics] => %s" % ctx.meta['log'])
 
