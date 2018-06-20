@@ -1,12 +1,14 @@
 '''Stores click common options for plots'''
 
+import functools
 import logging
 import click
 from click.types import INT, FLOAT
 import matplotlib.pyplot as plt
 import tabulate
 from matplotlib.backends.backend_pdf import PdfPages
-from bob.extension.scripts.click_helper import (bool_option, list_float_option)
+from bob.extension.scripts.click_helper import (
+    bool_option, list_float_option, verbosity_option, open_file_mode_option)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -567,3 +569,353 @@ def style_option(**kwargs):
             'multiple styles by repeating this option',
             callback=callback, **kwargs)(func)
     return custom_style_option
+
+
+def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
+    def custom_metrics_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(nargs=-1)
+        @eval_option()
+        @table_option()
+        @output_log_metric_option()
+        @criterion_option(criteria)
+        @thresholds_option()
+        @far_option()
+        @legends_option()
+        @open_file_mode_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_metrics_command
+
+
+METRICS_HELP = """Prints a table that contains {names} for a given
+    threshold criterion ({criteria}).
+
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    evaluation scores are provided, you must use flag `--eval`.
+
+    {score_format}
+
+    Resulting table format can be changed using the `--tablefmt`.
+
+    Examples:
+
+        $ {command} -v scores-dev
+
+        $ {command} -e -l results.txt sys1/scores-{{dev,eval}}
+
+        $ {command} -e {{sys1,sys2}}/scores-{{dev,eval}}
+    """
+
+
+def roc_command(docstring):
+    def custom_roc_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(nargs=-1)
+        @titles_option()
+        @legends_option()
+        @no_legend_option()
+        @legend_loc_option(dflt=None)
+        @sep_dev_eval_option()
+        @output_plot_file_option(default_out='roc.pdf')
+        @eval_option()
+        @semilogx_option(True)
+        @lines_at_option()
+        @axes_val_option()
+        @min_far_option()
+        @x_rotation_option()
+        @x_label_option()
+        @y_label_option()
+        @points_curve_option()
+        @const_layout_option()
+        @figsize_option()
+        @style_option()
+        @linestyles_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_roc_command
+
+
+ROC_HELP = """Plot ROC (receiver operating characteristic) curve.
+    The plot will represent the false match rate on the horizontal axis and the
+    false non match rate on the vertical axis.  The values for the axis will be
+    computed using :py:func:`bob.measure.roc`.
+
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    evaluation scores are provided, you must use flag `--eval`.
+
+    {score_format}
+
+    Examples:
+
+        $ {command} -v scores-dev
+
+        $ {command} -e -v sys1/scores-{{dev,eval}}
+
+        $ {command} -e -v -o my_roc.pdf {{sys1,sys2}}/scores-{{dev,eval}}
+    """
+
+
+def det_command(docstring):
+    def custom_det_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(nargs=-1)
+        @output_plot_file_option(default_out='det.pdf')
+        @titles_option()
+        @legends_option()
+        @no_legend_option()
+        @legend_loc_option(dflt='upper-right')
+        @sep_dev_eval_option()
+        @eval_option()
+        @axes_val_option(dflt='0.01,95,0.01,95')
+        @min_far_option()
+        @x_rotation_option(dflt=45)
+        @x_label_option()
+        @y_label_option()
+        @points_curve_option()
+        @lines_at_option()
+        @const_layout_option()
+        @figsize_option()
+        @style_option()
+        @linestyles_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_det_command
+
+
+DET_HELP = """Plot DET (detection error trade-off) curve.
+    modified ROC curve which plots error rates on both axes
+    (false positives on the x-axis and false negatives on the y-axis).
+
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    evaluation scores are provided, you must use flag `--eval`.
+
+    {score_format}
+
+    Examples:
+
+        $ {command} -v scores-dev
+
+        $ {command} -e -v sys1/scores-{{dev,eval}}
+
+        $ {command} -e -v -o my_det.pdf {{sys1,sys2}}/scores-{{dev,eval}}
+    """
+
+
+def epc_command(docstring):
+    def custom_epc_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(min_arg=1, force_eval=True, nargs=-1)
+        @output_plot_file_option(default_out='epc.pdf')
+        @titles_option()
+        @legends_option()
+        @no_legend_option()
+        @legend_loc_option(dflt='upper-center')
+        @points_curve_option()
+        @const_layout_option()
+        @x_label_option()
+        @y_label_option()
+        @figsize_option()
+        @style_option()
+        @linestyles_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_epc_command
+
+
+EPC_HELP = """Plot EPC (expected performance curve).
+    plots the error rate on the eval set depending on a threshold selected
+    a-priori on the development set and accounts for varying relative cost
+    in [0; 1] of FPR and FNR when calculating the threshold.
+
+    You need to provide one or more development score and eval file(s)
+    for each experiment.
+
+    {score_format}
+
+    Examples:
+
+        $ {command} -v scores-{{dev,eval}}
+
+        $ {command} -v -o my_epc.pdf {{sys1,sys2}}/scores-{{dev,eval}}
+    """
+
+
+def hist_command(docstring):
+    def custom_hist_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(nargs=-1)
+        @output_plot_file_option(default_out='hist.pdf')
+        @eval_option()
+        @hide_dev_option()
+        @n_bins_option()
+        @legends_option()
+        @no_legend_option()
+        @legend_ncols_option()
+        @criterion_option()
+        @far_option()
+        @no_line_option()
+        @thresholds_option()
+        @subplot_option()
+        @const_layout_option()
+        @print_filenames_option()
+        @figsize_option(dflt=None)
+        @style_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_hist_command
+
+
+HIST_HELP = """ Plots histograms of positive and negatives along with threshold
+    criterion.
+
+    You need to provide one or more development score file(s) for each
+    experiment. You can also provide evaluation files along with dev files. If
+    evaluation scores are provided, you must use the `--eval` flag. The
+    threshold is always computed from development score files.
+
+    By default, when eval-scores are given, only eval-scores histograms are
+    displayed with threshold line computed from dev-scores.
+
+    {score_format}
+
+    Examples:
+
+        $ {command} -v scores-dev
+
+        $ {command} -e -v sys1/scores-{{dev,eval}}
+
+        $ {command} -e -v --criterion min-hter {{sys1,sys2}}/scores-{{dev,eval}}
+    """
+
+
+def evaluate_command(docstring, criteria=('eer', 'min-hter', 'far')):
+    def custom_evaluate_command(func):
+        func.__doc__ = docstring
+
+        @click.command()
+        @scores_argument(nargs=-1)
+        @legends_option()
+        @sep_dev_eval_option()
+        @table_option()
+        @eval_option()
+        @criterion_option(criteria)
+        @far_option()
+        @output_log_metric_option()
+        @output_plot_file_option(default_out='eval_plots.pdf')
+        @lines_at_option()
+        @points_curve_option()
+        @const_layout_option()
+        @figsize_option(dflt=None)
+        @style_option()
+        @linestyles_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_evaluate_command
+
+
+EVALUATE_HELP = '''Runs error analysis on score sets.
+
+    \b
+    1. Computes the threshold using a criteria (EER by default) on
+       development set scores
+    2. Applies the above threshold on evaluation set scores to compute the
+       HTER if a eval-score (use --eval) set is provided.
+    3. Reports error rates on the console or in a log file.
+    4. Plots ROC, DET, and EPC curves and score distributions to a multi-page
+       PDF file
+
+    You need to provide 1 or 2 score files for each biometric system in this
+    order:
+
+    \b
+    * development scores
+    * evaluation scores
+
+    {score_format}
+
+    Examples:
+
+        $ {command} -v dev-scores
+
+        $ {command} -v /path/to/sys-{{1,2,3}}/scores-dev
+
+        $ {command} -e -v /path/to/sys-{{1,2,3}}/scores-{{dev,eval}}
+
+        $ {command} -v -l metrics.txt -o my_plots.pdf dev-scores
+
+    This command is a combination of metrics, roc, det, epc, and hist commands.
+    If you want more flexibility in your plots, please use the individual
+    commands.
+    '''
+
+
+def evaluate_flow(ctx, scores, evaluation, metrics, roc, det, epc, hist,
+                  **kwargs):
+    # open_mode is always write in this command.
+    ctx.meta['open_mode'] = 'w'
+    criterion = ctx.meta.get('criterion')
+    if criterion is not None:
+        click.echo("Computing metrics with %s..." % criterion)
+        ctx.invoke(metrics, scores=scores, evaluation=evaluation)
+        if 'log' in ctx.meta:
+            click.echo("[metrics] => %s" % ctx.meta['log'])
+
+    # avoid closing pdf file before all figures are plotted
+    ctx.meta['closef'] = False
+    if evaluation:
+        click.echo("Starting evaluate with dev and eval scores...")
+    else:
+        click.echo("Starting evaluate with dev scores only...")
+    click.echo("Computing ROC...")
+    # set axes limits for ROC
+    ctx.forward(roc)  # use class defaults plot settings
+    click.echo("Computing DET...")
+    ctx.forward(det)  # use class defaults plot settings
+    if evaluation:
+        click.echo("Computing EPC...")
+        ctx.forward(epc)  # use class defaults plot settings
+    # the last one closes the file
+    ctx.meta['closef'] = True
+    click.echo("Computing score histograms...")
+    ctx.meta['criterion'] = 'eer'  # no criterion passed in evaluate
+    ctx.forward(hist)
+    click.echo("Evaluate successfully completed!")
+    click.echo("[plots] => %s" % (ctx.meta['output']))

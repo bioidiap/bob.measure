@@ -160,8 +160,10 @@ class Metrics(MeasureBase):
         output stream
     '''
 
-    def __init__(self, ctx, scores, evaluation, func_load):
+    def __init__(self, ctx, scores, evaluation, func_load,
+                 names=('FtA', 'FMR', 'FNMR', 'FAR', 'FRR', 'HTER')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
+        self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
         self._criterion = ctx.meta.get('criterion')
         self._open_mode = ctx.meta.get('open_mode')
@@ -225,12 +227,12 @@ class Metrics(MeasureBase):
         dev_frr_str = "%.1f%%" % (100 * dev_frr)
         dev_hter_str = "%.1f%%" % (100 * dev_hter)
         headers = ['' or title, 'Development %s' % dev_file]
-        raws = [['FtA', dev_fta_str],
-                ['FMR', dev_fmr_str],
-                ['FNMR', dev_fnmr_str],
-                ['FAR', dev_far_str],
-                ['FRR', dev_frr_str],
-                ['HTER', dev_hter_str]]
+        raws = [[self.names[0], dev_fta_str],
+                [self.names[1], dev_fmr_str],
+                [self.names[2], dev_fnmr_str],
+                [self.names[3], dev_far_str],
+                [self.names[4], dev_frr_str],
+                [self.names[5], dev_hter_str]]
 
         if self._eval:
             # computes statistics for the eval set based on the threshold a priori
