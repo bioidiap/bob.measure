@@ -187,7 +187,7 @@ def x_rotation_option(dflt=0, **kwargs):
     return custom_x_rotation_option
 
 
-def legend_ncols_option(dflt=10, **kwargs):
+def legend_ncols_option(dflt=3, **kwargs):
     '''Get option for number of columns for legends'''
     def custom_legend_ncols_option(func):
         def callback(ctx, param, value):
