@@ -150,6 +150,29 @@ def test_hist():
             click.echo(result.output)
         assert result.exit_code == 0, (result.exit_code, result.output)
 
+def test_hist_legends():
+    dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
+    test1 = bob.io.base.test_utils.datafile('test-1.txt', 'bob.measure')
+    dev2 = bob.io.base.test_utils.datafile('dev-2.txt', 'bob.measure')
+    test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
+    runner = CliRunner()
+
+    # share same legend for dev/eval of each system
+    with runner.isolated_filesystem():
+        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-lg', 'A,B',
+                                               dev1, test1, dev2, test2])
+        if result.output:
+            click.echo(result.output)
+        assert result.exit_code == 0, (result.exit_code, result.output)
+
+    # individual legends for dev and eval
+    with runner.isolated_filesystem():
+        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-lg',
+                                               'A,B,C,D',
+                                               dev1, test1, dev2, test2])
+        if result.output:
+            click.echo(result.output)
+        assert result.exit_code == 0, (result.exit_code, result.output)
 
 def test_evaluate():
     dev1 = bob.io.base.test_utils.datafile('dev-1.txt', 'bob.measure')
