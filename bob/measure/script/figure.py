@@ -62,8 +62,8 @@ class MeasureBase(object):
                 'Number of argument must be a non-zero multiple of %d' % self._min_arg
             )
         self.n_systems = int(len(scores) / self._min_arg)
-        if self._legends is not None and len(self._legends) != self.n_systems:
-            raise click.BadParameter("Number of legends must be equal to the "
+        if self._legends is not None and len(self._legends) < self.n_systems:
+            raise click.BadParameter("Number of legends must be >= to the "
                                      "number of systems")
 
     def run(self):
