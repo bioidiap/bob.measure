@@ -272,9 +272,10 @@ def n_bins_option(**kwargs):
             return value
         return click.option(
             '-b', '--nbins', type=click.STRING, default='doane',
-            help='The number of bins for the different histograms in the '
-            'figure, seperated by commas. For example, if three histograms '
-            'are in the plots, input something like `100,doane,50`. All the '
+            help='The number of bins for the different quantities to plot, '
+            'seperated by commas. For example, if you plot histograms '
+            'of negative and positive scores '
+            ', input something like `100,doane`. All the '
             'possible bin options can be found in https://docs.scipy.org/doc/'
             'numpy/reference/generated/numpy.histogram.html. Be aware that '
             'for some corner cases, the option `auto` and `fd` can lead to '

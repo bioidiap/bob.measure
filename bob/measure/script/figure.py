@@ -565,7 +565,7 @@ class Hist(PlotBase):
         self._nbins = ctx.meta.get('n_bins', ['doane'])
         self._nhist_per_system = nhist_per_system
         self._nbins = check_list_value(
-            self._nbins, self.n_systems * nhist_per_system, 'n_bins',
+            self._nbins, nhist_per_system, 'n_bins',
             'histograms')
         self._thres = ctx.meta.get('thres')
         self._thres = check_list_value(
