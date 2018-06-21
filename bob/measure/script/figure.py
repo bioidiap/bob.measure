@@ -584,6 +584,10 @@ class Hist(PlotBase):
         self._y_label = 'Probability density'
         self._x_label = 'Scores values'
         self._end_setup_plot = False
+        if self._legends is not None and len(self._legends) == self.n_systems \
+           and not self._hide_dev:
+            self._legends = [x for pair in zip(self._legends,self._legends)
+                             for x in pair]
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
