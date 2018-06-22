@@ -611,15 +611,15 @@ class Hist(PlotBase):
         idx *= 1 if self._hide_dev or not self._eval else 2
 
         if not self._hide_dev or not self._eval:
-            self._print_subplot(idx, dev_neg, dev_pos, threshold, False,
-                                dflt_title="Dev scores")
+            self._print_subplot(idx, dev_neg, dev_pos, threshold,
+                                not self._no_line, False)
 
         idx += 1 if self._eval and not self._hide_dev else 0
         if self._eval:
             self._print_subplot(idx, eval_neg, eval_pos, threshold,
-                                not self._no_line, dflt_title="Eval scores")
+                                not self._no_line, True)
 
-    def _print_subplot(self, idx, neg, pos, threshold, draw_line, dflt_title):
+    def _print_subplot(self, idx, neg, pos, threshold, draw_line, evaluation):
         ''' print a subplot for the given score and subplot index'''
         n = idx % self._step_print
         col = n % self._ncols
@@ -633,6 +633,7 @@ class Hist(PlotBase):
             int(idx / self._step_print) * self._step_print
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
+        dflt_title = "Eval scores" if evaluation else "Dev scores"
         axis.set_title(self._get_title(idx, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
