@@ -586,7 +586,7 @@ class Hist(PlotBase):
         self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
         self._y_label = 'Probability density'
-        self._x_label = 'Scores values'
+        self._x_label = 'Score values'
         self._end_setup_plot = False
         if self._legends is not None and len(self._legends) == self.n_systems \
            and not self._hide_dev:
