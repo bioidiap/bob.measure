@@ -168,7 +168,9 @@ class Metrics(MeasureBase):
     '''
 
     def __init__(self, ctx, scores, evaluation, func_load,
-                 names=('FtA', 'FMR', 'FNMR', 'FAR', 'FRR', 'HTER')):
+                 names=('NaNs Rate', 'False Positive Rate', 'False Negative Rate',
+                        'False Accept Rate', 'False Reject Rate',
+                        'Half Total Error Rate')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
