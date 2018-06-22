@@ -121,6 +121,13 @@ class MeasureBase(object):
             list of base names for the input file of the system
         """
         pass
+        # structure of input is (vuln example):
+        # if evaluation is provided
+        # [ (dev_licit_neg, dev_licit_pos), (eval_licit_neg, eval_licit_pos),
+        #   (dev_spoof_neg, dev_licit_pos), (eval_spoof_neg, eval_licit_pos)]
+        # and if only dev:
+        # [ (dev_licit_neg, dev_licit_pos), (dev_spoof_neg, dev_licit_pos)]
+
 
     # Things to do after the main iterative computations are done
     @abstractmethod
@@ -578,15 +585,18 @@ class Hist(PlotBase):
         self._ncols = ctx.meta.get('n_col', 1)
         # do not display dev histo
         self._hide_dev = ctx.meta.get('hide_dev', False)
+        if self._hide_dev and not self._eval:
+            raise click.BadParameter("You can only use --hide-dev along with --eval")
+
         # dev hist are displayed next to eval hist
-        self._ncols *= 1 if self._hide_dev else 2
+        self._ncols *= 1 if self._hide_dev or not self._eval else 2
         self._nlegends = ctx.meta.get('legends_ncol', 3)
         self._legend_loc = self._legend_loc or 'upper center'
         # number of subplot on one page
         self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
         self._y_label = 'Probability density'
-        self._x_label = 'Scores values'
+        self._x_label = 'Score values'
         self._end_setup_plot = False
         if self._legends is not None and len(self._legends) == self.n_systems \
            and not self._hide_dev:
@@ -674,13 +684,23 @@ class Hist(PlotBase):
         ''' Get scores and threshod for the given system at index idx'''
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         length = len(neg_list)
+        # lists returned by get_fta_list contains all the following items:
+        # for bio or measure without eval:
+        #   [dev]
+        # for vuln with {licit,spoof} with eval:
+        #   [dev, eval]
+        # for vuln with {licit,spoof} without eval:
+        #   [licit_dev, spoof_dev]
+        # for vuln with {licit,spoof} with eval:
+        #   [licit_dev, licit_eval, spoof_dev, spoof_eval]
+        step = 2 if self._eval else 1
         # can have several files for one system
-        dev_neg = [neg_list[x] for x in range(0, length, 2)]
-        dev_pos = [pos_list[x] for x in range(0, length, 2)]
+        dev_neg = [neg_list[x] for x in range(0, length, step)]
+        dev_pos = [pos_list[x] for x in range(0, length, step)]
         eval_neg = eval_pos = None
         if self._eval:
-            eval_neg = [neg_list[x] for x in range(1, length, 2)]
-            eval_pos = [pos_list[x] for x in range(1, length, 2)]
+            eval_neg = [neg_list[x] for x in range(1, length, step)]
+            eval_pos = [pos_list[x] for x in range(1, length, step)]
 
         threshold = utils.get_thres(
             self._criterion, dev_neg[0], dev_pos[0]
