@@ -711,8 +711,9 @@ class Hist(PlotBase):
         if col == 0:
             axis.set_ylabel(self._y_label)
         # rest to be printed
-        rest_print = self.n_systems - \
-            int(idx / self._step_print) * self._step_print
+        rest_print = self.n_systems * (2 if self._eval and not self._hide_dev
+                                       else 1) - int(idx / self._step_print) \
+                                    * self._step_print
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
         dflt_title = "Eval. scores" if evaluation else "Dev. scores"
