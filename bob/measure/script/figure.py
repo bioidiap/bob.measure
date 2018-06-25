@@ -716,6 +716,8 @@ class Hist(PlotBase):
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
         dflt_title = "Eval. scores" if evaluation else "Dev. scores"
+        if self.n_systems == 1 and (not self._eval or self._hide_dev):
+            dflt_title = " "
         axis.set_title(self._get_title(idx, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
