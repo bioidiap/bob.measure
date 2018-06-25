@@ -486,7 +486,7 @@ class Roc(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
-        self._titles = self._titles or ['ROC dev', 'ROC eval']
+        self._titles = self._titles or ['ROC dev.', 'ROC eval.']
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
         self._semilogx = ctx.meta.get('semilogx', True)
@@ -524,7 +524,7 @@ class Roc(PlotBase):
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx],
-                label=self._label('eval', eval_file, idx)
+                label=self._label('eval.', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -550,7 +550,7 @@ class Det(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
-        self._titles = self._titles or ['DET dev', 'DET eval']
+        self._titles = self._titles or ['DET dev.', 'DET eval.']
         self._x_label = self._x_label or 'False Positive Rate (%)'
         self._y_label = self._y_label or 'False Negative Rate (%)'
         self._legend_loc = self._legend_loc or 'upper right'
@@ -589,7 +589,7 @@ class Det(PlotBase):
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval', eval_file, idx)
+                label=self._label('eval.', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -617,7 +617,7 @@ class Epc(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load, hter='HTER'):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
-            raise click.UsageError("EPC requires dev and eval score files")
+            raise click.UsageError("EPC requires dev. and eval. score files")
         self._titles = self._titles or ['EPC'] * 2
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or hter + ' (%)'
@@ -715,7 +715,7 @@ class Hist(PlotBase):
             int(idx / self._step_print) * self._step_print
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
-        dflt_title = "Eval scores" if evaluation else "Dev scores"
+        dflt_title = "Eval. scores" if evaluation else "Dev. scores"
         axis.set_title(self._get_title(idx, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
