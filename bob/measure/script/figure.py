@@ -168,7 +168,9 @@ class Metrics(MeasureBase):
     '''
 
     def __init__(self, ctx, scores, evaluation, func_load,
-                 names=('FtA', 'FMR', 'FNMR', 'FAR', 'FRR', 'HTER')):
+                 names=('NaNs Rate', 'False Positive Rate', 'False Negative Rate',
+                        'False Accept Rate', 'False Reject Rate',
+                        'Half Total Error Rate')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
@@ -484,7 +486,7 @@ class Roc(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
-        self._titles = self._titles or ['ROC dev', 'ROC eval']
+        self._titles = self._titles or ['ROC dev.', 'ROC eval.']
         self._x_label = self._x_label or 'False Positive Rate'
         self._y_label = self._y_label or "1 - False Negative Rate"
         self._semilogx = ctx.meta.get('semilogx', True)
@@ -522,7 +524,7 @@ class Roc(PlotBase):
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx],
-                label=self._label('eval', eval_file, idx)
+                label=self._label('eval.', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -548,7 +550,7 @@ class Det(PlotBase):
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
-        self._titles = self._titles or ['DET dev', 'DET eval']
+        self._titles = self._titles or ['DET dev.', 'DET eval.']
         self._x_label = self._x_label or 'False Positive Rate (%)'
         self._y_label = self._y_label or 'False Negative Rate (%)'
         self._legend_loc = self._legend_loc or 'upper right'
@@ -587,7 +589,7 @@ class Det(PlotBase):
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval', eval_file, idx)
+                label=self._label('eval.', eval_file, idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -615,7 +617,7 @@ class Epc(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load, hter='HTER'):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
         if self._min_arg != 2:
-            raise click.UsageError("EPC requires dev and eval score files")
+            raise click.UsageError("EPC requires dev. and eval. score files")
         self._titles = self._titles or ['EPC'] * 2
         self._x_label = self._x_label or r'$\alpha$'
         self._y_label = self._y_label or hter + ' (%)'
@@ -678,11 +680,13 @@ class Hist(PlotBase):
         self._y_label = 'Probability density'
         self._x_label = 'Score values'
         self._end_setup_plot = False
-        if self._legends is not None and len(self._legends) == self.n_systems \
+        # overide _titles of PlotBase
+        self._titles = ctx.meta.get('titles')
+        if self._titles is not None and len(self._titles) == self.n_systems \
            and not self._hide_dev:
             # use same legend for dev and eval if needed
-            self._legends = [x for pair in zip(self._legends, self._legends)
-                             for x in pair]
+            self._titles = [x for pair in zip(self._titles, self._titles)
+                            for x in pair]
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
@@ -709,11 +713,14 @@ class Hist(PlotBase):
         if col == 0:
             axis.set_ylabel(self._y_label)
         # rest to be printed
-        rest_print = self.n_systems - \
-            int(idx / self._step_print) * self._step_print
+        rest_print = self.n_systems * (2 if self._eval and not self._hide_dev
+                                       else 1) - int(idx / self._step_print) \
+                                    * self._step_print
         if n + self._ncols >= min(self._step_print, rest_print):
             axis.set_xlabel(self._x_label)
-        dflt_title = "Eval scores" if evaluation else "Dev scores"
+        dflt_title = "Eval. scores" if evaluation else "Dev. scores"
+        if self.n_systems == 1 and (not self._eval or self._hide_dev):
+            dflt_title = " "
         axis.set_title(self._get_title(idx, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
@@ -735,8 +742,8 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dflt=None):
         ''' Get the histo title for the given idx'''
-        title = self._legends[idx] if self._legends is not None \
-            and idx < len(self._legends) else dflt
+        title = self._titles[idx] if self._titles is not None \
+            and idx < len(self._titles) else dflt
         title = title or self._title_base
         title = '' if title is not None and not title.replace(
             ' ', '') else title

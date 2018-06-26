@@ -144,7 +144,7 @@ def test_hist():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['-e', '--criterion', 'eer','--output',
                                                'HISTO.pdf',  '-b',  '30,20',
-                                               '-sp', 221, '-lg', 'A,B',
+                                               '-sp', 221, '-ts', 'A,B',
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -159,7 +159,7 @@ def test_hist_legends():
 
     # share same legend for dev/eval of each system
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-lg', 'A,B',
+        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts', 'A,B',
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -167,7 +167,7 @@ def test_hist_legends():
 
     # individual legends for dev and eval
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-lg',
+        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts',
                                                'A,B,C,D',
                                                dev1, test1, dev2, test2])
         if result.output:
