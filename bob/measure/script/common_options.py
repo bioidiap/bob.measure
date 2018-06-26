@@ -491,7 +491,7 @@ def legends_option(**kwargs):
             return value
         return click.option(
             '-lg', '--legends', type=click.STRING, default=None,
-            help='The title for each system comma separated. '
+            help='The legend for each system comma separated. '
             'Example: --legends ISV,CNN',
             callback=callback, **kwargs)(func)
     return custom_legends_option
@@ -779,7 +779,7 @@ def hist_command(docstring):
         @eval_option()
         @hide_dev_option()
         @n_bins_option()
-        @legends_option()
+        @titles_option()
         @no_legend_option()
         @legend_ncols_option()
         @criterion_option()

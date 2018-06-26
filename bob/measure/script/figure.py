@@ -680,11 +680,13 @@ class Hist(PlotBase):
         self._y_label = 'Probability density'
         self._x_label = 'Score values'
         self._end_setup_plot = False
-        if self._legends is not None and len(self._legends) == self.n_systems \
+        # overide _titles of PlotBase
+        self._titles = ctx.meta.get('titles')
+        if self._titles is not None and len(self._titles) == self.n_systems \
            and not self._hide_dev:
             # use same legend for dev and eval if needed
-            self._legends = [x for pair in zip(self._legends, self._legends)
-                             for x in pair]
+            self._titles = [x for pair in zip(self._titles, self._titles)
+                            for x in pair]
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
@@ -740,8 +742,8 @@ class Hist(PlotBase):
 
     def _get_title(self, idx, dflt=None):
         ''' Get the histo title for the given idx'''
-        title = self._legends[idx] if self._legends is not None \
-            and idx < len(self._legends) else dflt
+        title = self._titles[idx] if self._titles is not None \
+            and idx < len(self._titles) else dflt
         title = title or self._title_base
         title = '' if title is not None and not title.replace(
             ' ', '') else title
