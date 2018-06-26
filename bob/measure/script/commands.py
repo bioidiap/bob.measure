@@ -11,10 +11,12 @@ SCORE_FORMAT = (
 CRITERIA = ('eer', 'min-hter', 'far')
 
 
-@common_options.metrics_command(common_options.METRICS_HELP.format(
-    names='FtA, FAR, FRR, FMR, FMNR, HTER',
-    criteria=CRITERIA, score_format=SCORE_FORMAT,
-    command='bob measure metrics'), criteria=CRITERIA)
+@common_options.metrics_command(
+    common_options.METRICS_HELP.format(
+        names='FtA, FAR, FRR, FMR, FMNR, HTER',
+        criteria=CRITERIA, score_format=SCORE_FORMAT,
+        command='bob measure metrics'),
+    criteria=CRITERIA)
 def metrics(ctx, scores, evaluation, **kwargs):
     process = figure.Metrics(ctx, scores, evaluation, load.split)
     process.run()
@@ -59,3 +61,15 @@ def hist(ctx, scores, evaluation, **kwargs):
 def evaluate(ctx, scores, evaluation, **kwargs):
     common_options.evaluate_flow(
         ctx, scores, evaluation, metrics, roc, det, epc, hist, **kwargs)
+
+
+@common_options.multi_metrics_command(
+    common_options.MULTI_METRICS_HELP.format(
+        names='FtA, FAR, FRR, FMR, FMNR, HTER',
+        criteria=CRITERIA, score_format=SCORE_FORMAT,
+        command='bob measure multi-metrics'),
+    criteria=CRITERIA)
+def multi_metrics(ctx, scores, evaluation, protocols_number, **kwargs):
+    ctx.meta['min_arg'] = protocols_number * (2 if evaluation else 1)
+    process = figure.MultiMetrics(ctx, scores, evaluation, load.split)
+    process.run()

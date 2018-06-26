@@ -74,6 +74,7 @@ setup(
       'bob.measure.cli': [
           'evaluate = bob.measure.script.commands:evaluate',
           'metrics = bob.measure.script.commands:metrics',
+          'multi-metrics = bob.measure.script.commands:multi_metrics',
           'roc = bob.measure.script.commands:roc',
           'det = bob.measure.script.commands:det',
           'epc = bob.measure.script.commands:epc',

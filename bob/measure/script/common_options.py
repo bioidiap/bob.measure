@@ -21,7 +21,7 @@ def scores_argument(min_arg=1, force_eval=False, **kwargs):
     ----------
     min_arg : int
         the minimum number of file needed to evaluate a system. For example,
-        PAD functionalities needs licit abd spoof and therefore min_arg = 2
+        vulnerability analysis needs licit and spoof and therefore min_arg = 2
 
     Returns
     -------
@@ -920,3 +920,67 @@ def evaluate_flow(ctx, scores, evaluation, metrics, roc, det, epc, hist,
     ctx.forward(hist)
     click.echo("Evaluate successfully completed!")
     click.echo("[plots] => %s" % (ctx.meta['output']))
+
+
+def n_protocols_option(required=True, **kwargs):
+    '''Get option for number of protocols.'''
+    def custom_n_protocols_option(func):
+        def callback(ctx, param, value):
+            value = abs(value)
+            ctx.meta['protocols_number'] = value
+            return value
+        return click.option(
+            '-pn', '--protocols-number', type=click.INT,
+            show_default=True, required=required,
+            help='The number of protocols of cross validation.',
+            callback=callback, **kwargs)(func)
+    return custom_n_protocols_option
+
+
+def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
+    def custom_metrics_command(func):
+        func.__doc__ = docstring
+
+        @click.command('multi-metrics')
+        @scores_argument(nargs=-1)
+        @eval_option()
+        @n_protocols_option()
+        @table_option()
+        @output_log_metric_option()
+        @criterion_option(criteria)
+        @thresholds_option()
+        @far_option()
+        @legends_option()
+        @open_file_mode_option()
+        @verbosity_option()
+        @click.pass_context
+        @functools.wraps(func)
+        def wrapper(*args, **kwds):
+            return func(*args, **kwds)
+        return wrapper
+    return custom_metrics_command
+
+
+MULTI_METRICS_HELP = """Multi protocol (cross-validation) metrics.
+
+    Prints a table that contains {names} for a given threshold criterion
+    ({criteria}). The metrics are averaged over several protocols. The idea is
+    that each protocol corresponds to one fold in your cross-validation.
+
+    You need to provide as many as development score files as the number of
+    protocols per system. You can also provide evaluation files along with dev
+    files. If evaluation scores are provided, you must use flag `--eval`. The
+    number of protocols must be provided using the `--protocols-number` option.
+
+    {score_format}
+
+    Resulting table format can be changed using the `--tablefmt`.
+
+    Examples:
+
+        $ {command} -v {{p1,p2,p3}}/scores-dev
+
+        $ {command} -v -e {{p1,p2,p3}}/scores-{{dev,eval}}
+
+        $ {command} -v -e {{sys1,sys2}}/{{p1,p2,p3}}/scores-{{dev,eval}}
+    """

@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 import math
 import sys
 import os.path
+import numpy
 import click
 import matplotlib
 import matplotlib.pyplot as mpl
@@ -128,7 +129,6 @@ class MeasureBase(object):
         # and if only dev:
         # [ (dev_licit_neg, dev_licit_pos), (dev_spoof_neg, dev_licit_pos)]
 
-
     # Things to do after the main iterative computations are done
     @abstractmethod
     def end_process(self):
@@ -192,6 +192,29 @@ class Metrics(MeasureBase):
     def get_thres(self, criterion, dev_neg, dev_pos, far):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
+    def _numbers(self, neg, pos, threshold, fta):
+        from .. import farfrr
+        fmr, fnmr = farfrr(neg, pos, threshold)
+        far = fmr * (1 - fta)
+        frr = fta + fnmr * (1 - fta)
+        hter = (far + frr) / 2.0
+
+        ni = neg.shape[0]  # number of impostors
+        fm = int(round(fmr * ni))  # number of false accepts
+        nc = pos.shape[0]  # number of clients
+        fnm = int(round(fnmr * nc))  # number of false rejects
+        return fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc
+
+    def _strings(self, fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc):
+        fta_str = "%.1f%%" % (100 * fta)
+        fmr_str = "%.1f%% (%d/%d)" % (100 * fmr, fm, ni)
+        fnmr_str = "%.1f%% (%d/%d)" % (100 * fnmr, fnm, nc)
+        far_str = "%.1f%%" % (100 * far)
+        frr_str = "%.1f%%" % (100 * frr)
+        hter_str = "%.1f%%" % (100 * hter)
+
+        return fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str
+
     def compute(self, idx, input_scores, input_names):
         ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
         given system inputs'''
@@ -204,6 +227,7 @@ class Metrics(MeasureBase):
 
         threshold = self.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
             if self._thres is None else self._thres[idx]
+
         title = self._legends[idx] if self._legends is not None else None
         if self._thres is None:
             far_str = ''
@@ -219,68 +243,123 @@ class Metrics(MeasureBase):
                        "Development set `%s`: %e"
                        % (dev_file or title, threshold), file=self.log_file)
 
-        from .. import farfrr
-        dev_fmr, dev_fnmr = farfrr(dev_neg, dev_pos, threshold)
-        dev_far = dev_fmr * (1 - dev_fta)
-        dev_frr = dev_fta + dev_fnmr * (1 - dev_fta)
-        dev_hter = (dev_far + dev_frr) / 2.0
-
-        dev_ni = dev_neg.shape[0]  # number of impostors
-        dev_fm = int(round(dev_fmr * dev_ni))  # number of false accepts
-        dev_nc = dev_pos.shape[0]  # number of clients
-        dev_fnm = int(round(dev_fnmr * dev_nc))  # number of false rejects
-
-        dev_fta_str = "%.1f%%" % (100 * dev_fta)
-        dev_fmr_str = "%.1f%% (%d/%d)" % (100 * dev_fmr, dev_fm, dev_ni)
-        dev_fnmr_str = "%.1f%% (%d/%d)" % (100 * dev_fnmr, dev_fnm, dev_nc)
-        dev_far_str = "%.1f%%" % (100 * dev_far)
-        dev_frr_str = "%.1f%%" % (100 * dev_frr)
-        dev_hter_str = "%.1f%%" % (100 * dev_hter)
+        fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
+            self._strings(*self._numbers(
+                dev_neg, dev_pos, threshold, dev_fta))
         headers = ['' or title, 'Development %s' % dev_file]
-        raws = [[self.names[0], dev_fta_str],
-                [self.names[1], dev_fmr_str],
-                [self.names[2], dev_fnmr_str],
-                [self.names[3], dev_far_str],
-                [self.names[4], dev_frr_str],
-                [self.names[5], dev_hter_str]]
+        rows = [[self.names[0], fta_str],
+                [self.names[1], fmr_str],
+                [self.names[2], fnmr_str],
+                [self.names[3], far_str],
+                [self.names[4], frr_str],
+                [self.names[5], hter_str]]
 
         if self._eval:
-            # computes statistics for the eval set based on the threshold a priori
-            eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, threshold)
-            eval_far = eval_fmr * (1 - eval_fta)
-            eval_frr = eval_fta + eval_fnmr * (1 - eval_fta)
-            eval_hter = (eval_far + eval_frr) / 2.0
-
-            eval_ni = eval_neg.shape[0]  # number of impostors
-            eval_fm = int(round(eval_fmr * eval_ni))  # number of false accepts
-            eval_nc = eval_pos.shape[0]  # number of clients
-            # number of false rejects
-            eval_fnm = int(round(eval_fnmr * eval_nc))
-
-            eval_fta_str = "%.1f%%" % (100 * eval_fta)
-            eval_fmr_str = "%.1f%% (%d/%d)" % (100 *
-                                               eval_fmr, eval_fm, eval_ni)
-            eval_fnmr_str = "%.1f%% (%d/%d)" % (100 *
-                                                eval_fnmr, eval_fnm, eval_nc)
-
-            eval_far_str = "%.1f%%" % (100 * eval_far)
-            eval_frr_str = "%.1f%%" % (100 * eval_frr)
-            eval_hter_str = "%.1f%%" % (100 * eval_hter)
+            # computes statistics for the eval set based on the threshold a
+            # priori
+            fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
+                self._strings(*self._numbers(
+                    eval_neg, eval_pos, threshold, eval_fta))
 
             headers.append('Eval. % s' % eval_file)
-            raws[0].append(eval_fta_str)
-            raws[1].append(eval_fmr_str)
-            raws[2].append(eval_fnmr_str)
-            raws[3].append(eval_far_str)
-            raws[4].append(eval_frr_str)
-            raws[5].append(eval_hter_str)
+            rows[0].append(fta_str)
+            rows[1].append(fmr_str)
+            rows[2].append(fnmr_str)
+            rows[3].append(far_str)
+            rows[4].append(frr_str)
+            rows[5].append(hter_str)
 
-        click.echo(tabulate(raws, headers, self._tablefmt), file=self.log_file)
+        click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 
     def end_process(self):
         ''' Close log file if needed'''
         if self._log is not None:
             self.log_file.close()
+
+
+class MultiMetrics(Metrics):
+    '''Computes average of metrics based on several protocols (cross
+    validation)
+
+    Attributes
+    ----------
+    log_file : str
+        output stream
+    names : tuple
+        List of names for the metrics.
+    '''
+
+    def __init__(self, ctx, scores, evaluation, func_load,
+                 names=('NaNs Rate', 'False Positive Rate',
+                        'False Negative Rate', 'False Accept Rate',
+                        'False Reject Rate', 'Half Total Error Rate')):
+        super(MultiMetrics, self).__init__(
+            ctx, scores, evaluation, func_load, names=names)
+
+        self.headers = ['Methods'] + list(self.names)
+        if self._eval:
+            self.headers.insert(1, self.names[5] + ' (dev)')
+        self.rows = []
+
+    def _strings(self, metrics):
+        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _ = metrics.mean(axis=0)
+        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _ = metrics.std(axis=0)
+        fta_str = "%.1f%% (%.1f%%)" % (100 * ftam, 100 * ftas)
+        fmr_str = "%.1f%% (%.1f%%)" % (100 * fmrm, 100 * fmrs)
+        fnmr_str = "%.1f%% (%.1f%%)" % (100 * fnmrm, 100 * fnmrs)
+        far_str = "%.1f%% (%.1f%%)" % (100 * farm, 100 * fars)
+        frr_str = "%.1f%% (%.1f%%)" % (100 * frrm, 100 * frrs)
+        hter_str = "%.1f%% (%.1f%%)" % (100 * hterm, 100 * hters)
+
+        return fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str
+
+    def compute(self, idx, input_scores, input_names):
+        '''Computes the average of metrics over several protocols.'''
+        neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
+        step = 2 if self._eval else 1
+        self._dev_metrics = []
+        self._thresholds = []
+        for i in range(0, len(input_scores), step):
+            neg, pos, fta = neg_list[i], pos_list[i], fta_list[i]
+            threshold = self.get_thres(self._criterion, neg, pos, self._far) \
+                if self._thres is None else self._thres[idx]
+            self._thresholds.append(threshold)
+            self._dev_metrics.append(self._numbers(neg, pos, threshold, fta))
+        self._dev_metrics = numpy.array(self._dev_metrics)
+
+        if self._eval:
+            self._eval_metrics = []
+            for i in range(1, len(input_scores), step):
+                neg, pos, fta = neg_list[i], pos_list[i], fta_list[i]
+                threshold = self._thresholds[i // 2]
+                self._eval_metrics.append(
+                    self._numbers(neg, pos, threshold, fta))
+            self._eval_metrics = numpy.array(self._eval_metrics)
+
+        title = self._legends[idx] if self._legends is not None else None
+
+        fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
+            self._strings(self._dev_metrics)
+
+        if self._eval:
+            self.rows.append([title, hter_str])
+        else:
+            self.rows.append([title, fta_str, fmr_str, fnmr_str,
+                              far_str, frr_str, hter_str])
+
+        if self._eval:
+            # computes statistics for the eval set based on the threshold a
+            # priori
+            fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
+                self._strings(self._eval_metrics)
+
+            self.rows[-1].extend([fta_str, fmr_str, fnmr_str,
+                                  far_str, frr_str, hter_str])
+
+    def end_process(self):
+        click.echo(tabulate(self.rows, self.headers,
+                            self._tablefmt), file=self.log_file)
+        super(MultiMetrics, self).end_process()
 
 
 class PlotBase(MeasureBase):
@@ -586,7 +665,8 @@ class Hist(PlotBase):
         # do not display dev histo
         self._hide_dev = ctx.meta.get('hide_dev', False)
         if self._hide_dev and not self._eval:
-            raise click.BadParameter("You can only use --hide-dev along with --eval")
+            raise click.BadParameter(
+                "You can only use --hide-dev along with --eval")
 
         # dev hist are displayed next to eval hist
         self._ncols *= 1 if self._hide_dev or not self._eval else 2
@@ -601,7 +681,7 @@ class Hist(PlotBase):
         if self._legends is not None and len(self._legends) == self.n_systems \
            and not self._hide_dev:
             # use same legend for dev and eval if needed
-            self._legends = [x for pair in zip(self._legends,self._legends)
+            self._legends = [x for pair in zip(self._legends, self._legends)
                              for x in pair]
 
     def compute(self, idx, input_scores, input_names):
