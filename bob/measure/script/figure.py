@@ -669,9 +669,8 @@ class Hist(PlotBase):
         if self._hide_dev and not self._eval:
             raise click.BadParameter(
                 "You can only use --hide-dev along with --eval")
-
         # dev hist are displayed next to eval hist
-        self._ncols *= 1 if self._hide_dev or not self._eval else 2
+        self._nrows *= 1 if self._hide_dev or not self._eval else 2
         self._nlegends = ctx.meta.get('legends_ncol', 3)
         self._legend_loc = self._legend_loc or 'upper center'
         # number of subplot on one page
@@ -681,29 +680,31 @@ class Hist(PlotBase):
         self._x_label = 'Score values'
         self._end_setup_plot = False
         # overide _titles of PlotBase
-        self._titles = ctx.meta.get('titles')
-        if self._titles is not None and len(self._titles) == self.n_systems \
-           and not self._hide_dev:
-            # use same legend for dev and eval if needed
-            self._titles = [x for pair in zip(self._titles, self._titles)
-                            for x in pair]
+        self._titles = ctx.meta.get('titles', []) * 2
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
             self._get_neg_pos_thres(idx, input_scores, input_names)
-        idx *= 1 if self._hide_dev or not self._eval else 2
+        # keep id of the current system
+        sys = idx
+        # if the id of the current system does not match the id of the plot, 
+        # change it
+        if not self._hide_dev and self._eval:
+            row = int(idx / self._ncols) * 2
+            col = idx % self._ncols
+            idx = col + self._ncols * row
 
         if not self._hide_dev or not self._eval:
-            self._print_subplot(idx, dev_neg, dev_pos, threshold,
+            self._print_subplot(idx, sys, dev_neg, dev_pos, threshold,
                                 not self._no_line, False)
 
-        idx += 1 if self._eval and not self._hide_dev else 0
         if self._eval:
-            self._print_subplot(idx, eval_neg, eval_pos, threshold,
+            idx += self._ncols if not self._hide_dev else 0
+            self._print_subplot(idx, sys, eval_neg, eval_pos, threshold,
                                 not self._no_line, True)
 
-    def _print_subplot(self, idx, neg, pos, threshold, draw_line, evaluation):
+    def _print_subplot(self, idx, sys, neg, pos, threshold, draw_line, evaluation):
         ''' print a subplot for the given score and subplot index'''
         n = idx % self._step_print
         col = n % self._ncols
@@ -712,16 +713,21 @@ class Hist(PlotBase):
         self._setup_hist(neg, pos)
         if col == 0:
             axis.set_ylabel(self._y_label)
+        # systems per page
+        sys_per_page = self._step_print / (1 if self._hide_dev or not
+                                           self._eval else 2)
         # rest to be printed
-        rest_print = self.n_systems * (2 if self._eval and not self._hide_dev
-                                       else 1) - int(idx / self._step_print) \
-                                    * self._step_print
-        if n + self._ncols >= min(self._step_print, rest_print):
+        sys_idx = sys % sys_per_page
+        rest_print = self.n_systems - int(sys / sys_per_page) * sys_per_page
+        # lower histo only
+        is_lower = evaluation or not self._eval
+        if is_lower and sys_idx + self._ncols >= min(sys_per_page, rest_print):
             axis.set_xlabel(self._x_label)
         dflt_title = "Eval. scores" if evaluation else "Dev. scores"
         if self.n_systems == 1 and (not self._eval or self._hide_dev):
             dflt_title = " "
-        axis.set_title(self._get_title(idx, dflt_title))
+        add = self.n_systems if is_lower else 0
+        axis.set_title(self._get_title(sys + add, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
             self._criterion.upper(), ' (dev)' if self._eval else ''
@@ -729,10 +735,11 @@ class Hist(PlotBase):
         if draw_line:
             self._lines(threshold, label, neg, pos, idx)
 
-        mult = 2 if self._eval and not self._hide_dev else 1
+
         # if it was the last subplot of the page or the last subplot
         # to display, save figure
-        if self._step_print == sub_plot_idx or idx == self.n_systems * mult - 1:
+        if self._step_print == sub_plot_idx or (is_lower and sys ==
+                                                self.n_systems - 1):
             # print legend on the page
             self.plot_legends()
             mpl.tight_layout()
