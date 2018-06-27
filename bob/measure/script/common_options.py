@@ -523,8 +523,8 @@ def titles_option(**kwargs):
             '-ts', '--titles', type=click.STRING, default=None,
             help='The titles of the plots seperated by commas. '
             'For example, if the figure has two plots, \"MyTitleA,MyTitleB\" '
-            'is a possible input'
-            'Provide just a space (-t ' ') to '
+            'is a possible input.'
+            ' Provide just a space (-ts \' \') to '
             'remove the titles from figures.',
             callback=callback, **kwargs)(func)
     return custom_title_option
