@@ -159,7 +159,7 @@ def test_hist_legends():
 
     # share same legend for dev/eval of each system
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts', 'A,B',
+        result = runner.invoke(commands.hist, ['-e', '-sp', 111, '-ts', 'A,B',
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
