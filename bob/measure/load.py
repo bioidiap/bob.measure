@@ -43,8 +43,8 @@ def split(filename):
                    positive) and the second the scores
                      (float).'''.format(filename))
         raise
-    return (scores[numpy.where(neg_pos == -1)],
-            scores[numpy.where(neg_pos == 1)])
+    positives = neg_pos == 1
+    return (scores[~positives], scores[positives])
 
 
 def split_files(filenames):
