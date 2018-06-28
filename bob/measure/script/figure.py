@@ -197,9 +197,9 @@ class Metrics(MeasureBase):
     def _numbers(self, neg, pos, threshold, fta):
         from .. import farfrr
         fmr, fnmr = farfrr(neg, pos, threshold)
+        hter = (fmr + fnmr) / 2.0
         far = fmr * (1 - fta)
         frr = fta + fnmr * (1 - fta)
-        hter = (far + frr) / 2.0
 
         ni = neg.shape[0]  # number of impostors
         fm = int(round(fmr * ni))  # number of false accepts
