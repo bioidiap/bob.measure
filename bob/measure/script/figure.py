@@ -97,6 +97,17 @@ class MeasureBase(object):
                 #    index idx * self._min_arg
                 self._scores[idx * self._min_arg:(idx + 1) * self._min_arg]
             )
+            LOGGER.info("-----Input files for system %d-----", idx + 1)
+            for i, name in enumerate(input_names):
+                if not self._eval:
+                    LOGGER.info("Dev. score %d: %s", i + 1, name)
+                else:
+                    if i % 2 == 0:
+                        LOGGER.info("Dev. score %d: %s", i / 2 + 1, name)
+                    else:
+                        LOGGER.info("Eval. score %d: %s", i / 2 + 1, name)
+            LOGGER.info("----------------------------------")
+
             self.compute(idx, input_scores, input_names)
         # setup final configuration, plotting properties, ...
         self.end_process()
@@ -151,12 +162,12 @@ class MeasureBase(object):
                 A list that contains the output of
                 ``func_load`` for the given files
             basenames: :any:`list`:
-                A list of basenames for the given files
+                A list of the given files
         '''
         scores = []
         basenames = []
         for filename in filepaths:
-            basenames.append(os.path.basename(filename).split(".")[0])
+            basenames.append(filename.split(".")[0])
             scores.append(self.func_load(filename))
         return scores, basenames
 
@@ -504,12 +515,12 @@ class PlotBase(MeasureBase):
 
     # common protected functions
 
-    def _label(self, base, name, idx):
+    def _label(self, base, idx):
         if self._legends is not None and len(self._legends) > idx:
             return self._legends[idx]
         if self.n_systems > 1:
-            return base + (" %d (%s)" % (idx + 1, name))
-        return base + (" (%s)" % name)
+            return base + (" %d" % (idx + 1))
+        return base
 
     def _set_axis(self):
         if self._axlim is not None:
@@ -543,23 +554,25 @@ class Roc(PlotBase):
 
         mpl.figure(1)
         if self._eval:
+            LOGGER.info("ROC dev. curve using %s", dev_file)
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', dev_file, idx)
+                label=self._label('dev', idx)
             )
             if self._split:
                 mpl.figure(2)
 
             linestyle = '--' if not self._split else self._linestyles[idx]
+            LOGGER.info("ROC eval. curve using %s", eval_file)
             plot.roc_for_far(
                 eval_neg, eval_pos, linestyle=linestyle,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx],
-                label=self._label('eval.', eval_file, idx)
+                label=self._label('eval.', idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -571,12 +584,13 @@ class Roc(PlotBase):
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
+            LOGGER.info("ROC dev. curve using %s", dev_file)
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', dev_file, idx)
+                label=self._label('dev', idx)
             )
 
 
@@ -613,18 +627,20 @@ class Det(PlotBase):
 
         mpl.figure(1)
         if self._eval and eval_neg is not None:
+            LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('dev.', dev_file, idx)
+                label=self._label('dev.', idx)
             )
             if self._split:
                 mpl.figure(2)
             linestyle = '--' if not self._split else self._linestyles[idx]
+            LOGGER.info("DET eval. curve using %s", eval_file)
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval.', eval_file, idx)
+                label=self._label('eval.', idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -636,10 +652,11 @@ class Det(PlotBase):
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
+            LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('dev.', dev_file, idx)
+                label=self._label('dev.', idx)
             )
 
     def _set_axis(self):
@@ -671,11 +688,12 @@ class Epc(PlotBase):
             eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
+        LOGGER.info("EPC using %s", dev_file + "_" + eval_file)
         plot.epc(
             dev_neg, dev_pos, eval_neg, eval_pos, self._points,
             color=self._colors[idx], linestyle=self._linestyles[idx],
             label=self._label(
-                'curve', dev_file + "_" + eval_file, idx
+                'curve', idx
             )
         )
 
