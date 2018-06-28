@@ -611,6 +611,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
 
 METRICS_HELP = """Prints a table that contains {names} for a given
     threshold criterion ({criteria}).
+    {hter_note}
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
@@ -627,6 +628,7 @@ METRICS_HELP = """Prints a table that contains {names} for a given
         $ {command} -e -l results.txt sys1/scores-{{dev,eval}}
 
         $ {command} -e {{sys1,sys2}}/scores-{{dev,eval}}
+
     """
 
 
