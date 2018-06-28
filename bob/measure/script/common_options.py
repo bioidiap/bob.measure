@@ -375,6 +375,19 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
     return custom_criterion_option
 
 
+def decimal_option(dflt=2, **kwargs):
+    '''Get option to get decimal value'''
+    def custom_decimal_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['decimal'] = value
+            return value
+        return click.option(
+            '-d', '--decimal', type=click.INT, default=dflt,
+            help='Number of decimals to be printed.',
+            callback=callback, show_default=True, **kwargs)(func)
+    return custom_decimal_option
+
+
 def far_option(**kwargs):
     '''Get option to get far value'''
     def custom_far_option(func):
@@ -589,6 +602,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)
+        @decimal_option()
         def wrapper(*args, **kwds):
             return func(*args, **kwds)
         return wrapper

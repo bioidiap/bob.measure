@@ -219,15 +219,17 @@ class Metrics(MeasureBase):
                 recall, f1_score)
 
     def _strings(self, metrics):
-        fta_str = "%.1f%%" % (100 * metrics[0])
-        fmr_str = "%.1f%% (%d/%d)" % (100 * metrics[1], metrics[6], metrics[7])
-        fnmr_str = "%.1f%% (%d/%d)" % (100 * metrics[2], metrics[8], metrics[9])
-        far_str = "%.1f%%" % (100 * metrics[4])
-        frr_str = "%.1f%%" % (100 * metrics[5])
-        hter_str = "%.1f%%" % (100 * metrics[3])
-        prec_str = "%.1f" % (metrics[10])
-        recall_str = "%.1f" % (metrics[11])
-        f1_str = "%.1f" % (metrics[12])
+        fta_str = "%s%%" % format(100 * metrics[0], '.%df' % self._decimal)
+        fmr_str = "%s%% (%d/%d)" % (format(100 * metrics[1], '.%df' % self._decimal),
+                                    metrics[6], metrics[7])
+        fnmr_str = "%s%% (%d/%d)" % (format(100 * metrics[2], '.%df' % self._decimal),
+                                     metrics[8], metrics[9])
+        far_str = "%s%%" % format(100 * metrics[4], '.%df' % self._decimal)
+        frr_str = "%s%%" % format(100 * metrics[5], '.%df' % self._decimal)
+        hter_str = "%s%%" % format(100 * metrics[3], '.%df' % self._decimal)
+        prec_str = "%s" % format(metrics[10], '.%df' % self._decimal)
+        recall_str = "%s" % format(metrics[11], '.%df' % self._decimal)
+        f1_str = "%s" % format(metrics[12], '.%df' % self._decimal)
 
         return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
                 prec_str, recall_str, f1_str)
