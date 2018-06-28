@@ -805,6 +805,8 @@ def hist_command(docstring):
         @print_filenames_option()
         @figsize_option(dflt=None)
         @style_option()
+        @x_label_option()
+        @y_label_option()
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)
