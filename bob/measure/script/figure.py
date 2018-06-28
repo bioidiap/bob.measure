@@ -12,6 +12,9 @@ import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
 from .. import (far_threshold, plot, utils, ppndf)
+import logging
+
+LOGGER = logging.getLogger("bob.measure")
 
 
 def check_list_value(values, desired_number, name, name2='systems'):
@@ -168,15 +171,15 @@ class Metrics(MeasureBase):
     '''
 
     def __init__(self, ctx, scores, evaluation, func_load,
-                 names=('NaNs Rate', 'False Positive Rate', 'False Negative Rate',
-                        'False Accept Rate', 'False Reject Rate',
-                        'Half Total Error Rate')):
+                 names=('False Positive Rate', 'False Negative Rate',
+                        'F1-score', 'Precision', 'Recall')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
         self._criterion = ctx.meta.get('criterion')
         self._open_mode = ctx.meta.get('open_mode')
         self._thres = ctx.meta.get('thres')
+        self._decimal = ctx.meta.get('decimal', 2)
         if self._thres is not None:
             if len(self._thres) == 1:
                 self._thres = self._thres * self.n_systems
@@ -195,7 +198,8 @@ class Metrics(MeasureBase):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
     def _numbers(self, neg, pos, threshold, fta):
-        from .. import farfrr
+        from .. import (farfrr, precision_recall, f_score)
+        # fpr and fnr
         fmr, fnmr = farfrr(neg, pos, threshold)
         hter = (fmr + fnmr) / 2.0
         far = fmr * (1 - fta)
@@ -205,27 +209,36 @@ class Metrics(MeasureBase):
         fm = int(round(fmr * ni))  # number of false accepts
         nc = pos.shape[0]  # number of clients
         fnm = int(round(fnmr * nc))  # number of false rejects
-        return fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc
 
-    def _strings(self, fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc):
-        fta_str = "%.1f%%" % (100 * fta)
-        fmr_str = "%.1f%% (%d/%d)" % (100 * fmr, fm, ni)
-        fnmr_str = "%.1f%% (%d/%d)" % (100 * fnmr, fnm, nc)
-        far_str = "%.1f%%" % (100 * far)
-        frr_str = "%.1f%%" % (100 * frr)
-        hter_str = "%.1f%%" % (100 * hter)
+        # precision and recall
+        precision, recall = precision_recall(neg, pos, threshold)
 
-        return fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str
+        # f_score
+        f1_score = f_score(neg, pos, threshold, 1)
+        return (fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc, precision,
+                recall, f1_score)
 
-    def compute(self, idx, input_scores, input_names):
-        ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
-        given system inputs'''
+    def _strings(self, metrics):
+        fta_str = "%.1f%%" % (100 * metrics[0])
+        fmr_str = "%.1f%% (%d/%d)" % (100 * metrics[1], metrics[6], metrics[7])
+        fnmr_str = "%.1f%% (%d/%d)" % (100 * metrics[2], metrics[8], metrics[9])
+        far_str = "%.1f%%" % (100 * metrics[4])
+        frr_str = "%.1f%%" % (100 * metrics[5])
+        hter_str = "%.1f%%" % (100 * metrics[3])
+        prec_str = "%.1f" % (metrics[10])
+        recall_str = "%.1f" % (metrics[11])
+        f1_str = "%.1f" % (metrics[12])
+
+        return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
+                prec_str, recall_str, f1_str)
+
+    def _get_all_metrics(self, idx, input_scores, input_names):
+        ''' Compute all metrics for dev and eval scores'''
         neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
         dev_neg, dev_pos, dev_fta = neg_list[0], pos_list[0], fta_list[0]
         dev_file = input_names[0]
         if self._eval:
             eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
-            eval_file = input_names[1]
 
         threshold = self.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
             if self._thres is None else self._thres[idx]
@@ -245,31 +258,55 @@ class Metrics(MeasureBase):
                        "Development set `%s`: %e"
                        % (dev_file or title, threshold), file=self.log_file)
 
-        fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
-            self._strings(*self._numbers(
-                dev_neg, dev_pos, threshold, dev_fta))
-        headers = ['' or title, 'Development %s' % dev_file]
-        rows = [[self.names[0], fta_str],
-                [self.names[1], fmr_str],
-                [self.names[2], fnmr_str],
-                [self.names[3], far_str],
-                [self.names[4], frr_str],
-                [self.names[5], hter_str]]
+        res = []
+        res.append(self._strings(self._numbers(
+            dev_neg, dev_pos, threshold, dev_fta)))
 
         if self._eval:
             # computes statistics for the eval set based on the threshold a
             # priori
-            fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
-                self._strings(*self._numbers(
-                    eval_neg, eval_pos, threshold, eval_fta))
+            res.append(self._strings(self._numbers(
+                eval_neg, eval_pos, threshold, eval_fta)))
+        else:
+            res.append(None)
 
-            headers.append('Eval. % s' % eval_file)
-            rows[0].append(fta_str)
-            rows[1].append(fmr_str)
-            rows[2].append(fnmr_str)
-            rows[3].append(far_str)
-            rows[4].append(frr_str)
-            rows[5].append(hter_str)
+        return res
+
+    def compute(self, idx, input_scores, input_names):
+        ''' Compute metrics thresholds and tables (FPR, FNR, precision, recall,
+        f1_score) for given system inputs'''
+        dev_file = input_names[0]
+        title = self._legends[idx] if self._legends is not None else None
+        all_metrics = self._get_all_metrics(idx, input_scores, input_names)
+        fta_dev = float(all_metrics[0][0].replace('%', ''))
+        if fta_dev > 0.0:
+            click.echo("NaNs scores (%s) were found in %s" %
+                       (all_metrics[0][0], dev_file))
+            LOGGER.warn("NaNs scores (%s) were found in %s", all_metrics[0][0],
+                        dev_file)
+        headers = [' ' or title, 'Development']
+        rows = [[self.names[0], all_metrics[0][1]],
+                [self.names[1], all_metrics[0][2]],
+                [self.names[2], all_metrics[0][6]],
+                [self.names[3], all_metrics[0][7]],
+                [self.names[4], all_metrics[0][8]]]
+
+        if self._eval:
+            eval_file = input_names[1]
+            fta_eval = float(all_metrics[1][0].replace('%', ''))
+            if fta_eval > 0.0:
+                click.echo("NaNs scores (%s) were found in %s" %
+                           (all_metrics[1][0], eval_file))
+                LOGGER.warn("NaNs scores (%s) were found in %s",
+                            all_metrics[1][0], eval_file)
+            # computes statistics for the eval set based on the threshold a
+            # priori
+            headers.append('Evaluation')
+            rows[0].append(all_metrics[1][1])
+            rows[1].append(all_metrics[1][2])
+            rows[2].append(all_metrics[1][6])
+            rows[3].append(all_metrics[1][7])
+            rows[4].append(all_metrics[1][8])
 
         click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 
