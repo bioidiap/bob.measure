@@ -526,8 +526,8 @@ class Roc(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
         self._titles = self._titles or ['ROC dev.', 'ROC eval.']
-        self._x_label = self._x_label or 'False Positive Rate'
-        self._y_label = self._y_label or "1 - False Negative Rate"
+        self._x_label = self._x_label or 'FPR'
+        self._y_label = self._y_label or "1 - FNR"
         self._semilogx = ctx.meta.get('semilogx', True)
         best_legend = 'lower right' if self._semilogx else 'upper right'
         self._legend_loc = self._legend_loc or best_legend
@@ -590,8 +590,8 @@ class Det(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
         self._titles = self._titles or ['DET dev.', 'DET eval.']
-        self._x_label = self._x_label or 'False Positive Rate (%)'
-        self._y_label = self._y_label or 'False Negative Rate (%)'
+        self._x_label = self._x_label or 'FPR (%)'
+        self._y_label = self._y_label or 'FNR (%)'
         self._legend_loc = self._legend_loc or 'upper right'
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
@@ -620,7 +620,7 @@ class Det(PlotBase):
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev.', dev_file, idx)
             )
             if self._split:
                 mpl.figure(2)
@@ -643,7 +643,7 @@ class Det(PlotBase):
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev.', dev_file, idx)
             )
 
     def _set_axis(self):
@@ -715,8 +715,8 @@ class Hist(PlotBase):
         # number of subplot on one page
         self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
-        self._y_label = 'Probability density'
-        self._x_label = 'Score values'
+        self._y_label = self._y_label or 'Probability density'
+        self._x_label = self._x_label or 'Score values'
         self._end_setup_plot = False
         # overide _titles of PlotBase
         self._titles = ctx.meta.get('titles', []) * 2
