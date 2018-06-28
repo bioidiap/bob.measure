@@ -282,8 +282,6 @@ class Metrics(MeasureBase):
         all_metrics = self._get_all_metrics(idx, input_scores, input_names)
         fta_dev = float(all_metrics[0][0].replace('%', ''))
         if fta_dev > 0.0:
-            click.echo("NaNs scores (%s) were found in %s" %
-                       (all_metrics[0][0], dev_file))
             LOGGER.warn("NaNs scores (%s) were found in %s", all_metrics[0][0],
                         dev_file)
         headers = [' ' or title, 'Development']
@@ -297,8 +295,6 @@ class Metrics(MeasureBase):
             eval_file = input_names[1]
             fta_eval = float(all_metrics[1][0].replace('%', ''))
             if fta_eval > 0.0:
-                click.echo("NaNs scores (%s) were found in %s" %
-                           (all_metrics[1][0], eval_file))
                 LOGGER.warn("NaNs scores (%s) were found in %s",
                             all_metrics[1][0], eval_file)
             # computes statistics for the eval set based on the threshold a
