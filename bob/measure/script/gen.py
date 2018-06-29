@@ -8,6 +8,7 @@ from click.types import FLOAT
 from bob.extension.scripts.click_helper import verbosity_option
 from bob.core import random
 from bob.io.base import create_directories_safe
+from . import common_options
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ def write_scores_to_file(neg, pos, filename):
             f.write(text)
 
 
-@click.command()
+@click.command(context_settings=common_options.CONTEXT_SETTINGS)
 @click.argument('outdir')
 @click.option('--mean-neg', default=-1, type=FLOAT, show_default=True)
 @click.option('--mean-pos', default=1, type=FLOAT, show_default=True)
