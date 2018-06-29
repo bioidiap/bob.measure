@@ -167,7 +167,7 @@ class MeasureBase(object):
         scores = []
         basenames = []
         for filename in filepaths:
-            basenames.append(filename.split(".")[0])
+            basenames.append(filename)
             scores.append(self.func_load(filename))
         return scores, basenames
 
@@ -294,7 +294,7 @@ class Metrics(MeasureBase):
         fta_dev = float(all_metrics[0][0].replace('%', ''))
         if fta_dev > 0.0:
             LOGGER.error("NaNs scores (%s) were found in %s", all_metrics[0][0],
-                        dev_file)
+                         dev_file)
         headers = [' ' or title, 'Development']
         rows = [[self.names[0], all_metrics[0][1]],
                 [self.names[1], all_metrics[0][2]],
@@ -307,7 +307,7 @@ class Metrics(MeasureBase):
             fta_eval = float(all_metrics[1][0].replace('%', ''))
             if fta_eval > 0.0:
                 LOGGER.error("NaNs scores (%s) were found in %s",
-                            all_metrics[1][0], eval_file)
+                             all_metrics[1][0], eval_file)
             # computes statistics for the eval set based on the threshold a
             # priori
             headers.append('Evaluation')
