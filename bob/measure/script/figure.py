@@ -743,7 +743,7 @@ class Hist(PlotBase):
             self._get_neg_pos_thres(idx, input_scores, input_names)
         # keep id of the current system
         sys = idx
-        # if the id of the current system does not match the id of the plot, 
+        # if the id of the current system does not match the id of the plot,
         # change it
         if not self._hide_dev and self._eval:
             row = int(idx / self._ncols) * 2
@@ -795,6 +795,9 @@ class Hist(PlotBase):
         # to display, save figure
         if self._step_print == sub_plot_idx or (is_lower and sys ==
                                                 self.n_systems - 1):
+            # enable the grid and set it below other elements
+            axis.set_axisbelow(True)
+            axis.grid(True, color=self._grid_color)
             # print legend on the page
             self.plot_legends()
             mpl.tight_layout()
