@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 import tabulate
 from matplotlib.backends.backend_pdf import PdfPages
 from bob.extension.scripts.click_helper import (
-    bool_option, list_float_option, verbosity_option, open_file_mode_option,
-    CONTEXT_SETTINGS
+    bool_option, list_float_option, verbosity_option, open_file_mode_option
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -590,7 +589,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(nargs=-1)
         @eval_option()
         @table_option()
@@ -637,7 +636,7 @@ def roc_command(docstring):
     def custom_roc_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(nargs=-1)
         @titles_option()
         @legends_option()
@@ -692,7 +691,7 @@ def det_command(docstring):
     def custom_det_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(nargs=-1)
         @output_plot_file_option(default_out='det.pdf')
         @titles_option()
@@ -745,7 +744,7 @@ def epc_command(docstring):
     def custom_epc_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(min_arg=1, force_eval=True, nargs=-1)
         @output_plot_file_option(default_out='epc.pdf')
         @titles_option()
@@ -790,7 +789,7 @@ def hist_command(docstring):
     def custom_hist_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(nargs=-1)
         @output_plot_file_option(default_out='hist.pdf')
         @eval_option()
@@ -846,7 +845,7 @@ def evaluate_command(docstring, criteria=('eer', 'min-hter', 'far')):
     def custom_evaluate_command(func):
         func.__doc__ = docstring
 
-        @click.command(context_settings=CONTEXT_SETTINGS)
+        @click.command()
         @scores_argument(nargs=-1)
         @legends_option()
         @sep_dev_eval_option()
@@ -960,7 +959,7 @@ def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
-        @click.command('multi-metrics', context_settings=CONTEXT_SETTINGS)
+        @click.command('multi-metrics')
         @scores_argument(nargs=-1)
         @eval_option()
         @n_protocols_option()
