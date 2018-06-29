@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 import tabulate
 from matplotlib.backends.backend_pdf import PdfPages
 from bob.extension.scripts.click_helper import (
-    bool_option, list_float_option, verbosity_option, open_file_mode_option)
+    bool_option, list_float_option, verbosity_option, open_file_mode_option,
+    CONTEXT_SETTINGS
+)
 
 LOGGER = logging.getLogger(__name__)
-CONTEXT_SETTINGS = dict(help_option_names=['-?', '-h', '--help'])
 
 def scores_argument(min_arg=1, force_eval=False, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
