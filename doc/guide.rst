@@ -35,26 +35,26 @@ Overview
 --------
 
 A classifier is subject to two types of errors, either the real access/signal
-is rejected (false rejection) or an impostor attack/a false access is accepted
-(false acceptance). A possible way to measure the detection performance is to
-use the Half Total Error Rate (HTER), which combines the False Rejection Rate
-(FRR) and the False Acceptance Rate (FAR) and is defined in the following
+is rejected (false negative) or an impostor attack/a false access is accepted
+(false positive). A possible way to measure the detection performance is to
+use the Half Total Error Rate (HTER), which combines the False Negative Rate
+(FNR) and the False Positive Rate (FPR) and is defined in the following
 formula:
 
 .. math::
 
-   HTER(\tau, \mathcal{D}) = \frac{FAR(\tau, \mathcal{D}) + FRR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
+   HTER(\tau, \mathcal{D}) = \frac{FPR(\tau, \mathcal{D}) + FNR(\tau, \mathcal{D})}{2} \quad \textrm{[\%]}
 
 
-where :math:`\mathcal{D}` denotes the dataset used. Since both the FAR and the
-FRR depends on the threshold :math:`\tau`, they are strongly related to each
-other: increasing the FAR will reduce the FRR and vice-versa. For this reason,
+where :math:`\mathcal{D}` denotes the dataset used. Since both the FPR and the
+FNR depends on the threshold :math:`\tau`, they are strongly related to each
+other: increasing the FPR will reduce the FNR and vice-versa. For this reason,
 results are often presented using either a Receiver Operating Characteristic
 (ROC) or a Detection-Error Tradeoff (DET) plot, these two plots basically
-present the FAR versus the FRR for different values of the threshold. Another
+present the FPR versus the FNR for different values of the threshold. Another
 widely used measure to summarise the performance of a system is the Equal Error
-Rate (EER), defined as the point along the ROC or DET curve where the FAR
-equals the FRR.
+Rate (EER), defined as the point along the ROC or DET curve where the FPR
+equals the FNR.
 
 However, it was noted in by Bengio et al. (2004) that ROC and DET curves may be
 misleading when comparing systems. Hence, the so-called Expected Performance
@@ -63,13 +63,13 @@ performance of a system at various operating points.  Indeed, in real-world
 scenarios, the threshold :math:`\tau` has to be set a priori: this is typically
 done using a development set (also called cross-validation set). Nevertheless,
 the optimal threshold can be different depending on the relative importance
-given to the FAR and the FRR. Hence, in the EPC framework, the cost
-:math:`\beta \in [0;1]` is defined as the trade-off between the FAR and FRR.
+given to the FPR and the FNR. Hence, in the EPC framework, the cost
+:math:`\beta \in [0;1]` is defined as the trade-off between the FPR and FNR.
 The optimal threshold :math:`\tau^*` is then computed using different values of
 :math:`\beta`, corresponding to different operating points:
 
 .. math::
-  \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FAR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FRR}(\tau, \mathcal{D}_{d})
+  \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FPR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FNR}(\tau, \mathcal{D}_{d})
 
 
 where :math:`\mathcal{D}_{d}` denotes the development set and should be
@@ -122,15 +122,15 @@ the following techniques:
    >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
    >>> T = 0.0 #Threshold: later we explain how one can calculate these
    >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
-   >>> FAR = 1 - (float(correct_negatives.sum())/negatives.size)
+   >>> FPR = 1 - (float(correct_negatives.sum())/negatives.size)
    >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
-   >>> FRR = 1 - (float(correct_positives.sum())/positives.size)
+   >>> FNR = 1 - (float(correct_positives.sum())/positives.size)
 
-We do provide a method to calculate the FAR and FRR in a single shot:
+We do provide a method to calculate the FPR and FNR in a single shot:
 
 .. doctest::
 
-   >>> FAR, FRR = bob.measure.farfrr(negatives, positives, T)
+   >>> FPR, FNR = bob.measure.farfrr(negatives, positives, T)
 
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
@@ -170,12 +170,12 @@ calculation of the threshold:
    calculating the threshold based on the provided scores. Instead, the closest
    possible threshold is returned. For example, using
    :any:`bob.measure.eer_threshold` **will not** give you a threshold where
-   :math:`FAR == FRR`. Hence, you cannot report :math:`FAR` or :math:`FRR`
-   instead of :math:`EER`; you should report :math:`(FAR+FRR)/2` instead. This
+   :math:`FPR == FNR`. Hence, you cannot report :math:`FPR` or :math:`FNR`
+   instead of :math:`EER`; you should report :math:`(FPR+FNR)/2` instead. This
    is also true for :any:`bob.measure.far_threshold` and
    :any:`bob.measure.frr_threshold`. The threshold returned by those functions
    does not guarantee that using that threshold you will get the requested
-   :math:`FAR` or :math:`FRR` value. Instead, you should recalculate using
+   :math:`FPR` or :math:`FNR` value. Instead, you should recalculate using
    :any:`bob.measure.farfrr`.
 
 .. note::
@@ -280,8 +280,8 @@ town. To plot an ROC curve, in possession of your **negatives** and
    >>> # we assume you have your negatives and positives already split
    >>> npoints = 100
    >>> bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
-   >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
-   >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
+   >>> pyplot.xlabel('FPR (%)') # doctest: +SKIP
+   >>> pyplot.ylabel('FNR (%)') # doctest: +SKIP
    >>> pyplot.grid(True)
    >>> pyplot.show() # doctest: +SKIP
 
@@ -299,8 +299,8 @@ You should see an image like the following one:
    npoints = 100
    bob.measure.plot.roc(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test')
    pyplot.grid(True)
-   pyplot.xlabel('FAR (%)')
-   pyplot.ylabel('FRR (%)')
+   pyplot.xlabel('FPR (%)')
+   pyplot.ylabel('FNR (%)')
    pyplot.title('ROC')
 
 As can be observed, plotting methods live in the namespace
@@ -329,8 +329,8 @@ A DET curve can be drawn using similar commands such as the ones for the ROC cur
   >>> npoints = 100
   >>> bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
   >>> bob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
-  >>> pyplot.xlabel('FAR (%)') # doctest: +SKIP
-  >>> pyplot.ylabel('FRR (%)') # doctest: +SKIP
+  >>> pyplot.xlabel('FPR (%)') # doctest: +SKIP
+  >>> pyplot.ylabel('FNR (%)') # doctest: +SKIP
   >>> pyplot.grid(True)
   >>> pyplot.show() # doctest: +SKIP
 
@@ -350,8 +350,8 @@ This will produce an image like the following one:
    bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test')
    bob.measure.plot.det_axis([0.1, 80, 0.1, 80])
    pyplot.grid(True)
-   pyplot.xlabel('FAR (%)')
-   pyplot.ylabel('FRR (%)')
+   pyplot.xlabel('FPR (%)')
+   pyplot.ylabel('FNR (%)')
    pyplot.title('DET')
 
 .. note::
@@ -444,9 +444,9 @@ The detection & identification curve is designed to evaluate open set
 identification tasks.  It can be plotted using the
 :py:func:`bob.measure.plot.detection_identification_curve` function, but it
 requires at least one open-set probe, i.e., where no corresponding positive
-score exists, for which the FAR values are computed.  Here, we plot the
+score exists, for which the FPR values are computed.  Here, we plot the
 detection and identification curve for rank 1, so that the recognition rate for
-FAR=1 will be identical to the rank one :py:func:`bob.measure.recognition_rate`
+FPR=1 will be identical to the rank one :py:func:`bob.measure.recognition_rate`
 obtained in the CMC plot above.
 
 .. plot::
@@ -498,24 +498,26 @@ Metrics
 =======
 
 To calculate the threshold using a certain criterion (EER (default) or min.HTER)
-on a set, after setting up |project|, just do:
+on a development set and conduct the threshold computation and its performance
+on an evaluation set, after setting up |project|, just do:
 
 .. code-block:: sh
 
-  $ bob measure metrics dev-1.txt
-  [Min. criterion: EER] Threshold on Development set `dev-1.txt`: -8.025286e-03
-  ====  ===================
-  ..    Development dev-1
-  ====  ===================
-  FtA   0.000%
-  FMR   6.263% (31/495)
-  FNMR  6.208% (28/451)
-  FAR   5.924%
-  FRR   11.273%
-  HTER  8.599%
-  ====  ===================
+    ./bin/bob measure  metrics ./MTest1/scores-{dev,eval} -e
+    [Min. criterion: EER ] Threshold on Development set `./MTest1/scores-dev`: -1.373550e-02
+    bob.measure@2018-06-29 10:20:14,177 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-dev
+    bob.measure@2018-06-29 10:20:14,177 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-eval
+    ===================  ================  ================
+    ..                   Development       Evaluation
+    ===================  ================  ================
+    False Positive Rate  15.5% (767/4942)  15.5% (767/4942)
+    False Negative Rate  15.5% (769/4954)  15.5% (769/4954)
+    Precision            0.8               0.8
+    Recall               0.8               0.8
+    F1-score             0.8               0.8
+    ===================  ================  ================
 
-The output will present the threshold together with the FtA, FMR, FMNR, FAR, FRR and
+The output will present the threshold together with the FPR, FNR, Precision, Recall, F1-score and
 HTER on the given set, calculated using such a threshold. The relative counts of FAs
 and FRs are also displayed between parenthesis.
 
@@ -531,36 +533,22 @@ To evaluate the performance of a new score file with a given threshold, use
 
 .. code-block:: sh
 
-  $ bob measure metrics --thres 0.006 eval-1.txt
-  [Min. criterion: user provider] Threshold on Development set `eval-1`: 6.000000e-03
-  ====  ====================
-  ..    Development eval-1
-  ====  ====================
-  FtA   0.000%
-  FMR   5.010% (24/479)
-  FNMR  6.977% (33/473)
-  FAR   4.770%
-  FRR   11.442%
-  HTER  8.106%
-  ====  ====================
+    ./bin/bob measure  metrics ./MTest1/scores-eval --thres 0.006
+    [Min. criterion: user provided] Threshold on Development set `./MTest1/scores-eval`: 6.000000e-03
+    bob.measure@2018-06-29 10:22:06,852 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-eval
+    ===================  ================
+    ..                   Development
+    ===================  ================
+    False Positive Rate  15.2% (751/4942)
+    False Negative Rate  16.1% (796/4954)
+    Precision            0.8
+    Recall               0.8
+    F1-score             0.8
+    ===================  ================
+
 
 You can simultaneously conduct the threshold computation and its performance
 on an evaluation set:
-
-.. code-block:: sh
-
-  $ bob measure metrics -e dev-1.txt eval-1.txt
-  [Min. criterion: EER] Threshold on Development set `dev-1`: -8.025286e-03
-  ====  ===================  ===============
-  ..    Development dev-1    Eval. eval-1
-  ====  ===================  ===============
-  FtA   0.000%               0.000%
-  FMR   6.263% (31/495)      5.637% (27/479)
-  FNMR  6.208% (28/451)      6.131% (29/473)
-  FAR   5.924%               5.366%
-  FRR   11.273%              10.637%
-  HTER  8.599%               8.001%
-  ====  ===================  ===============
 
 .. note::
     Table format can be changed using ``--tablefmt`` option, the default format
