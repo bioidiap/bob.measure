@@ -350,8 +350,10 @@ class MultiMetrics(Metrics):
         self.rows = []
 
     def _strings(self, metrics):
-        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _ = metrics.mean(axis=0)
-        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _ = metrics.std(axis=0)
+        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _, _, _, _ = \
+        metrics.mean(axis=0)
+        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = \
+        metrics.std(axis=0)
         fta_str = "%.1f%% (%.1f%%)" % (100 * ftam, 100 * ftas)
         fmr_str = "%.1f%% (%.1f%%)" % (100 * fmrm, 100 * fmrs)
         fnmr_str = "%.1f%% (%.1f%%)" % (100 * fnmrm, 100 * fnmrs)
