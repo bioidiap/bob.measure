@@ -375,7 +375,7 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
     return custom_criterion_option
 
 
-def decimal_option(dflt=2, **kwargs):
+def decimal_option(dflt=1, **kwargs):
     '''Get option to get decimal value'''
     def custom_decimal_option(func):
         def callback(ctx, param, value):
