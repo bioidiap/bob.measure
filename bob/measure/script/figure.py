@@ -293,8 +293,8 @@ class Metrics(MeasureBase):
         all_metrics = self._get_all_metrics(idx, input_scores, input_names)
         fta_dev = float(all_metrics[0][0].replace('%', ''))
         if fta_dev > 0.0:
-            LOGGER.error("NaNs scores (%s) were found in %s", all_metrics[0][0],
-                         dev_file)
+            LOGGER.warn("NaNs scores (%s) were found in %s amd removed",
+                        all_metrics[0][0], dev_file)
         headers = [' ' or title, 'Development']
         rows = [[self.names[0], all_metrics[0][1]],
                 [self.names[1], all_metrics[0][2]],
@@ -306,7 +306,7 @@ class Metrics(MeasureBase):
             eval_file = input_names[1]
             fta_eval = float(all_metrics[1][0].replace('%', ''))
             if fta_eval > 0.0:
-                LOGGER.error("NaNs scores (%s) were found in %s",
+                LOGGER.warn("NaNs scores (%s) were found in %s and removed.",
                              all_metrics[1][0], eval_file)
             # computes statistics for the eval set based on the threshold a
             # priori
@@ -577,10 +577,10 @@ class Roc(PlotBase):
                 label=self._label('eval.', idx)
             )
             if self._far_at is not None:
-                from .. import farfrr
+                from .. import fprfnr
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
-                    eval_fmr, eval_fnmr = farfrr(
+                    eval_fmr, eval_fnmr = fprfnr(
                         eval_neg, eval_pos, thres_line)
                     eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
