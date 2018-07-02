@@ -503,10 +503,10 @@ on an evaluation set, after setting up |project|, just do:
 
 .. code-block:: sh
 
-    ./bin/bob measure  metrics ./MTest1/scores-{dev,eval} -e
+    ./bin/bob measure  metrics ./MTest1/scores-{dev,eval} -e -v
     [Min. criterion: EER ] Threshold on Development set `./MTest1/scores-dev`: -1.373550e-02
-    bob.measure@2018-06-29 10:20:14,177 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-dev
-    bob.measure@2018-06-29 10:20:14,177 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-eval
+    bob.measure@2018-06-29 10:20:14,177 -- WARNING: NaNs scores (1.0%) were found in ./MTest1/scores-dev
+    bob.measure@2018-06-29 10:20:14,177 -- WARNING: NaNs scores (1.0%) were found in ./MTest1/scores-eval
     ===================  ================  ================
     ..                   Development       Evaluation
     ===================  ================  ================
@@ -533,9 +533,9 @@ To evaluate the performance of a new score file with a given threshold, use
 
 .. code-block:: sh
 
-    ./bin/bob measure  metrics ./MTest1/scores-eval --thres 0.006
+    ./bin/bob measure  metrics ./MTest1/scores-eval -v --thres 0.006
     [Min. criterion: user provided] Threshold on Development set `./MTest1/scores-eval`: 6.000000e-03
-    bob.measure@2018-06-29 10:22:06,852 -- ERROR: NaNs scores (1.0%) were found in ./MTest1/scores-eval
+    bob.measure@2018-06-29 10:22:06,852 -- WARNING: NaNs scores (1.0%) were found in ./MTest1/scores-eval
     ===================  ================
     ..                   Development
     ===================  ================
