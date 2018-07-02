@@ -13,8 +13,9 @@ CRITERIA = ('eer', 'min-hter', 'far')
 
 @common_options.metrics_command(
     common_options.METRICS_HELP.format(
-        names='FtA, FAR, FRR, FMR, FMNR, HTER',
+        names='FPR, FNR, precision, recall, F1-score',
         criteria=CRITERIA, score_format=SCORE_FORMAT,
+        hter_note=' ',
         command='bob measure metrics'),
     criteria=CRITERIA)
 def metrics(ctx, scores, evaluation, **kwargs):

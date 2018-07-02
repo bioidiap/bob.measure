@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 import tabulate
 from matplotlib.backends.backend_pdf import PdfPages
 from bob.extension.scripts.click_helper import (
-    bool_option, list_float_option, verbosity_option, open_file_mode_option)
+    bool_option, list_float_option, verbosity_option, open_file_mode_option
+)
 
 LOGGER = logging.getLogger(__name__)
-
 
 def scores_argument(min_arg=1, force_eval=False, **kwargs):
     """Get the argument for scores, and add `dev-scores` and `eval-scores` in
@@ -375,6 +375,19 @@ def criterion_option(lcriteria=['eer', 'min-hter', 'far'], **kwargs):
     return custom_criterion_option
 
 
+def decimal_option(dflt=1, **kwargs):
+    '''Get option to get decimal value'''
+    def custom_decimal_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['decimal'] = value
+            return value
+        return click.option(
+            '-d', '--decimal', type=click.INT, default=dflt,
+            help='Number of decimals to be printed.',
+            callback=callback, show_default=True, **kwargs)(func)
+    return custom_decimal_option
+
+
 def far_option(**kwargs):
     '''Get option to get far value'''
     def custom_far_option(func):
@@ -523,8 +536,8 @@ def titles_option(**kwargs):
             '-ts', '--titles', type=click.STRING, default=None,
             help='The titles of the plots seperated by commas. '
             'For example, if the figure has two plots, \"MyTitleA,MyTitleB\" '
-            'is a possible input'
-            'Provide just a space (-t ' ') to '
+            'is a possible input.'
+            ' Provide just a space (-ts \' \') to '
             'remove the titles from figures.',
             callback=callback, **kwargs)(func)
     return custom_title_option
@@ -589,6 +602,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)
+        @decimal_option()
         def wrapper(*args, **kwds):
             return func(*args, **kwds)
         return wrapper
@@ -597,6 +611,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
 
 METRICS_HELP = """Prints a table that contains {names} for a given
     threshold criterion ({criteria}).
+    {hter_note}
 
     You need to provide one or more development score file(s) for each
     experiment. You can also provide evaluation files along with dev files. If
@@ -613,6 +628,7 @@ METRICS_HELP = """Prints a table that contains {names} for a given
         $ {command} -e -l results.txt sys1/scores-{{dev,eval}}
 
         $ {command} -e {{sys1,sys2}}/scores-{{dev,eval}}
+
     """
 
 
@@ -791,6 +807,8 @@ def hist_command(docstring):
         @print_filenames_option()
         @figsize_option(dflt=None)
         @style_option()
+        @x_label_option()
+        @y_label_option()
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)

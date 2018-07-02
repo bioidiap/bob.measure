@@ -46,7 +46,7 @@ def get_fta(scores):
     NaN(s)
     :py:class:`float` : failure to acquire rate
     """
-    fta_sum, fta_total = 0, 0
+    fta_sum, fta_total = 0.0, 0.0
     neg, sum_nans, total = remove_nan(scores[0])
     fta_sum += sum_nans
     fta_total += total

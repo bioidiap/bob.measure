@@ -10,6 +10,12 @@ from . import plot
 from . import calibration
 import numpy
 
+
+def fprfnr(negatives, positives, threshold):
+  """Alias for :py:func:`bob.measure.farfrr`"""
+  return farfrr(negatives, positives, threshold)
+
+
 def mse (estimation, target):
   """Mean square error between a set of outputs and target values
 

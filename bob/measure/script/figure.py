@@ -12,6 +12,9 @@ import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
 from .. import (far_threshold, plot, utils, ppndf)
+import logging
+
+LOGGER = logging.getLogger("bob.measure")
 
 
 def check_list_value(values, desired_number, name, name2='systems'):
@@ -94,6 +97,17 @@ class MeasureBase(object):
                 #    index idx * self._min_arg
                 self._scores[idx * self._min_arg:(idx + 1) * self._min_arg]
             )
+            LOGGER.info("-----Input files for system %d-----", idx + 1)
+            for i, name in enumerate(input_names):
+                if not self._eval:
+                    LOGGER.info("Dev. score %d: %s", i + 1, name)
+                else:
+                    if i % 2 == 0:
+                        LOGGER.info("Dev. score %d: %s", i / 2 + 1, name)
+                    else:
+                        LOGGER.info("Eval. score %d: %s", i / 2 + 1, name)
+            LOGGER.info("----------------------------------")
+
             self.compute(idx, input_scores, input_names)
         # setup final configuration, plotting properties, ...
         self.end_process()
@@ -148,12 +162,12 @@ class MeasureBase(object):
                 A list that contains the output of
                 ``func_load`` for the given files
             basenames: :any:`list`:
-                A list of basenames for the given files
+                A list of the given files
         '''
         scores = []
         basenames = []
         for filename in filepaths:
-            basenames.append(os.path.basename(filename).split(".")[0])
+            basenames.append(filename)
             scores.append(self.func_load(filename))
         return scores, basenames
 
@@ -168,15 +182,15 @@ class Metrics(MeasureBase):
     '''
 
     def __init__(self, ctx, scores, evaluation, func_load,
-                 names=('NaNs Rate', 'False Positive Rate', 'False Negative Rate',
-                        'False Accept Rate', 'False Reject Rate',
-                        'Half Total Error Rate')):
+                 names=('False Positive Rate', 'False Negative Rate',
+                        'Precision', 'Recall', 'F1-score')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
         self._criterion = ctx.meta.get('criterion')
         self._open_mode = ctx.meta.get('open_mode')
         self._thres = ctx.meta.get('thres')
+        self._decimal = ctx.meta.get('decimal', 2)
         if self._thres is not None:
             if len(self._thres) == 1:
                 self._thres = self._thres * self.n_systems
@@ -195,7 +209,8 @@ class Metrics(MeasureBase):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
     def _numbers(self, neg, pos, threshold, fta):
-        from .. import farfrr
+        from .. import (farfrr, precision_recall, f_score)
+        # fpr and fnr
         fmr, fnmr = farfrr(neg, pos, threshold)
         hter = (fmr + fnmr) / 2.0
         far = fmr * (1 - fta)
@@ -205,27 +220,38 @@ class Metrics(MeasureBase):
         fm = int(round(fmr * ni))  # number of false accepts
         nc = pos.shape[0]  # number of clients
         fnm = int(round(fnmr * nc))  # number of false rejects
-        return fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc
 
-    def _strings(self, fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc):
-        fta_str = "%.1f%%" % (100 * fta)
-        fmr_str = "%.1f%% (%d/%d)" % (100 * fmr, fm, ni)
-        fnmr_str = "%.1f%% (%d/%d)" % (100 * fnmr, fnm, nc)
-        far_str = "%.1f%%" % (100 * far)
-        frr_str = "%.1f%%" % (100 * frr)
-        hter_str = "%.1f%%" % (100 * hter)
+        # precision and recall
+        precision, recall = precision_recall(neg, pos, threshold)
 
-        return fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str
+        # f_score
+        f1_score = f_score(neg, pos, threshold, 1)
+        return (fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc, precision,
+                recall, f1_score)
 
-    def compute(self, idx, input_scores, input_names):
-        ''' Compute metrics thresholds and tables (FAR, FMR, FNMR, HTER) for
-        given system inputs'''
+    def _strings(self, metrics):
+        fta_str = "%s%%" % format(100 * metrics[0], '.%df' % self._decimal)
+        fmr_str = "%s%% (%d/%d)" % (format(100 * metrics[1], '.%df' % self._decimal),
+                                    metrics[6], metrics[7])
+        fnmr_str = "%s%% (%d/%d)" % (format(100 * metrics[2], '.%df' % self._decimal),
+                                     metrics[8], metrics[9])
+        far_str = "%s%%" % format(100 * metrics[4], '.%df' % self._decimal)
+        frr_str = "%s%%" % format(100 * metrics[5], '.%df' % self._decimal)
+        hter_str = "%s%%" % format(100 * metrics[3], '.%df' % self._decimal)
+        prec_str = "%s" % format(metrics[10], '.%df' % self._decimal)
+        recall_str = "%s" % format(metrics[11], '.%df' % self._decimal)
+        f1_str = "%s" % format(metrics[12], '.%df' % self._decimal)
+
+        return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
+                prec_str, recall_str, f1_str)
+
+    def _get_all_metrics(self, idx, input_scores, input_names):
+        ''' Compute all metrics for dev and eval scores'''
         neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
         dev_neg, dev_pos, dev_fta = neg_list[0], pos_list[0], fta_list[0]
         dev_file = input_names[0]
         if self._eval:
             eval_neg, eval_pos, eval_fta = neg_list[1], pos_list[1], fta_list[1]
-            eval_file = input_names[1]
 
         threshold = self.get_thres(self._criterion, dev_neg, dev_pos, self._far) \
             if self._thres is None else self._thres[idx]
@@ -245,31 +271,51 @@ class Metrics(MeasureBase):
                        "Development set `%s`: %e"
                        % (dev_file or title, threshold), file=self.log_file)
 
-        fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
-            self._strings(*self._numbers(
-                dev_neg, dev_pos, threshold, dev_fta))
-        headers = ['' or title, 'Development %s' % dev_file]
-        rows = [[self.names[0], fta_str],
-                [self.names[1], fmr_str],
-                [self.names[2], fnmr_str],
-                [self.names[3], far_str],
-                [self.names[4], frr_str],
-                [self.names[5], hter_str]]
+        res = []
+        res.append(self._strings(self._numbers(
+            dev_neg, dev_pos, threshold, dev_fta)))
 
         if self._eval:
             # computes statistics for the eval set based on the threshold a
             # priori
-            fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = \
-                self._strings(*self._numbers(
-                    eval_neg, eval_pos, threshold, eval_fta))
+            res.append(self._strings(self._numbers(
+                eval_neg, eval_pos, threshold, eval_fta)))
+        else:
+            res.append(None)
 
-            headers.append('Eval. % s' % eval_file)
-            rows[0].append(fta_str)
-            rows[1].append(fmr_str)
-            rows[2].append(fnmr_str)
-            rows[3].append(far_str)
-            rows[4].append(frr_str)
-            rows[5].append(hter_str)
+        return res
+
+    def compute(self, idx, input_scores, input_names):
+        ''' Compute metrics thresholds and tables (FPR, FNR, precision, recall,
+        f1_score) for given system inputs'''
+        dev_file = input_names[0]
+        title = self._legends[idx] if self._legends is not None else None
+        all_metrics = self._get_all_metrics(idx, input_scores, input_names)
+        fta_dev = float(all_metrics[0][0].replace('%', ''))
+        if fta_dev > 0.0:
+            LOGGER.warn("NaNs scores (%s) were found in %s amd removed",
+                        all_metrics[0][0], dev_file)
+        headers = [' ' or title, 'Development']
+        rows = [[self.names[0], all_metrics[0][1]],
+                [self.names[1], all_metrics[0][2]],
+                [self.names[2], all_metrics[0][6]],
+                [self.names[3], all_metrics[0][7]],
+                [self.names[4], all_metrics[0][8]]]
+
+        if self._eval:
+            eval_file = input_names[1]
+            fta_eval = float(all_metrics[1][0].replace('%', ''))
+            if fta_eval > 0.0:
+                LOGGER.warn("NaNs scores (%s) were found in %s and removed.",
+                             all_metrics[1][0], eval_file)
+            # computes statistics for the eval set based on the threshold a
+            # priori
+            headers.append('Evaluation')
+            rows[0].append(all_metrics[1][1])
+            rows[1].append(all_metrics[1][2])
+            rows[2].append(all_metrics[1][6])
+            rows[3].append(all_metrics[1][7])
+            rows[4].append(all_metrics[1][8])
 
         click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 
@@ -304,8 +350,10 @@ class MultiMetrics(Metrics):
         self.rows = []
 
     def _strings(self, metrics):
-        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _ = metrics.mean(axis=0)
-        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _ = metrics.std(axis=0)
+        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _, _, _, _ = \
+        metrics.mean(axis=0)
+        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = \
+        metrics.std(axis=0)
         fta_str = "%.1f%% (%.1f%%)" % (100 * ftam, 100 * ftas)
         fmr_str = "%.1f%% (%.1f%%)" % (100 * fmrm, 100 * fmrs)
         fnmr_str = "%.1f%% (%.1f%%)" % (100 * fnmrm, 100 * fnmrs)
@@ -469,12 +517,12 @@ class PlotBase(MeasureBase):
 
     # common protected functions
 
-    def _label(self, base, name, idx):
+    def _label(self, base, idx):
         if self._legends is not None and len(self._legends) > idx:
             return self._legends[idx]
         if self.n_systems > 1:
-            return base + (" %d (%s)" % (idx + 1, name))
-        return base + (" (%s)" % name)
+            return base + (" %d" % (idx + 1))
+        return base
 
     def _set_axis(self):
         if self._axlim is not None:
@@ -487,8 +535,8 @@ class Roc(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
         self._titles = self._titles or ['ROC dev.', 'ROC eval.']
-        self._x_label = self._x_label or 'False Positive Rate'
-        self._y_label = self._y_label or "1 - False Negative Rate"
+        self._x_label = self._x_label or 'FPR'
+        self._y_label = self._y_label or "1 - FNR"
         self._semilogx = ctx.meta.get('semilogx', True)
         best_legend = 'lower right' if self._semilogx else 'upper right'
         self._legend_loc = self._legend_loc or best_legend
@@ -508,40 +556,43 @@ class Roc(PlotBase):
 
         mpl.figure(1)
         if self._eval:
+            LOGGER.info("ROC dev. curve using %s", dev_file)
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', dev_file, idx)
+                label=self._label('dev', idx)
             )
             if self._split:
                 mpl.figure(2)
 
             linestyle = '--' if not self._split else self._linestyles[idx]
+            LOGGER.info("ROC eval. curve using %s", eval_file)
             plot.roc_for_far(
                 eval_neg, eval_pos, linestyle=linestyle,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx],
-                label=self._label('eval.', eval_file, idx)
+                label=self._label('eval.', idx)
             )
             if self._far_at is not None:
-                from .. import farfrr
+                from .. import fprfnr
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
-                    eval_fmr, eval_fnmr = farfrr(
+                    eval_fmr, eval_fnmr = fprfnr(
                         eval_neg, eval_pos, thres_line)
                     eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
+            LOGGER.info("ROC dev. curve using %s", dev_file)
             plot.roc_for_far(
                 dev_neg, dev_pos,
                 far_values=plot.log_values(self._min_dig or -4),
                 CAR=self._semilogx,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', dev_file, idx)
+                label=self._label('dev', idx)
             )
 
 
@@ -551,8 +602,8 @@ class Det(PlotBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
         self._titles = self._titles or ['DET dev.', 'DET eval.']
-        self._x_label = self._x_label or 'False Positive Rate (%)'
-        self._y_label = self._y_label or 'False Negative Rate (%)'
+        self._x_label = self._x_label or 'FPR (%)'
+        self._y_label = self._y_label or 'FNR (%)'
         self._legend_loc = self._legend_loc or 'upper right'
         if self._far_at is not None:
             self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
@@ -578,18 +629,20 @@ class Det(PlotBase):
 
         mpl.figure(1)
         if self._eval and eval_neg is not None:
+            LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev.', idx)
             )
             if self._split:
                 mpl.figure(2)
             linestyle = '--' if not self._split else self._linestyles[idx]
+            LOGGER.info("DET eval. curve using %s", eval_file)
             plot.det(
                 eval_neg, eval_pos, self._points, color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval.', eval_file, idx)
+                label=self._label('eval.', idx)
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -601,10 +654,11 @@ class Det(PlotBase):
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
+            LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg, dev_pos, self._points, color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('development', dev_file, idx)
+                label=self._label('dev.', idx)
             )
 
     def _set_axis(self):
@@ -636,11 +690,12 @@ class Epc(PlotBase):
             eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
+        LOGGER.info("EPC using %s", dev_file + "_" + eval_file)
         plot.epc(
             dev_neg, dev_pos, eval_neg, eval_pos, self._points,
             color=self._colors[idx], linestyle=self._linestyles[idx],
             label=self._label(
-                'curve', dev_file + "_" + eval_file, idx
+                'curve', idx
             )
         )
 
@@ -669,41 +724,42 @@ class Hist(PlotBase):
         if self._hide_dev and not self._eval:
             raise click.BadParameter(
                 "You can only use --hide-dev along with --eval")
-
         # dev hist are displayed next to eval hist
-        self._ncols *= 1 if self._hide_dev or not self._eval else 2
+        self._nrows *= 1 if self._hide_dev or not self._eval else 2
         self._nlegends = ctx.meta.get('legends_ncol', 3)
         self._legend_loc = self._legend_loc or 'upper center'
         # number of subplot on one page
         self._step_print = int(self._nrows * self._ncols)
         self._title_base = 'Scores'
-        self._y_label = 'Probability density'
-        self._x_label = 'Score values'
+        self._y_label = self._y_label or 'Probability density'
+        self._x_label = self._x_label or 'Score values'
         self._end_setup_plot = False
         # overide _titles of PlotBase
-        self._titles = ctx.meta.get('titles')
-        if self._titles is not None and len(self._titles) == self.n_systems \
-           and not self._hide_dev:
-            # use same legend for dev and eval if needed
-            self._titles = [x for pair in zip(self._titles, self._titles)
-                            for x in pair]
+        self._titles = ctx.meta.get('titles', []) * 2
 
     def compute(self, idx, input_scores, input_names):
         ''' Draw histograms of negative and positive scores.'''
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = \
             self._get_neg_pos_thres(idx, input_scores, input_names)
-        idx *= 1 if self._hide_dev or not self._eval else 2
+        # keep id of the current system
+        sys = idx
+        # if the id of the current system does not match the id of the plot,
+        # change it
+        if not self._hide_dev and self._eval:
+            row = int(idx / self._ncols) * 2
+            col = idx % self._ncols
+            idx = col + self._ncols * row
 
         if not self._hide_dev or not self._eval:
-            self._print_subplot(idx, dev_neg, dev_pos, threshold,
+            self._print_subplot(idx, sys, dev_neg, dev_pos, threshold,
                                 not self._no_line, False)
 
-        idx += 1 if self._eval and not self._hide_dev else 0
         if self._eval:
-            self._print_subplot(idx, eval_neg, eval_pos, threshold,
+            idx += self._ncols if not self._hide_dev else 0
+            self._print_subplot(idx, sys, eval_neg, eval_pos, threshold,
                                 not self._no_line, True)
 
-    def _print_subplot(self, idx, neg, pos, threshold, draw_line, evaluation):
+    def _print_subplot(self, idx, sys, neg, pos, threshold, draw_line, evaluation):
         ''' print a subplot for the given score and subplot index'''
         n = idx % self._step_print
         col = n % self._ncols
@@ -712,16 +768,21 @@ class Hist(PlotBase):
         self._setup_hist(neg, pos)
         if col == 0:
             axis.set_ylabel(self._y_label)
+        # systems per page
+        sys_per_page = self._step_print / (1 if self._hide_dev or not
+                                           self._eval else 2)
         # rest to be printed
-        rest_print = self.n_systems * (2 if self._eval and not self._hide_dev
-                                       else 1) - int(idx / self._step_print) \
-                                    * self._step_print
-        if n + self._ncols >= min(self._step_print, rest_print):
+        sys_idx = sys % sys_per_page
+        rest_print = self.n_systems - int(sys / sys_per_page) * sys_per_page
+        # lower histo only
+        is_lower = evaluation or not self._eval
+        if is_lower and sys_idx + self._ncols >= min(sys_per_page, rest_print):
             axis.set_xlabel(self._x_label)
         dflt_title = "Eval. scores" if evaluation else "Dev. scores"
         if self.n_systems == 1 and (not self._eval or self._hide_dev):
             dflt_title = " "
-        axis.set_title(self._get_title(idx, dflt_title))
+        add = self.n_systems if is_lower else 0
+        axis.set_title(self._get_title(sys + add, dflt_title))
         label = "%s threshold%s" % (
             '' if self._criterion is None else
             self._criterion.upper(), ' (dev)' if self._eval else ''
@@ -729,10 +790,14 @@ class Hist(PlotBase):
         if draw_line:
             self._lines(threshold, label, neg, pos, idx)
 
-        mult = 2 if self._eval and not self._hide_dev else 1
+
         # if it was the last subplot of the page or the last subplot
         # to display, save figure
-        if self._step_print == sub_plot_idx or idx == self.n_systems * mult - 1:
+        if self._step_print == sub_plot_idx or (is_lower and sys ==
+                                                self.n_systems - 1):
+            # enable the grid and set it below other elements
+            axis.set_axisbelow(True)
+            axis.grid(True, color=self._grid_color)
             # print legend on the page
             self.plot_legends()
             mpl.tight_layout()
