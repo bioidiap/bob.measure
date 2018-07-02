@@ -24,6 +24,7 @@ Single point measurements
 
 .. autosummary::
    bob.measure.eer
+   bob.measure.fprfnr
    bob.measure.farfrr
    bob.measure.f_score
    bob.measure.precision_recall

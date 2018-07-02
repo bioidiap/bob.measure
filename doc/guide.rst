@@ -34,8 +34,8 @@ methods.
 Overview
 --------
 
-A classifier is subject to two types of errors, either the real access/signal
-is rejected (false negative) or an impostor attack/a false access is accepted
+A classifier is subject to two types of errors, either the event one wishes to detect
+is rejected (false negative) or an the noise or background one wishes to discard is accepted
 (false positive). A possible way to measure the detection performance is to
 use the Half Total Error Rate (HTER), which combines the False Negative Rate
 (FNR) and the False Positive Rate (FPR) and is defined in the following
@@ -130,7 +130,7 @@ We do provide a method to calculate the FPR and FNR in a single shot:
 
 .. doctest::
 
-   >>> FPR, FNR = bob.measure.farfrr(negatives, positives, T)
+   >>> FPR, FNR = bob.measure.fprfnr(negatives, positives, T)
 
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
@@ -171,12 +171,12 @@ calculation of the threshold:
    possible threshold is returned. For example, using
    :any:`bob.measure.eer_threshold` **will not** give you a threshold where
    :math:`FPR == FNR`. Hence, you cannot report :math:`FPR` or :math:`FNR`
-   instead of :math:`EER`; you should report :math:`(FPR+FNR)/2` instead. This
+   instead of :math:`EER`; you should report :math:`(FPR+FNR)/2`. This
    is also true for :any:`bob.measure.far_threshold` and
    :any:`bob.measure.frr_threshold`. The threshold returned by those functions
    does not guarantee that using that threshold you will get the requested
    :math:`FPR` or :math:`FNR` value. Instead, you should recalculate using
-   :any:`bob.measure.farfrr`.
+   :any:`bob.measure.fprfnr`.
 
 .. note::
    Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which defaults to ``False``, throughout.
