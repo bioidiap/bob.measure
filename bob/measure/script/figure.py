@@ -307,7 +307,7 @@ class Metrics(MeasureBase):
             fta_eval = float(all_metrics[1][0].replace('%', ''))
             if fta_eval > 0.0:
                 LOGGER.warn("NaNs scores (%s) were found in %s and removed.",
-                             all_metrics[1][0], eval_file)
+                            all_metrics[1][0], eval_file)
             # computes statistics for the eval set based on the threshold a
             # priori
             headers.append('Evaluation')
@@ -351,9 +351,9 @@ class MultiMetrics(Metrics):
 
     def _strings(self, metrics):
         ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _, _, _, _ = \
-        metrics.mean(axis=0)
+            metrics.mean(axis=0)
         ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = \
-        metrics.std(axis=0)
+            metrics.std(axis=0)
         fta_str = "%.1f%% (%.1f%%)" % (100 * ftam, 100 * ftas)
         fmr_str = "%.1f%% (%.1f%%)" % (100 * fmrm, 100 * fmrs)
         fnmr_str = "%.1f%% (%.1f%%)" % (100 * fnmrm, 100 * fnmrs)
@@ -790,14 +790,14 @@ class Hist(PlotBase):
         if draw_line:
             self._lines(threshold, label, neg, pos, idx)
 
+        # enable the grid and set it below other elements
+        axis.set_axisbelow(True)
+        axis.grid(True, color=self._grid_color)
 
         # if it was the last subplot of the page or the last subplot
         # to display, save figure
         if self._step_print == sub_plot_idx or (is_lower and sys ==
                                                 self.n_systems - 1):
-            # enable the grid and set it below other elements
-            axis.set_axisbelow(True)
-            axis.grid(True, color=self._grid_color)
             # print legend on the page
             self.plot_legends()
             mpl.tight_layout()
