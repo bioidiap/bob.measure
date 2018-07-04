@@ -136,8 +136,8 @@ def const_layout_option(dflt=True, **kwargs):
             plt.rcParams['figure.constrained_layout.use'] = value
             return value
         return click.option(
-            '-Y', '--clayout/--no-clayout', default=dflt, show_default=True,
-            help='(De)Activate constrained layout',
+            '-Y/-nY', '--clayout/--no-clayout', default=dflt,
+            show_default=True, help='(De)Activate constrained layout',
             callback=callback, **kwargs)(func)
     return custom_layout_option
 
