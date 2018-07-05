@@ -254,8 +254,8 @@ transactions, 9856 are true matches. The 95% confidence interval for true match
 rate is then:
 .. doctest:: python
 
-    >>> bob.measure.utils.confidence_for_indicator_variable(9856, 10000)
-    (0.98306835053282549, 0.98784270928084694)
+    >>> numpy.allclose(bob.measure.utils.confidence_for_indicator_variable(9856, 10000),(0.98306835053282549, 0.98784270928084694))
+    True
 
 meaning there is a 95% probability that the true match rate is inside :math:`[0.983,
 0.988]`.
