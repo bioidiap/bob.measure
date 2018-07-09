@@ -230,17 +230,18 @@ class Metrics(MeasureBase):
                 recall, f1_score)
 
     def _strings(self, metrics):
-        fta_str = "%s%%" % format(100 * metrics[0], '.%df' % self._decimal)
-        fmr_str = "%s%% (%d/%d)" % (format(100 * metrics[1], '.%df' % self._decimal),
+        n_dec = '.%df' % self._decimal
+        fta_str = "%s%%" % format(100 * metrics[0], n_dec)
+        fmr_str = "%s%% (%d/%d)" % (format(100 * metrics[1], n_dec),
                                     metrics[6], metrics[7])
-        fnmr_str = "%s%% (%d/%d)" % (format(100 * metrics[2], '.%df' % self._decimal),
+        fnmr_str = "%s%% (%d/%d)" % (format(100 * metrics[2], n_dec),
                                      metrics[8], metrics[9])
-        far_str = "%s%%" % format(100 * metrics[4], '.%df' % self._decimal)
-        frr_str = "%s%%" % format(100 * metrics[5], '.%df' % self._decimal)
-        hter_str = "%s%%" % format(100 * metrics[3], '.%df' % self._decimal)
-        prec_str = "%s" % format(metrics[10], '.%df' % self._decimal)
-        recall_str = "%s" % format(metrics[11], '.%df' % self._decimal)
-        f1_str = "%s" % format(metrics[12], '.%df' % self._decimal)
+        far_str = "%s%%" % format(100 * metrics[4], n_dec)
+        frr_str = "%s%%" % format(100 * metrics[5], n_dec)
+        hter_str = "%s%%" % format(100 * metrics[3], n_dec)
+        prec_str = "%s" % format(metrics[10], n_dec)
+        recall_str = "%s" % format(metrics[11], n_dec)
+        f1_str = "%s" % format(metrics[12], n_dec)
 
         return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
                 prec_str, recall_str, f1_str)
@@ -354,13 +355,19 @@ class MultiMetrics(Metrics):
             metrics.mean(axis=0)
         ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = \
             metrics.std(axis=0)
-        fta_str = "%.1f%% (%.1f%%)" % (100 * ftam, 100 * ftas)
-        fmr_str = "%.1f%% (%.1f%%)" % (100 * fmrm, 100 * fmrs)
-        fnmr_str = "%.1f%% (%.1f%%)" % (100 * fnmrm, 100 * fnmrs)
-        far_str = "%.1f%% (%.1f%%)" % (100 * farm, 100 * fars)
-        frr_str = "%.1f%% (%.1f%%)" % (100 * frrm, 100 * frrs)
-        hter_str = "%.1f%% (%.1f%%)" % (100 * hterm, 100 * hters)
-
+        n_dec = '.%df' % self._decimal
+        fta_str = "%s%% (%s%%)" % (format(100 * ftam, n_dec),
+                                   format(100 * ftas, n_dec))
+        fmr_str = "%s%% (%s%%)" % (format(100 * fmrm, n_dec),
+                                   format(100 * fmrs, n_dec))
+        fnmr_str = "%s%% (%s%%)" % (format(100 * fnmrm, n_dec),
+                                    format(100 * fnmrs, n_dec))
+        far_str = "%s%% (%s%%)" % (format(100 * farm, n_dec),
+                                   format(100 * fars, n_dec))
+        frr_str = "%s%% (%s%%)" % (format(100 * frrm, n_dec),
+                                   format(100 * frrs, n_dec))
+        hter_str = "%s%% (%s%%)" % (format(100 * hterm, n_dec),
+                                    format(100 * hters, n_dec))
         return fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str
 
     def compute(self, idx, input_scores, input_names):

@@ -972,6 +972,7 @@ def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @open_file_mode_option()
         @verbosity_option()
         @click.pass_context
+        @decimal_option()
         @functools.wraps(func)
         def wrapper(*args, **kwds):
             return func(*args, **kwds)
