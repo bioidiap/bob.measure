@@ -145,7 +145,7 @@ def test_hist():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['-e', '--criterion', 'eer','--output',
                                                'HISTO.pdf',  '-b',  '30,20',
-                                               '-sp', 221, '-ts', 'A,B',
+                                               '-sp', 111, '-ts', 'A,B',
                                                dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -167,9 +167,7 @@ def test_hist_legends():
         assert_click_runner_result(result)
 
     # individual legends for dev and eval
-    import matplotlib
     with runner.isolated_filesystem():
-        matplotlib.rcdefaults()
         result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts',
                                                'A,B,C,D',
                                                dev1, test1, dev2, test2])
