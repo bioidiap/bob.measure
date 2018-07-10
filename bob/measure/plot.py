@@ -81,8 +81,8 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
       (:py:func:`bob.measure.roc`)
 
     CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
-      over FAR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
-      FAR over FRR linearly using :py:func:`matplotlib.pyplot.plot`.
+      over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+      FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
@@ -107,7 +107,7 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
 
 def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
                 **kwargs):
-  """Plots the ROC curve for the given list of False Acceptance Rates (FAR).
+  """Plots the ROC curve for the given list of False Acceptance Rates (FPR).
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
@@ -115,7 +115,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
   All parameters passed with exception of the three first parameters of this
   method will be directly passed to the plot command.
 
-  The plot will represent the False Acceptance Rate (FAR) on the horizontal
+  The plot will represent the False Acceptance Rate (FPR) on the horizontal
   axis and the Correct Acceptance Rate (CAR) on the vertical axis.  The values
   for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
 
@@ -136,12 +136,12 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    far_values (:py:class:`list`, optional): The values for the FAR, where the
+    far_values (:py:class:`list`, optional): The values for the FPR, where the
       CAR should be plotted; each value should be in range [0,1].
 
     CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
-      over FAR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
-      FAR over FRR linearly using :py:func:`matplotlib.pyplot.plot`.
+      over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+      FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
@@ -510,14 +510,14 @@ def cmc(cmc_scores, logx=True, **kwargs):
 
 
 def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, logx=True, **kwargs):
-  """Plots the Detection & Identification curve over the FAR
+  """Plots the Detection & Identification curve over the FPR
 
   This curve is designed to be used in an open set identification protocol, and
   defined in Chapter 14.1 of [LiJain2005]_.  It requires to have at least one
   open set probe item, i.e., with no corresponding gallery, such that the
   positives for that pair are ``None``.
 
-  The detection and identification curve first computes FAR thresholds based on
+  The detection and identification curve first computes FPR thresholds based on
   the out-of-set probe scores (negative scores).  For each probe item, the
   **maximum** negative score is used.  Then, it plots the detection and
   identification rates for those thresholds, which are based on the in-set
@@ -534,7 +534,7 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
     rank (:py:class:`int`, optional): The rank for which the curve should be
       plotted
 
-    far_values (:py:class:`list`, optional): The values for the FAR, where the
+    far_values (:py:class:`list`, optional): The values for the FAR (FPR), where the
       CAR should be plotted; each value should be in range [0,1].
 
     logx (:py:class:`bool`, optional): If set (the default), plots the rank

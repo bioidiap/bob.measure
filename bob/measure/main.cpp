@@ -159,7 +159,7 @@ static auto det_doc =
                                           "curve, for which the DET should be "
                                           "evaluated")
         .add_return("curve", "array_like(2D, float)",
-                    "The DET curve, with the FAR in the first and the FRR in "
+                    "The DET curve, with the FPR in the first and the FNR in "
                     "the second row");
 static PyObject *det(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
@@ -197,7 +197,7 @@ static auto ppndf_doc =
         "By 20.04.2011, you could find such package `here "
         "<http://www.itl.nist.gov/iad/mig/tools/>`_.")
         .add_prototype("value", "ppndf")
-        .add_parameter("value", "float", "The value (usually FAR or FRR) for "
+        .add_parameter("value", "float", "The value (usually FPR or FNR) for "
                                          "which the ppndf should be calculated")
         .add_return("ppndf", "float",
                     "The derivative scale of the given value");
@@ -229,7 +229,7 @@ static auto roc_doc =
                                           "max(negatives, positives)]``")
         .add_return("curve", "array_like(2D, float)",
                     "A two-dimensional array of doubles that express the X "
-                    "(FAR) and Y (FRR) coordinates in this order");
+                    "(FPR) and Y (FNR) coordinates in this order");
 static PyObject *roc(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   static char **kwlist = roc_doc.kwlist();
@@ -283,8 +283,8 @@ static auto farfrr_doc =
         "The output is in form of a tuple of two double-precision real "
         "numbers. "
         "The numbers range from 0 to 1. "
-        "The first element of the pair is the false-accept ratio (FAR), the "
-        "second element the false-rejection ratio (FRR).\n\n"
+        "The first element of the pair is the false positive ratio (FPR), the "
+        "second element the false negative ratio (FNR).\n\n"
         "The ``threshold`` value does not necessarily have to fall in the "
         "range covered by the input scores (negatives and positives "
         "altogether), but if it does not, the output will be either (1.0, 0.0) "
@@ -306,9 +306,9 @@ static auto farfrr_doc =
                                              "correctly and incorrectly "
                                              "classified scores")
         .add_return("far", "float",
-                    "The False Accept Rate (FAR) for the given threshold")
+                    "The False Positve Rate (FPR) for the given threshold")
         .add_return("frr", "float",
-                    "The False Reject Rate (FRR) for the given threshold");
+                    "The False Negative Rate (FNR) for the given threshold");
 static PyObject *farfrr(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   char **kwlist = farfrr_doc.kwlist();
@@ -339,7 +339,7 @@ static auto eer_threshold_doc =
         "eer_threshold", "Calculates the threshold that is as close as "
                          "possible to the equal-error-rate (EER) for the given "
                          "input data",
-        "The EER should be the point where the FAR equals the FRR. "
+        "The EER should be the point where the FPR equals the FNR. "
         "Graphically, this would be equivalent to the intersection between the "
         "ROC (or DET) curves and the identity.\n\n"
         ".. note::\n\n"
@@ -356,7 +356,7 @@ static auto eer_threshold_doc =
                                             "ascendantly sorted order?")
         .add_return("threshold", "float", "The threshold (i.e., as used in "
                                           ":py:func:`bob.measure.farfrr`) "
-                                          "where FAR and FRR are as close as "
+                                          "where FPR and FNR are as close as "
                                           "possible");
 static PyObject *eer_threshold(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
@@ -392,8 +392,8 @@ static auto min_weighted_error_rate_threshold_doc =
         "false-accepts and false-rejections. "
         "This number should be between 0 and 1 and will be clipped to those "
         "extremes. "
-        "The value to minimize becomes: :math:`ER_{cost} = cost * FAR + "
-        "(1-cost) * FRR`. "
+        "The value to minimize becomes: :math:`ER_{cost} = cost * FPR + "
+        "(1-cost) * FNR`. "
         "The higher the cost, the higher the importance given to **not** "
         "making mistakes classifying negatives/noise/impostors.\n\n"
         ".. note:: "
@@ -405,8 +405,8 @@ static auto min_weighted_error_rate_threshold_doc =
         .add_parameter(
             "negatives, positives", "array_like(1D, float)",
             "The set of negative and positive scores to compute the threshold")
-        .add_parameter("cost", "float", "The relative cost over FAR with "
-                                        "respect to FRR in the threshold "
+        .add_parameter("cost", "float", "The relative cost over FPR with "
+                                        "respect to FNR in the threshold "
                                         "calculation")
         .add_parameter("is_sorted", "bool", "[Default: ``False``] Are both "
                                             "sets of scores already in "
@@ -712,7 +712,7 @@ static PyObject *precision_recall_curve(PyObject *, PyObject *args,
 
 static auto far_threshold_doc =
     bob::extension::FunctionDoc(
-        "far_threshold", "Computes the threshold such that the real FAR is "
+        "far_threshold", "Computes the threshold such that the real FPR is "
                          "**at most** the requested ``far_value`` if possible",
         "\n\n.. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
@@ -724,11 +724,11 @@ static auto far_threshold_doc =
                        "threshold")
         .add_parameter(
             "negatives", "array_like(1D, float)",
-            "The set of negative scores to compute the FAR threshold")
+            "The set of negative scores to compute the FPR threshold")
         .add_parameter(
             "positives", "array_like(1D, float)",
             "Ignored, but needs to be specified -- may be given as ``[]``")
-        .add_parameter("far_value", "float", "[Default: ``0.001``] The FAR "
+        .add_parameter("far_value", "float", "[Default: ``0.001``] The FPR "
                                              "value, for which the threshold "
                                              "should be computed")
         .add_parameter("is_sorted", "bool",
@@ -738,7 +738,7 @@ static auto far_threshold_doc =
                        "will require more memory")
         .add_return(
             "threshold", "float",
-            "The threshold such that the real FAR is at most ``far_value``");
+            "The threshold such that the real FPR is at most ``far_value``");
 static PyObject *far_threshold(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   static char **kwlist = far_threshold_doc.kwlist();
@@ -768,7 +768,7 @@ static PyObject *far_threshold(PyObject *, PyObject *args, PyObject *kwds) {
 
 static auto frr_threshold_doc =
     bob::extension::FunctionDoc(
-        "frr_threshold", "Computes the threshold such that the real FRR is "
+        "frr_threshold", "Computes the threshold such that the real FNR is "
                          "**at most** the requested ``frr_value`` if possible",
         "\n\n.. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
@@ -783,8 +783,8 @@ static auto frr_threshold_doc =
             "Ignored, but needs to be specified -- may be given as ``[]``")
         .add_parameter(
             "positives", "array_like(1D, float)",
-            "The set of positive scores to compute the FRR threshold")
-        .add_parameter("frr_value", "float", "[Default: ``0.001``] The FRR "
+            "The set of positive scores to compute the FNR threshold")
+        .add_parameter("frr_value", "float", "[Default: ``0.001``] The FNR "
                                              "value, for which the threshold "
                                              "should be computed")
         .add_parameter("is_sorted", "bool",
@@ -868,8 +868,8 @@ static auto rocch_doc =
             "negatives, positives", "array_like(1D, float)",
             "The set of negative and positive scores to compute the curve")
         .add_return("curve", "array_like(2D, float)",
-                    "The ROC curve, with the first row containing the FAR, and "
-                    "the second row containing the FRR");
+                    "The ROC curve, with the first row containing the FPR, and "
+                    "the second row containing the FNR");
 static PyObject *rocch(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   /* Parses input arguments in a single shot */
@@ -925,8 +925,8 @@ static PyObject *rocch2eer(PyObject *, PyObject *args, PyObject *kwds) {
 static auto roc_for_far_doc =
     bob::extension::FunctionDoc(
         "roc_for_far", "Calculates the ROC curve for a given set of positive "
-                       "and negative scores and the FAR values, for which the "
-                       "FRR should be computed",
+                       "and negative scores and the FPR values, for which the "
+                       "FNR should be computed",
         ".. note::\n\n"
         "   The scores will be sorted internally, requiring the scores to be "
         "copied.\n"
@@ -938,15 +938,15 @@ static auto roc_for_far_doc =
             "The set of negative and positive scores to compute the curve")
         .add_parameter(
             "far_list", "array_like(1D, float)",
-            "A list of FAR values, for which the FRR values should be computed")
+            "A list of FPR values, for which the FNR values should be computed")
         .add_parameter("is_sorted", "bool",
                        "[Default: ``False``] Set this to ``True`` if both sets "
                        "of scores are already sorted in ascending order. If "
                        "``False``, scores will be sorted internally, which "
                        "will require more memory")
         .add_return("curve", "array_like(2D, float)",
-                    "The ROC curve, which holds a copy of the given FAR values "
-                    "in row 0, and the corresponding FRR values in row 1");
+                    "The ROC curve, which holds a copy of the given FPR values "
+                    "in row 0, and the corresponding FNR values in row 1");
 static PyObject *roc_for_far(PyObject *, PyObject *args, PyObject *kwds) {
   BOB_TRY
   /* Parses input arguments in a single shot */

@@ -229,7 +229,7 @@ double minimizingThreshold(const blitz::Array<double, 1> &negatives,
 /**
  * Calculates the threshold that is, as close as possible, to the
  * equal-error-rate (EER) given the input data. The EER should be the point
- * where the FAR equals the FRR. Graphically, this would be equivalent to the
+ * where the FPR equals the FNR. Graphically, this would be equivalent to the
  * intersection between the R.O.C. (or D.E.T.) curves and the identity.
  */
 double eerThreshold(const blitz::Array<double, 1> &negatives,
@@ -252,7 +252,7 @@ double eerRocch(const blitz::Array<double, 1> &negatives,
  *
  * The value to minimize becomes:
  *
- * ER_cost = [cost * FAR] + [(1-cost) * FRR]
+ * ER_cost = [cost * FPR] + [(1-cost) * FNR]
  *
  * The higher the cost, the higher the importance given to *not* making
  * mistakes classifying negatives/noise/impostors.
@@ -271,12 +271,12 @@ inline double minHterThreshold(const blitz::Array<double, 1> &negatives,
 }
 
 /**
- * Computes the threshold such that the real FAR is as close as possible
+ * Computes the threshold such that the real FPR is as close as possible
  * to the requested far_value.
  *
- * @param negatives The impostor scores to be used for computing the FAR
+ * @param negatives The impostor scores to be used for computing the FPR
  * @param positives The client scores; ignored by this function
- * @param far_value The FAR value where the threshold should be computed
+ * @param far_value The FPR value where the threshold should be computed
  *
  * @return The computed threshold
  */
@@ -301,7 +301,7 @@ double frrThreshold(const blitz::Array<double, 1> &negatives,
 /**
  * Calculates the ROC curve given a set of positive and negative scores and a
  * number of desired points. Returns a two-dimensional blitz::Array of
- * doubles that express the X (FRR) and Y (FAR) coordinates in this order.
+ * doubles that express the X (FNR) and Y (FPR) coordinates in this order.
  * The points in which the ROC curve are calculated are distributed
  * uniformly in the range [min(negatives, positives), max(negatives,
  * positives)].
@@ -349,8 +349,8 @@ double rocch2eer(const blitz::Array<double, 2> &pmiss_pfa);
 
 /**
  * Calculates the ROC curve given a set of positive and negative scores at
- * the given FAR coordinates. Returns a two-dimensional blitz::Array of
- * doubles that express the X (FAR) and Y (CAR) coordinates in this order.
+ * the given FPR coordinates. Returns a two-dimensional blitz::Array of
+ * doubles that express the X (FPR) and Y (CAR) coordinates in this order.
  */
 blitz::Array<double, 2> roc_for_far(const blitz::Array<double, 1> &negatives,
                                     const blitz::Array<double, 1> &positives,
