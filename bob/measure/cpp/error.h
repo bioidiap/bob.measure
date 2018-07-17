@@ -350,7 +350,7 @@ double rocch2eer(const blitz::Array<double, 2> &pmiss_pfa);
 /**
  * Calculates the ROC curve given a set of positive and negative scores at
  * the given FPR coordinates. Returns a two-dimensional blitz::Array of
- * doubles that express the X (FPR) and Y (CAR) coordinates in this order.
+ * doubles that express the X (FPR) and Y (CPR) coordinates in this order.
  */
 blitz::Array<double, 2> roc_for_far(const blitz::Array<double, 1> &negatives,
                                     const blitz::Array<double, 1> &positives,

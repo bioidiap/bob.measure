@@ -39,13 +39,13 @@ bob::measure::farfrr(const blitz::Array<double, 1> &negatives,
                      const blitz::Array<double, 1> &positives,
                      double threshold) {
   if (std::isnan(threshold)){
-    bob::core::error << "Cannot compute FAR (FPR) or FRR (FNR) with threshold NaN.\n";
+    bob::core::error << "Cannot compute FPR (FAR) or FNR (FRR) with threshold NaN.\n";
     return std::make_pair(1.,1.);
   }
   if (!negatives.size())
-    throw std::runtime_error("Cannot compute FAR (FPR) when no negatives are given");
+    throw std::runtime_error("Cannot compute FPR (FAR) when no negatives are given");
   if (!positives.size())
-    throw std::runtime_error("Cannot compute FRR (FNR) when no positives are given");
+    throw std::runtime_error("Cannot compute FNR (FRR) when no positives are given");
   blitz::sizeType total_negatives = negatives.extent(blitz::firstDim);
   blitz::sizeType total_positives = positives.extent(blitz::firstDim);
   blitz::sizeType false_accepts = blitz::count(negatives >= threshold);

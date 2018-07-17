@@ -80,8 +80,8 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
     npoints (:py:class:`int`, optional): The number of points for the plot. See
       (:py:func:`bob.measure.roc`)
 
-    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
-      over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CPR
+      (CAR) over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
       FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
@@ -107,7 +107,7 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
 
 def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
                 **kwargs):
-  """Plots the ROC curve for the given list of False Acceptance Rates (FPR).
+  """Plots the ROC curve for the given list of False Positive Rates (FAR).
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
   contains a particular set of negatives (impostors) and positives (clients)
@@ -115,8 +115,8 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
   All parameters passed with exception of the three first parameters of this
   method will be directly passed to the plot command.
 
-  The plot will represent the False Acceptance Rate (FPR) on the horizontal
-  axis and the Correct Acceptance Rate (CAR) on the vertical axis.  The values
+  The plot will represent the False Positive Rate (FPR) on the horizontal
+  axis and the Correct Positive Rate (CPR) on the vertical axis.  The values
   for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
 
   .. note::
@@ -137,10 +137,10 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
       (:py:func:`bob.measure.roc`)
 
     far_values (:py:class:`list`, optional): The values for the FPR, where the
-      CAR should be plotted; each value should be in range [0,1].
+      CPR (CAR) should be plotted; each value should be in range [0,1].
 
-    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CAR
-      over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
+    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CPR
+      (CAR) over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
       FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
@@ -534,8 +534,8 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
     rank (:py:class:`int`, optional): The rank for which the curve should be
       plotted
 
-    far_values (:py:class:`list`, optional): The values for the FAR (FPR), where the
-      CAR should be plotted; each value should be in range [0,1].
+    far_values (:py:class:`list`, optional): The values for the FPR (FAR), where the
+      CPR (CAR) should be plotted; each value should be in range [0,1].
 
     logx (:py:class:`bool`, optional): If set (the default), plots the rank
       axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or
