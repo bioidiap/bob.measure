@@ -220,16 +220,16 @@ def subplot_option(dflt=111, **kwargs):
 
 
 def cost_option(**kwargs):
-    '''Get option to get cost for FAR'''
+    '''Get option to get cost for FPR'''
     def custom_cost_option(func):
         def callback(ctx, param, value):
             if value < 0 or value > 1:
-                raise click.BadParameter("Cost for FAR must be betwen 0 and 1")
+                raise click.BadParameter("Cost for FPR must be betwen 0 and 1")
             ctx.meta['cost'] = value
             return value
         return click.option(
             '-C', '--cost', type=float, default=0.99, show_default=True,
-            help='Cost for FAR in minDCF',
+            help='Cost for FPR in minDCF',
             callback=callback, **kwargs)(func)
     return custom_cost_option
 
@@ -388,34 +388,40 @@ def decimal_option(dflt=1, **kwargs):
     return custom_decimal_option
 
 
-def far_option(**kwargs):
+def far_option(far_name="FAR", **kwargs):
     '''Get option to get far value'''
     def custom_far_option(func):
         def callback(ctx, param, value):
             if value is not None and (value > 1 or value < 0):
-                raise click.BadParameter("FAR value should be between 0 and 1")
+                raise click.BadParameter(
+                    "{} value should be between 0 and 1".format(far_name)
+                )
             ctx.meta['far_value'] = value
             return value
         return click.option(
-            '-f', '--far-value', type=click.FLOAT, default=None,
-            help='The FAR value for which to compute threshold. This option '
-            'must be used alongside `--criterion far`.',
+            '-f', '--{}-value'.format(far_name.lower()), 'far_value',
+            type=click.FLOAT, default=None,
+            help='The {} value for which to compute threshold. This option '
+            'must be used alongside `--criterion far`.'.format(far_name),
             callback=callback, show_default=True, **kwargs)(func)
     return custom_far_option
 
 
-def min_far_option(dflt=1e-4, **kwargs):
+def min_far_option(far_name="FAR",dflt=1e-4, **kwargs):
     '''Get option to get min far value'''
     def custom_min_far_option(func):
         def callback(ctx, param, value):
             if value is not None and (value > 1 or value < 0):
-                raise click.BadParameter("FAR value should be between 0 and 1")
+                raise click.BadParameter(
+                    "{} value should be between 0 and 1".format(far_name)
+                )
             ctx.meta['min_far_value'] = value
             return value
         return click.option(
-            '-M', '--min-far-value', type=click.FLOAT, default=dflt,
-            help='Select the minimum FAR value used in ROC and DET plots; '
-            'should be a power of 10.',
+            '-M', '--min-{}-value'.format(far_name.lower()), 'min_far_value',
+            type=click.FLOAT, default=dflt,
+            help='Select the minimum {} value used in ROC and DET plots; '
+            'should be a power of 10.'.format(far_name),
             callback=callback, show_default=True, **kwargs)(func)
     return custom_min_far_option
 
@@ -585,7 +591,8 @@ def style_option(**kwargs):
     return custom_style_option
 
 
-def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
+def metrics_command(docstring, criteria=('eer', 'min-hter', 'far'),
+                    far_name="FAR"):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
@@ -596,7 +603,7 @@ def metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @output_log_metric_option()
         @criterion_option(criteria)
         @thresholds_option()
-        @far_option()
+        @far_option(far_name=far_name)
         @legends_option()
         @open_file_mode_option()
         @verbosity_option()
@@ -632,7 +639,7 @@ METRICS_HELP = """Prints a table that contains {names} for a given
     """
 
 
-def roc_command(docstring):
+def roc_command(docstring, far_name="FAR"):
     def custom_roc_command(func):
         func.__doc__ = docstring
 
@@ -648,7 +655,7 @@ def roc_command(docstring):
         @semilogx_option(True)
         @lines_at_option()
         @axes_val_option()
-        @min_far_option()
+        @min_far_option(far_name=far_name)
         @x_rotation_option()
         @x_label_option()
         @y_label_option()
@@ -687,7 +694,7 @@ ROC_HELP = """Plot ROC (receiver operating characteristic) curve.
     """
 
 
-def det_command(docstring):
+def det_command(docstring, far_name="FAR"):
     def custom_det_command(func):
         func.__doc__ = docstring
 
@@ -701,7 +708,7 @@ def det_command(docstring):
         @sep_dev_eval_option()
         @eval_option()
         @axes_val_option(dflt='0.01,95,0.01,95')
-        @min_far_option()
+        @min_far_option(far_name=far_name)
         @x_rotation_option(dflt=45)
         @x_label_option()
         @y_label_option()
@@ -785,7 +792,7 @@ EPC_HELP = """Plot EPC (expected performance curve).
     """
 
 
-def hist_command(docstring):
+def hist_command(docstring, far_name="FAR"):
     def custom_hist_command(func):
         func.__doc__ = docstring
 
@@ -799,7 +806,7 @@ def hist_command(docstring):
         @no_legend_option()
         @legend_ncols_option()
         @criterion_option()
-        @far_option()
+        @far_option(far_name=far_name)
         @no_line_option()
         @thresholds_option()
         @subplot_option()
@@ -841,7 +848,8 @@ HIST_HELP = """ Plots histograms of positive and negatives along with threshold
     """
 
 
-def evaluate_command(docstring, criteria=('eer', 'min-hter', 'far')):
+def evaluate_command(docstring, criteria=('eer', 'min-hter', 'far'),
+                     far_name="FAR"):
     def custom_evaluate_command(func):
         func.__doc__ = docstring
 
@@ -852,7 +860,7 @@ def evaluate_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @table_option()
         @eval_option()
         @criterion_option(criteria)
-        @far_option()
+        @far_option(far_name=far_name)
         @output_log_metric_option()
         @output_plot_file_option(default_out='eval_plots.pdf')
         @lines_at_option()
@@ -955,7 +963,8 @@ def n_protocols_option(required=True, **kwargs):
     return custom_n_protocols_option
 
 
-def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
+def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far'),
+                          far_name="FAR"):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
@@ -967,7 +976,7 @@ def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far')):
         @output_log_metric_option()
         @criterion_option(criteria)
         @thresholds_option()
-        @far_option()
+        @far_option(far_name=far_name)
         @legends_option()
         @open_file_mode_option()
         @verbosity_option()

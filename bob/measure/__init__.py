@@ -440,9 +440,9 @@ def false_alarm_rate(cmc_scores, threshold):
 def eer(negatives, positives, is_sorted=False, also_farfrr=False):
   """Calculates the Equal Error Rate (EER).
 
-  Please note that it is possible that eer != far != frr.
-  This function returns (far + frr) / 2 as eer.
-  If you also need the far and frr values, set ``also_farfrr`` to ``True``.
+  Please note that it is possible that eer != fpr != fnr.
+  This function returns (fpr + fnr) / 2 as eer.
+  If you also need the fpr and fnr values, set ``also_farfrr`` to ``True``.
 
   Parameters
   ----------
@@ -459,11 +459,11 @@ def eer(negatives, positives, is_sorted=False, also_farfrr=False):
   -------
   eer : float
       The Equal Error Rate (EER).
-  far : float
-      The False Accept Rate (FAR). Returned only when ``also_farfrr`` is
+  fpr : float
+      The False Positive Rate (FPR). Returned only when ``also_farfrr`` is
       ``True``.
-  frr : float
-      The False Reject Rate (FAR). Returned only when ``also_farfrr`` is
+  fnr : float
+      The False Negative Rate (FNR). Returned only when ``also_farfrr`` is
       ``True``.
   """
   threshold = eer_threshold(negatives, positives, is_sorted)
