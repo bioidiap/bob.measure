@@ -85,7 +85,7 @@ def test_det():
     with runner.isolated_filesystem():
         result = runner.invoke(commands.det, ['-e', '--split', '--output',
                                               'test.pdf', '--legends', 'A,B',
-                                              '-lc', 'upper-right',
+                                              '-ll', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -115,7 +115,7 @@ def test_epc():
         result = runner.invoke(commands.epc, ['--output', 'test.pdf',
                                               '--legends', 'A,B',
                                               '--titles', 'TA,TB',
-                                              '-lc', 'upper-right',
+                                              '-ll', 'upper-right',
                                               dev1, test1, dev2, test2])
         if result.output:
             click.echo(result.output)
@@ -158,7 +158,7 @@ def test_hist_legends():
     test2 = bob.io.base.test_utils.datafile('test-2.txt', 'bob.measure')
     runner = CliRunner()
 
-    # share same legend for dev/eval of each system
+    # share same title for dev/eval of each system
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['-e', '-sp', 111, '-ts', 'A,B',
                                                dev1, test1, dev2, test2])
@@ -166,7 +166,7 @@ def test_hist_legends():
             click.echo(result.output)
         assert_click_runner_result(result)
 
-    # individual legends for dev and eval
+    # individual titles for dev and eval
     with runner.isolated_filesystem():
         result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts',
                                                'A,B,C,D',
