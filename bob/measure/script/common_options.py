@@ -464,7 +464,7 @@ def legend_loc_option(dflt='best', **kwargs):
                 '-', ' ') if value else value
             return value
         return click.option(
-            '-lc', '--legend-loc', default=dflt, show_default=True,
+            '-ll', '--legend-loc', default=dflt, show_default=True,
             type=click.Choice(['best', 'upper-right', 'upper-left',
                                'lower-left', 'lower-right', 'right',
                                'center-left', 'center-right', 'lower-center',
