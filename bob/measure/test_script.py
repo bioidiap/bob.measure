@@ -168,7 +168,7 @@ def test_hist_legends():
 
     # individual titles for dev and eval
     with runner.isolated_filesystem():
-        result = runner.invoke(commands.hist, ['-e', '-sp', 221, '-ts',
+        result = runner.invoke(commands.hist, ['-e', '-sp', 121, '-ts',
                                                'A,B,C,D',
                                                dev1, test1, dev2, test2])
         if result.output:
