@@ -489,3 +489,18 @@ def test_open_set_rates():
   assert abs(bob.measure.recognition_rate(cmc_scores) - 6. / 9.) < 1e-8
   assert abs(bob.measure.recognition_rate(
       cmc_scores, threshold=0.5) - 6. / 8.) < 1e-8
+
+
+def test_mindcf():
+  """ Test outlier scores in negative set
+  """
+  from bob.measure import min_weighted_error_rate_threshold, farfrr
+  cost = 0.99
+  negatives = [-3, -2, -1, -0.5, 4]
+  positives = [0.5, 3]
+  th = min_weighted_error_rate_threshold(negatives, positives, cost, True)
+  far, frr = farfrr(negatives, positives, th)
+  mindcf = (cost * far + (1-cost)*frr)*100
+  assert mindcf <= 1.0
+
+
