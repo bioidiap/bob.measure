@@ -211,6 +211,7 @@ double minimizingThreshold(const blitz::Array<double, 1> &negatives,
       else
         current_threshold += *pos_it;
       current_threshold /= 2;
+
     }
   } // while
 
@@ -220,6 +221,22 @@ double minimizingThreshold(const blitz::Array<double, 1> &negatives,
   if (current_predicate < min_predicate) {
     min_predicate = current_predicate;
     min_threshold = current_threshold;
+  }
+
+  // now we just double check choosing the threshold higher than all scores will not improve the min_predicate
+  if (neg_it != negatives.end() || pos_it != positives.end()) {
+    double last_threshold = current_threshold;
+    if (neg_it != negatives.end()) 
+      last_threshold = std::nextafter(negatives(negatives.extent(0)-1), negatives(negatives.extent(0)-1)+1);
+    else {
+      if (pos_it != positives.end()) 
+        last_threshold = std::nextafter(positives(positives.extent(0)-1), positives(positives.extent(0)-1)+1);      
+    }
+    current_predicate = predicate(0., 1.);
+    if (current_predicate < min_predicate) {
+      min_predicate = current_predicate;
+      min_threshold = last_threshold;
+    }
   }
 
   // return the best threshold found
