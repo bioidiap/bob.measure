@@ -501,6 +501,6 @@ def test_mindcf():
   th = min_weighted_error_rate_threshold(negatives, positives, cost, True)
   far, frr = farfrr(negatives, positives, th)
   mindcf = (cost * far + (1-cost)*frr)*100
-  assert mindcf <= 1.0
+  assert mindcf< 1.0 + 1e-8
 
 
