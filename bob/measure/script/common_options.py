@@ -592,11 +592,11 @@ def style_option(**kwargs):
 
 
 def metrics_command(docstring, criteria=('eer', 'min-hter', 'far'),
-                    far_name="FAR"):
+                    far_name="FAR", **kwarg):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
-        @click.command()
+        @click.command(**kwarg)
         @scores_argument(nargs=-1)
         @eval_option()
         @table_option()
@@ -922,7 +922,7 @@ def evaluate_flow(ctx, scores, evaluation, metrics, roc, det, epc, hist,
     if criterion is not None:
         click.echo("Computing metrics with %s..." % criterion)
         ctx.invoke(metrics, scores=scores, evaluation=evaluation)
-        if 'log' in ctx.meta:
+        if ctx.meta.get('log') is not None:
             click.echo("[metrics] => %s" % ctx.meta['log'])
 
     # avoid closing pdf file before all figures are plotted
@@ -964,11 +964,11 @@ def n_protocols_option(required=True, **kwargs):
 
 
 def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far'),
-                          far_name="FAR"):
+                          far_name="FAR", **kwargs):
     def custom_metrics_command(func):
         func.__doc__ = docstring
 
-        @click.command('multi-metrics')
+        @click.command('multi-metrics', **kwargs)
         @scores_argument(nargs=-1)
         @eval_option()
         @n_protocols_option()
@@ -991,9 +991,9 @@ def multi_metrics_command(docstring, criteria=('eer', 'min-hter', 'far'),
 
 MULTI_METRICS_HELP = """Multi protocol (cross-validation) metrics.
 
-    Prints a table that contains {names} for a given threshold criterion
-    ({criteria}). The metrics are averaged over several protocols. The idea is
-    that each protocol corresponds to one fold in your cross-validation.
+    Prints a table that contains mean and standard deviation of {names} for a given
+    threshold criterion ({criteria}). The metrics are averaged over several protocols.
+    The idea is that each protocol corresponds to one fold in your cross-validation.
 
     You need to provide as many as development score files as the number of
     protocols per system. You can also provide evaluation files along with dev
@@ -1006,9 +1006,9 @@ MULTI_METRICS_HELP = """Multi protocol (cross-validation) metrics.
 
     Examples:
 
-        $ {command} -v {{p1,p2,p3}}/scores-dev
+        $ {command} -vv -pn 3 {{p1,p2,p3}}/scores-dev
 
-        $ {command} -v -e {{p1,p2,p3}}/scores-{{dev,eval}}
+        $ {command} -vv -pn 3 -e {{p1,p2,p3}}/scores-{{dev,eval}}
 
-        $ {command} -v -e {{sys1,sys2}}/{{p1,p2,p3}}/scores-{{dev,eval}}
+        $ {command} -vv -pn 3 -e {{sys1,sys2}}/{{p1,p2,p3}}/scores-{{dev,eval}}
     """
