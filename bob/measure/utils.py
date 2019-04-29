@@ -2,7 +2,9 @@
 
 import numpy
 import scipy.stats
-import bob.core
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 
 def remove_nan(scores):
@@ -25,9 +27,8 @@ def remove_nan(scores):
     sum_nans = sum(nans)
     total = len(scores)
     if sum_nans > 0:
-        logger = bob.core.log.setup("bob.measure")
-        logger.warning('Found {} NaNs in {} scores'.format(sum_nans, total))
-    return scores[numpy.where(~nans)], sum_nans, total
+        LOGGER.warning('Found {} NaNs in {} scores'.format(sum_nans, total))
+    return scores[~nans], sum_nans, total
 
 
 def get_fta(scores):
