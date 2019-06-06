@@ -451,7 +451,7 @@ def figsize_option(dflt='4,3', **kwargs):
             '--figsize', default=dflt, show_default=True,
             help='If given, will run '
             '``plt.rcParams[\'figure.figsize\']=figsize)``. '
-            'Example: --fig-size 4,6',
+            'Example: --figsize 4,6',
             callback=callback, **kwargs)(func)
     return custom_figsize_option
 
