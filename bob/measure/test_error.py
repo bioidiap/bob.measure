@@ -492,8 +492,7 @@ def test_open_set_rates():
 
 
 def test_mindcf():
-  """ Test outlier scores in negative set
-  """
+  # Test outlier scores in negative set
   from bob.measure import min_weighted_error_rate_threshold, farfrr
   cost = 0.99
   negatives = [-3, -2, -1, -0.5, 4]

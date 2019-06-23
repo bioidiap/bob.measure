@@ -47,7 +47,7 @@ def _semilogx(x, y, **kwargs):
   return pyplot.semilogx(x, y, **kwargs)
 
 
-def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
+def roc(negatives, positives, npoints=2000, CAR=False, min_far=-8, **kwargs):
   """Plots Receiver Operating Characteristic (ROC) curve.
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
@@ -98,7 +98,7 @@ def roc(negatives, positives, npoints=100, CAR=False, **kwargs):
 
   from matplotlib import pyplot
   from . import roc as calc
-  out = calc(negatives, positives, npoints)
+  out = calc(negatives, positives, npoints, min_far)
   if not CAR:
     return pyplot.plot(out[0, :], out[1, :], **kwargs)
   else:
@@ -164,7 +164,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
     return _semilogx(out[0, :], (1 - out[1, :]), **kwargs)
 
 
-def precision_recall_curve(negatives, positives, npoints=100, **kwargs):
+def precision_recall_curve(negatives, positives, npoints=2000, **kwargs):
   """Plots a Precision-Recall curve.
 
   This method will call ``matplotlib`` to plot the precision-recall curve for a
@@ -279,7 +279,7 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   return pyplot.plot(out[0, :], 100.0 * out[1, :], **kwargs)
 
 
-def det(negatives, positives, npoints=100, **kwargs):
+def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
   """Plots Detection Error Trade-off (DET) curve as defined in the paper:
 
   Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
@@ -395,7 +395,7 @@ def det(negatives, positives, npoints=100, **kwargs):
   from . import det as calc
   from . import ppndf
 
-  out = calc(negatives, positives, npoints)
+  out = calc(negatives, positives, npoints, min_far)
   retval = pyplot.plot(out[0, :], out[1, :], **kwargs)
 
   # now the trick: we must plot the tick marks by hand using the PPNDF method
