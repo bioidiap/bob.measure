@@ -589,7 +589,8 @@ class Roc(PlotBase):
                     thres_line = far_threshold(dev_neg, dev_pos, line)
                     eval_fmr, eval_fnmr = fprfnr(
                         eval_neg, eval_pos, thres_line)
-                    eval_fnmr = 1 - eval_fnmr
+                    if self._semilogx:
+                        eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
