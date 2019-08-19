@@ -226,11 +226,11 @@ double minimizingThreshold(const blitz::Array<double, 1> &negatives,
   // now we just double check choosing the threshold higher than all scores will not improve the min_predicate
   if (neg_it != negatives.end() || pos_it != positives.end()) {
     double last_threshold = current_threshold;
-    if (neg_it != negatives.end()) 
+    if (neg_it != negatives.end())
       last_threshold = std::nextafter(negatives(negatives.extent(0)-1), negatives(negatives.extent(0)-1)+1);
     else {
-      if (pos_it != positives.end()) 
-        last_threshold = std::nextafter(positives(positives.extent(0)-1), positives(positives.extent(0)-1)+1);      
+      if (pos_it != positives.end())
+        last_threshold = std::nextafter(positives(positives.extent(0)-1), positives(positives.extent(0)-1)+1);
     }
     current_predicate = predicate(0., 1.);
     if (current_predicate < min_predicate) {
@@ -314,18 +314,43 @@ double farThreshold(const blitz::Array<double, 1> &negatives,
 double frrThreshold(const blitz::Array<double, 1> &negatives,
                     const blitz::Array<double, 1> &positives, double frr_value,
                     bool is_sorted = false);
+/**
+ * Computes log-scaled values between :math:`10^{min_power}` and 1
+ */
+blitz::Array<double, 1> log_values(size_t points, int min_power);
+
+/**
+ * This function creates a list of far (and frr) values that we are interested
+ * to see on the curve. Computes thresholds for those points. Sorts the
+ * thresholds so we get sorted numbers to plot on the curve and returns the
+ * thresholds. Some points will be duplicate but in terms of resolution and
+ * accuracy this is better than just changing the threshold from min of scores
+ * to max of scores with equal spaces.
+ */
+blitz::Array<double, 1> meaningfulThresholds(
+    const blitz::Array<double, 1> &negatives,
+    const blitz::Array<double, 1> &positives,
+    size_t points_, int min_far = -8, bool is_sorted = false);
 
 /**
  * Calculates the ROC curve given a set of positive and negative scores and a
  * number of desired points. Returns a two-dimensional blitz::Array of
- * doubles that express the X (FNR) and Y (FPR) coordinates in this order.
- * The points in which the ROC curve are calculated are distributed
- * uniformly in the range [min(negatives, positives), max(negatives,
- * positives)].
+ * doubles that express the X (FPR) and Y (FNR) coordinates in this order.
+ * Internally it uses roc_for_far and roc_for_frr to compute X and Y. This will make
+ * sure all corner cases are addressed. It is recommended to use a very large number of
+ * points (say 2000) to get a smooth output.
+ *
+ * @param negatives The impostor scores
+ * @param positives The genuine scores
+ * @param points    The number of points in of X and Y. It should be multiples of 2.
+ * @param min_far   Minimum FAR in terms of 10^(min_far). This value is also used for
+ *                  min_frr.
+ *
+ * @return A two dimensional array with shape of <2, 2*(points//2)>
  */
 blitz::Array<double, 2> roc(const blitz::Array<double, 1> &negatives,
                             const blitz::Array<double, 1> &positives,
-                            size_t points);
+                            size_t points, int min_far = -8);
 
 /**
  * Calculates the precision-recall curve given a set of positive and negative
@@ -406,7 +431,7 @@ double ppndf(double value);
  */
 blitz::Array<double, 2> det(const blitz::Array<double, 1> &negatives,
                             const blitz::Array<double, 1> &positives,
-                            size_t points);
+                            size_t points, int min_far = -8);
 
 /**
  * Calculates the EPC curve given a set of positive and negative scores and a

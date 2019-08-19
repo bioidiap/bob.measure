@@ -246,7 +246,7 @@ def points_curve_option(**kwargs):
             ctx.meta['points'] = value
             return value
         return click.option(
-            '-n', '--points', type=INT, default=100, show_default=True,
+            '-n', '--points', type=INT, default=2000, show_default=True,
             help='The number of points use to draw curves in plots',
             callback=callback, **kwargs)(func)
     return custom_points_curve_option

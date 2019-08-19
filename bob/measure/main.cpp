@@ -151,13 +151,17 @@ static auto det_doc =
         "recommended by NIST. "
         "The derivative scales are computed with the "
         ":py:func:`bob.measure.ppndf` function.")
-        .add_prototype("negatives, positives, n_points", "curve")
+        .add_prototype("negatives, positives, n_points, [min_far]", "curve")
         .add_parameter(
             "negatives, positives", "array_like(1D, float)",
             "The list of negative and positive scores to compute the DET for")
         .add_parameter("n_points", "int", "The number of points on the DET "
                                           "curve, for which the DET should be "
                                           "evaluated")
+        .add_parameter("min_far", "int", "Minimum FAR in terms of 10^(min_far). "
+                                         "This value is also used for min_frr. "
+                                         "Default value is -8. Values should be "
+                                         "negative.")
         .add_return("curve", "array_like(2D, float)",
                     "The DET curve, with the FPR in the first and the FNR in "
                     "the second row");
@@ -168,10 +172,11 @@ static PyObject *det(PyObject *, PyObject *args, PyObject *kwds) {
   PyBlitzArrayObject *neg;
   PyBlitzArrayObject *pos;
   Py_ssize_t n_points;
+  int min_far = -8;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&n", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&n|i", kwlist,
                                    &double1d_converter, &neg,
-                                   &double1d_converter, &pos, &n_points))
+                                   &double1d_converter, &pos, &n_points, &min_far))
     return 0;
 
   // protects acquired resources through this scope
@@ -180,7 +185,7 @@ static PyObject *det(PyObject *, PyObject *args, PyObject *kwds) {
 
   auto result =
       bob::measure::det(*PyBlitzArrayCxx_AsBlitz<double, 1>(neg),
-                        *PyBlitzArrayCxx_AsBlitz<double, 1>(pos), n_points);
+                        *PyBlitzArrayCxx_AsBlitz<double, 1>(pos), n_points, min_far);
 
   return PyBlitzArrayCxx_AsNumpy(result);
   BOB_CATCH_FUNCTION("det", 0)
@@ -218,7 +223,7 @@ static auto roc_doc =
         "Calculates points of an Receiver Operating Characteristic (ROC)",
         "Calculates the ROC curve given a set of negative and positive scores "
         "and a desired number of points. ")
-        .add_prototype("negatives, positives, n_points", "curve")
+        .add_prototype("negatives, positives, n_points, [min_far]", "curve")
         .add_parameter("negatives, positives", "array_like(1D, float)",
                        "The negative and positive scores, for which the ROC "
                        "curve should be calculated")
@@ -227,6 +232,10 @@ static auto roc_doc =
                                           "distributed uniformly in the range "
                                           "``[min(negatives, positives), "
                                           "max(negatives, positives)]``")
+        .add_parameter("min_far", "int", "Minimum FAR in terms of 10^(min_far). "
+                                         "This value is also used for min_frr. "
+                                         "Default value is -8. Values should be "
+                                         "negative.")
         .add_return("curve", "array_like(2D, float)",
                     "A two-dimensional array of doubles that express the X "
                     "(FPR) and Y (FNR) coordinates in this order");
@@ -237,10 +246,12 @@ static PyObject *roc(PyObject *, PyObject *args, PyObject *kwds) {
   PyBlitzArrayObject *neg;
   PyBlitzArrayObject *pos;
   Py_ssize_t n_points;
+  int min_far = -8;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&n", kwlist,
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&n|i", kwlist,
                                    &double1d_converter, &neg,
-                                   &double1d_converter, &pos, &n_points))
+                                   &double1d_converter, &pos, &n_points, &min_far))
     return 0;
 
   // protects acquired resources through this scope
@@ -249,7 +260,7 @@ static PyObject *roc(PyObject *, PyObject *args, PyObject *kwds) {
 
   auto result =
       bob::measure::roc(*PyBlitzArrayCxx_AsBlitz<double, 1>(neg),
-                        *PyBlitzArrayCxx_AsBlitz<double, 1>(pos), n_points);
+                        *PyBlitzArrayCxx_AsBlitz<double, 1>(pos), n_points, min_far);
 
   return PyBlitzArrayCxx_AsNumpy(result);
   BOB_CATCH_FUNCTION("roc", 0)

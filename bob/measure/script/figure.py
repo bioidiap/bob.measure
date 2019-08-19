@@ -427,7 +427,7 @@ class PlotBase(MeasureBase):
     def __init__(self, ctx, scores, evaluation, func_load):
         super(PlotBase, self).__init__(ctx, scores, evaluation, func_load)
         self._output = ctx.meta.get('output')
-        self._points = ctx.meta.get('points', 100)
+        self._points = ctx.meta.get('points', 2000)
         self._split = ctx.meta.get('split')
         self._axlim = ctx.meta.get('axlim')
         self._disp_legend = ctx.meta.get('disp_legend', True)
@@ -550,6 +550,7 @@ class Roc(PlotBase):
         # custom defaults
         if self._axlim is None:
             self._axlim = [None, None, -0.05, 1.05]
+        self._min_dig = -4 if self._min_dig is None else self._min_dig
 
     def compute(self, idx, input_scores, input_names):
         ''' Plot ROC for dev and eval data using
@@ -564,10 +565,11 @@ class Roc(PlotBase):
         mpl.figure(1)
         if self._eval:
             LOGGER.info("ROC dev. curve using %s", dev_file)
-            plot.roc_for_far(
+            plot.roc(
                 dev_neg, dev_pos,
-                far_values=plot.log_values(self._min_dig or -4),
+                npoints=self._points,
                 CAR=self._semilogx,
+                min_far=self._min_dig,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
                 label=self._label('dev', idx)
             )
@@ -576,10 +578,11 @@ class Roc(PlotBase):
 
             linestyle = '--' if not self._split else self._linestyles[idx]
             LOGGER.info("ROC eval. curve using %s", eval_file)
-            plot.roc_for_far(
+            plot.roc(
                 eval_neg, eval_pos, linestyle=linestyle,
-                far_values=plot.log_values(self._min_dig or -4),
+                npoints=self._points,
                 CAR=self._semilogx,
+                min_far=self._min_dig,
                 color=self._colors[idx],
                 label=self._label('eval.', idx)
             )
@@ -589,15 +592,17 @@ class Roc(PlotBase):
                     thres_line = far_threshold(dev_neg, dev_pos, line)
                     eval_fmr, eval_fnmr = fprfnr(
                         eval_neg, eval_pos, thres_line)
-                    eval_fnmr = 1 - eval_fnmr
+                    if self._semilogx:
+                        eval_fnmr = 1 - eval_fnmr
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
             LOGGER.info("ROC dev. curve using %s", dev_file)
-            plot.roc_for_far(
+            plot.roc(
                 dev_neg, dev_pos,
-                far_values=plot.log_values(self._min_dig or -4),
+                npoints=self._points,
                 CAR=self._semilogx,
+                min_far=self._min_dig,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
                 label=self._label('dev', idx)
             )
@@ -624,6 +629,8 @@ class Det(PlotBase):
         if self._min_dig is not None:
             self._axlim[0] = math.pow(10, self._min_dig) * 100
 
+        self._min_dig = -4 if self._min_dig is None else self._min_dig
+
     def compute(self, idx, input_scores, input_names):
         ''' Plot DET for dev and eval data using
         :py:func:`bob.measure.plot.det`'''
@@ -638,7 +645,8 @@ class Det(PlotBase):
         if self._eval and eval_neg is not None:
             LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
-                dev_neg, dev_pos, self._points, color=self._colors[idx],
+                dev_neg, dev_pos, self._points, min_far=self._min_dig,
+                color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label('dev.', idx)
             )
@@ -647,7 +655,8 @@ class Det(PlotBase):
             linestyle = '--' if not self._split else self._linestyles[idx]
             LOGGER.info("DET eval. curve using %s", eval_file)
             plot.det(
-                eval_neg, eval_pos, self._points, color=self._colors[idx],
+                eval_neg, eval_pos, self._points, min_far=self._min_dig,
+                color=self._colors[idx],
                 linestyle=linestyle,
                 label=self._label('eval.', idx)
             )
@@ -663,7 +672,8 @@ class Det(PlotBase):
         else:
             LOGGER.info("DET dev. curve using %s", dev_file)
             plot.det(
-                dev_neg, dev_pos, self._points, color=self._colors[idx],
+                dev_neg, dev_pos, self._points, min_far=self._min_dig,
+                color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label('dev.', idx)
             )
