@@ -59,6 +59,20 @@ def scores_argument(min_arg=1, force_eval=False, **kwargs):
     return custom_scores_argument
 
 
+def alpha_option(dflt=1, **kwargs):
+    '''An alpha option for plots'''
+    def custom_eval_option(func):
+        def callback(ctx, param, value):
+            ctx.meta['alpha'] = value
+            return value
+        return click.option(
+            '-a', '--alpha', default=dflt, type=click.FLOAT,
+            show_default=True,
+            help='Adjusts transparency of plots.',
+            callback=callback, **kwargs)(func)
+    return custom_eval_option
+
+
 def no_legend_option(dflt=True, **kwargs):
     '''Get option flag to say if legend should be displayed or not'''
     return bool_option(
@@ -284,7 +298,7 @@ def n_bins_option(**kwargs):
     return custom_n_bins_option
 
 
-def table_option(**kwargs):
+def table_option(dflt="rst", **kwargs):
     '''Get table option for tabulate package
     More informnations: https://pypi.org/project/tabulate/
     '''
@@ -294,7 +308,7 @@ def table_option(**kwargs):
             return value
         return click.option(
             '--tablefmt', type=click.Choice(tabulate.tabulate_formats),
-            default='rst', show_default=True, help='Format of printed tables.',
+            default=dflt, show_default=True, help='Format of printed tables.',
             callback=callback, **kwargs)(func)
     return custom_table_option
 
@@ -664,6 +678,7 @@ def roc_command(docstring, far_name="FAR"):
         @figsize_option()
         @style_option()
         @linestyles_option()
+        @alpha_option()
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)
@@ -718,6 +733,7 @@ def det_command(docstring, far_name="FAR"):
         @figsize_option()
         @style_option()
         @linestyles_option()
+        @alpha_option()
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)
@@ -765,6 +781,7 @@ def epc_command(docstring):
         @figsize_option()
         @style_option()
         @linestyles_option()
+        @alpha_option()
         @verbosity_option()
         @click.pass_context
         @functools.wraps(func)

@@ -430,6 +430,7 @@ class PlotBase(MeasureBase):
         self._points = ctx.meta.get('points', 2000)
         self._split = ctx.meta.get('split')
         self._axlim = ctx.meta.get('axlim')
+        self._alpha = ctx.meta.get('alpha')
         self._disp_legend = ctx.meta.get('disp_legend', True)
         self._legend_loc = ctx.meta.get('legend_loc')
         self._min_dig = None
@@ -571,7 +572,8 @@ class Roc(PlotBase):
                 CAR=self._semilogx,
                 min_far=self._min_dig,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', idx)
+                label=self._label('dev', idx),
+                alpha=self._alpha,
             )
             if self._split:
                 mpl.figure(2)
@@ -584,7 +586,8 @@ class Roc(PlotBase):
                 CAR=self._semilogx,
                 min_far=self._min_dig,
                 color=self._colors[idx],
-                label=self._label('eval.', idx)
+                label=self._label('eval.', idx),
+                alpha=self._alpha,
             )
             if self._far_at is not None:
                 from .. import fprfnr
@@ -604,7 +607,8 @@ class Roc(PlotBase):
                 CAR=self._semilogx,
                 min_far=self._min_dig,
                 color=self._colors[idx], linestyle=self._linestyles[idx],
-                label=self._label('dev', idx)
+                label=self._label('dev', idx),
+                alpha=self._alpha,
             )
 
 
@@ -648,7 +652,8 @@ class Det(PlotBase):
                 dev_neg, dev_pos, self._points, min_far=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('dev.', idx)
+                label=self._label('dev.', idx),
+                alpha=self._alpha,
             )
             if self._split:
                 mpl.figure(2)
@@ -658,7 +663,8 @@ class Det(PlotBase):
                 eval_neg, eval_pos, self._points, min_far=self._min_dig,
                 color=self._colors[idx],
                 linestyle=linestyle,
-                label=self._label('eval.', idx)
+                label=self._label('eval.', idx),
+                alpha=self._alpha,
             )
             if self._far_at is not None:
                 from .. import farfrr
@@ -675,7 +681,8 @@ class Det(PlotBase):
                 dev_neg, dev_pos, self._points, min_far=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
-                label=self._label('dev.', idx)
+                label=self._label('dev.', idx),
+                alpha=self._alpha,
             )
 
     def _set_axis(self):
@@ -713,7 +720,8 @@ class Epc(PlotBase):
             color=self._colors[idx], linestyle=self._linestyles[idx],
             label=self._label(
                 'curve', idx
-            )
+            ),
+            alpha=self._alpha,
         )
 
 
