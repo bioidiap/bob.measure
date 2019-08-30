@@ -474,6 +474,34 @@ def eer(negatives, positives, is_sorted=False, also_farfrr=False):
   return (far + frr) / 2.0
 
 
+def roc_auc_score(negatives, positives, npoints=2000, min_far=-8):
+  """Area Under the ROC Curve.
+  Computes the area under the ROC curve. This is useful when you want to report one
+  number that represents an ROC curve. For more information, see:
+  https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Area_under_the_curve
+
+  Parameters
+  ----------
+  negatives : array_like
+      The negative scores.
+  positives : array_like
+      The positive scores.
+  npoints : int, optional
+      Number of points in the ROC curve. Higher numbers leads to more accurate ROC.
+  min_far : float, optional
+      Min FAR and FRR values to consider when calculating ROC.
+
+  Returns
+  -------
+  float
+      The ROC AUC
+  """
+  fpr, fnr = roc(negatives, positives, npoints, min_far=min_far)
+  tpr = 1 - fnr
+  area = -1 * numpy.trapz(tpr, fpr)
+  return area
+
+
 def get_config():
   """Returns a string containing the configuration information.
   """

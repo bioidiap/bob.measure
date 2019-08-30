@@ -49,6 +49,7 @@ Curves
 
 .. autosummary::
    bob.measure.roc
+   bob.measure.roc_auc_score
    bob.measure.rocch
    bob.measure.roc_for_far
    bob.measure.det

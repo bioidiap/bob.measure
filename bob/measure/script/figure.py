@@ -183,7 +183,7 @@ class Metrics(MeasureBase):
 
     def __init__(self, ctx, scores, evaluation, func_load,
                  names=('False Positive Rate', 'False Negative Rate',
-                        'Precision', 'Recall', 'F1-score')):
+                        'Precision', 'Recall', 'F1-score', 'Area Under ROC Curve')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
@@ -209,7 +209,7 @@ class Metrics(MeasureBase):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
     def _numbers(self, neg, pos, threshold, fta):
-        from .. import (farfrr, precision_recall, f_score)
+        from .. import (farfrr, precision_recall, f_score, roc_auc_score)
         # fpr and fnr
         fmr, fnmr = farfrr(neg, pos, threshold)
         hter = (fmr + fnmr) / 2.0
@@ -226,8 +226,11 @@ class Metrics(MeasureBase):
 
         # f_score
         f1_score = f_score(neg, pos, threshold, 1)
+
+        # AUC ROC
+        auc = roc_auc_score(neg, pos)
         return (fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc, precision,
-                recall, f1_score)
+                recall, f1_score, auc)
 
     def _strings(self, metrics):
         n_dec = '.%df' % self._decimal
@@ -242,9 +245,10 @@ class Metrics(MeasureBase):
         prec_str = "%s" % format(metrics[10], n_dec)
         recall_str = "%s" % format(metrics[11], n_dec)
         f1_str = "%s" % format(metrics[12], n_dec)
+        auc_str = "%s" % format(metrics[13], n_dec)
 
         return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
-                prec_str, recall_str, f1_str)
+                prec_str, recall_str, f1_str, auc_str)
 
     def _get_all_metrics(self, idx, input_scores, input_names):
         ''' Compute all metrics for dev and eval scores'''
@@ -297,11 +301,14 @@ class Metrics(MeasureBase):
             LOGGER.warn("NaNs scores (%s) were found in %s amd removed",
                         all_metrics[0][0], dev_file)
         headers = [' ' or title, 'Development']
-        rows = [[self.names[0], all_metrics[0][1]],
-                [self.names[1], all_metrics[0][2]],
-                [self.names[2], all_metrics[0][6]],
-                [self.names[3], all_metrics[0][7]],
-                [self.names[4], all_metrics[0][8]]]
+        rows = [
+            [self.names[0], all_metrics[0][1]],
+            [self.names[1], all_metrics[0][2]],
+            [self.names[2], all_metrics[0][6]],
+            [self.names[3], all_metrics[0][7]],
+            [self.names[4], all_metrics[0][8]],
+            [self.names[5], all_metrics[0][9]],
+        ]
 
         if self._eval:
             eval_file = input_names[1]
@@ -317,6 +324,7 @@ class Metrics(MeasureBase):
             rows[2].append(all_metrics[1][6])
             rows[3].append(all_metrics[1][7])
             rows[4].append(all_metrics[1][8])
+            rows[5].append(all_metrics[1][9])
 
         click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 

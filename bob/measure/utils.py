@@ -115,7 +115,7 @@ def get_thres(criter, neg, pos, far=None):
     elif criter == 'far':
         if far is None:
             raise ValueError("FAR value must be provided through "
-                             "``--far-value`` option.")
+                             "``--far-value`` or ``--fpr-value`` option.")
         from . import far_threshold
         return far_threshold(neg, pos, far)
     else:
