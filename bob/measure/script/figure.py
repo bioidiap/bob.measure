@@ -183,7 +183,7 @@ class Metrics(MeasureBase):
 
     def __init__(self, ctx, scores, evaluation, func_load,
                  names=('False Positive Rate', 'False Negative Rate',
-                        'Precision', 'Recall', 'F1-score', 'Area Under ROC Curve')):
+                        'Precision', 'Recall', 'F1-score', 'Area Under ROC Curve', 'Area Under ROC Curve (log scale)')):
         super(Metrics, self).__init__(ctx, scores, evaluation, func_load)
         self.names = names
         self._tablefmt = ctx.meta.get('tablefmt')
@@ -229,8 +229,9 @@ class Metrics(MeasureBase):
 
         # AUC ROC
         auc = roc_auc_score(neg, pos)
+        auc_log = roc_auc_score(neg, pos, log_scale=True)
         return (fta, fmr, fnmr, hter, far, frr, fm, ni, fnm, nc, precision,
-                recall, f1_score, auc)
+                recall, f1_score, auc, auc_log)
 
     def _strings(self, metrics):
         n_dec = '.%df' % self._decimal
@@ -246,9 +247,10 @@ class Metrics(MeasureBase):
         recall_str = "%s" % format(metrics[11], n_dec)
         f1_str = "%s" % format(metrics[12], n_dec)
         auc_str = "%s" % format(metrics[13], n_dec)
+        auc_log_str = "%s" % format(metrics[14], n_dec)
 
         return (fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str,
-                prec_str, recall_str, f1_str, auc_str)
+                prec_str, recall_str, f1_str, auc_str, auc_log_str)
 
     def _get_all_metrics(self, idx, input_scores, input_names):
         ''' Compute all metrics for dev and eval scores'''
@@ -308,6 +310,7 @@ class Metrics(MeasureBase):
             [self.names[3], all_metrics[0][7]],
             [self.names[4], all_metrics[0][8]],
             [self.names[5], all_metrics[0][9]],
+            [self.names[6], all_metrics[0][10]],
         ]
 
         if self._eval:
@@ -325,6 +328,7 @@ class Metrics(MeasureBase):
             rows[3].append(all_metrics[1][7])
             rows[4].append(all_metrics[1][8])
             rows[5].append(all_metrics[1][9])
+            rows[6].append(all_metrics[1][10])
 
         click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 

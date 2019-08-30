@@ -517,3 +517,8 @@ def test_roc_auc_score():
   oracle = 0.9326
 
   assert numpy.allclose(auc, oracle), f"Expected {oracle} but got {auc} instead."
+
+  # test the function on log scale as well
+  auc = roc_auc_score(negatives, positives, log_scale=True)
+  oracle = 1.4183699583300993
+  assert numpy.allclose(auc, oracle), f"Expected {oracle} but got {auc} instead."

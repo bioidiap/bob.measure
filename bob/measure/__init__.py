@@ -474,7 +474,7 @@ def eer(negatives, positives, is_sorted=False, also_farfrr=False):
   return (far + frr) / 2.0
 
 
-def roc_auc_score(negatives, positives, npoints=2000, min_far=-8):
+def roc_auc_score(negatives, positives, npoints=2000, min_far=-8, log_scale=False):
   """Area Under the ROC Curve.
   Computes the area under the ROC curve. This is useful when you want to report one
   number that represents an ROC curve. For more information, see:
@@ -490,14 +490,23 @@ def roc_auc_score(negatives, positives, npoints=2000, min_far=-8):
       Number of points in the ROC curve. Higher numbers leads to more accurate ROC.
   min_far : float, optional
       Min FAR and FRR values to consider when calculating ROC.
+  log_scale : bool, optional
+      If True, converts the x axis (FPR) to log10 scale before calculating AUC. This is
+      useful in cases where len(negatives) >> len(positives)
 
   Returns
   -------
   float
-      The ROC AUC
+      The ROC AUC. If ``log_scale`` is False, the value should be between 0 and 1.
   """
   fpr, fnr = roc(negatives, positives, npoints, min_far=min_far)
   tpr = 1 - fnr
+
+  if log_scale:
+    fpr_pos = fpr > 0
+    fpr, tpr = fpr[fpr_pos], tpr[fpr_pos]
+    fpr = numpy.log10(fpr)
+
   area = -1 * numpy.trapz(tpr, fpr)
   return area
 
