@@ -13,7 +13,7 @@ CRITERIA = ('eer', 'min-hter', 'far')
 
 @common_options.metrics_command(
     common_options.METRICS_HELP.format(
-        names='FPR, FNR, precision, recall, F1-score',
+        names='FPR, FNR, precision, recall, F1-score, AUC ROC',
         criteria=CRITERIA, score_format=SCORE_FORMAT,
         hter_note=' ',
         command='bob measure metrics'),

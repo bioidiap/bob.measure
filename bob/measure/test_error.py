@@ -503,3 +503,22 @@ def test_mindcf():
   assert mindcf< 1.0 + 1e-8
 
 
+def test_roc_auc_score():
+  from bob.measure import roc_auc_score
+  positives = bob.io.base.load(F('nonsep-positives.hdf5'))
+  negatives = bob.io.base.load(F('nonsep-negatives.hdf5'))
+  auc = roc_auc_score(negatives, positives)
+
+  # commented out sklearn computation to avoid adding an extra test dependency
+  # from sklearn.metrics import roc_auc_score as oracle_auc
+  # y_true = numpy.concatenate([numpy.ones_like(positives), numpy.zeros_like(negatives)], axis=0)
+  # y_score = numpy.concatenate([positives, negatives], axis=0)
+  # oracle = oracle_auc(y_true, y_score)
+  oracle = 0.9326
+
+  assert numpy.allclose(auc, oracle), f"Expected {oracle} but got {auc} instead."
+
+  # test the function on log scale as well
+  auc = roc_auc_score(negatives, positives, log_scale=True)
+  oracle = 1.4183699583300993
+  assert numpy.allclose(auc, oracle), f"Expected {oracle} but got {auc} instead."

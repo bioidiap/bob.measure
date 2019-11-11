@@ -284,6 +284,9 @@ town. To plot an ROC curve, in possession of your **negatives** and
    >>> pyplot.ylabel('FNR (%)') # doctest: +SKIP
    >>> pyplot.grid(True)
    >>> pyplot.show() # doctest: +SKIP
+   >>> # You can also compute the area under the ROC curve:
+   >>> bob.measure.roc_auc_score(negatives, positives)
+   0.8958
 
 You should see an image like the following one:
 
