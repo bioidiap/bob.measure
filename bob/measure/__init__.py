@@ -477,8 +477,9 @@ def eer(negatives, positives, is_sorted=False, also_farfrr=False):
 def roc_auc_score(negatives, positives, npoints=2000, min_far=-8, log_scale=False):
   """Area Under the ROC Curve.
   Computes the area under the ROC curve. This is useful when you want to report one
-  number that represents an ROC curve. For more information, see:
+  number that represents an ROC curve. This implementation uses the trapezoidal rule for the integration of the ROC curve. For more information, see:
   https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Area_under_the_curve
+
 
   Parameters
   ----------
