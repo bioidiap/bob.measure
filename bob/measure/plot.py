@@ -2,6 +2,7 @@
 # vim: set fileencoding=utf-8 :
 # Mon 23 May 2011 14:36:14 CEST
 import numpy
+import warnings
 
 
 def log_values(min_step=-4, counts_per_step=4):
@@ -47,7 +48,7 @@ def _semilogx(x, y, **kwargs):
   return pyplot.semilogx(x, y, **kwargs)
 
 
-def roc(negatives, positives, npoints=2000, CAR=False, min_far=-8, **kwargs):
+def roc(negatives, positives, npoints=2000, CAR=None, min_far=-8, tpr=False, semilogx=False, **kwargs):
   """Plots Receiver Operating Characteristic (ROC) curve.
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
@@ -67,42 +68,63 @@ def roc(negatives, positives, npoints=2000, CAR=False, min_far=-8, **kwargs):
     saving the figure as you see fit.
 
 
-  Parameters:
-
-    negatives (array): 1D float array that contains the scores of the
+  Parameters
+  ----------
+  negatives : array
+      1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    positives (array): 1D float array that contains the scores of the
+  positives : array
+      1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
       (:py:func:`bob.measure.roc`)
 
-    npoints (:py:class:`int`, optional): The number of points for the plot. See
+  npoints : :py:class:`int`, optional
+      The number of points for the plot. See
       (:py:func:`bob.measure.roc`)
 
-    CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CPR
+  min_far : float, optional
+      The minimum value of FPR and FNR that is used for ROC computations.
+
+  tpr : bool, optional
+      If True, will plot TPR (TPR = 1 - FNR) on the y-axis instead of FNR.
+
+  semilogx : bool, optional
+      If True, will use pyplot.semilogx to plot the ROC curve.
+
+  CAR : :py:class:`bool`, optional
+      This option is deprecated. Please use ``TPR`` and ``semilogx`` options instead.
+      If set to ``True``, it will plot the CPR
       (CAR) over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
       FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
 
-    kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
+  **kwargs
+      Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
 
-
-  Returns:
-
-    :py:class:`list` of :py:class:`matplotlib.lines.Line2D`: The lines that
-    were added as defined by the return value of
-    :py:func:`matplotlib.pyplot.plot`.
-
+  Returns
+  -------
+  object
+      `list` of :py:class:`matplotlib.lines.Line2D`: The lines that
+      were added as defined by the return value of
+      :py:func`matplotlib.pyplot.plot`.
   """
+  if CAR is not None:
+    warnings.warn('CAR argument is deprecated. Please use TPR and semilogx arguments instead.', DeprecationWarning)
+    tpr = semilogx = CAR
 
   from matplotlib import pyplot
   from . import roc as calc
-  out = calc(negatives, positives, npoints, min_far)
-  if not CAR:
-    return pyplot.plot(out[0, :], out[1, :], **kwargs)
+  fpr, fnr = calc(negatives, positives, npoints, min_far=min_far)
+
+  if tpr:
+    fnr = 1 - fnr  # plot tpr instead of fnr
+
+  if not semilogx:
+    return pyplot.plot(fpr, fnr, **kwargs)
   else:
-    return _semilogx(out[0, :], (1 - out[1, :]), **kwargs)
+    return _semilogx(fpr, fnr, **kwargs)
 
 
 def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
@@ -154,6 +176,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
     :py:func:`matplotlib.pyplot.semilogx`.
 
   """
+  warnings.warn("roc_for_far is deprecated. Please use the roc function instead.")
 
   from matplotlib import pyplot
   from . import roc_for_far as calc
