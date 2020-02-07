@@ -498,7 +498,7 @@ def no_line_option(**kwargs):
     return custom_no_line_option
 
 
-def criterion_option(lcriteria=["eer", "min-hter", "far"], **kwargs):
+def criterion_option(lcriteria=["eer", "min-hter", "far"], check=True, **kwargs):
     """Get option flag to tell which criteriom is used (default:eer)
 
     Parameters
@@ -513,7 +513,7 @@ def criterion_option(lcriteria=["eer", "min-hter", "far"], **kwargs):
         )
 
         def callback(ctx, param, value):
-            if value not in list_accepted_crit:
+            if value not in list_accepted_crit and check:
                 raise click.BadParameter(
                     "Incorrect value for `--criterion`. "
                     "Must be one of [`%s`]" % "`, `".join(list_accepted_crit)
@@ -536,7 +536,7 @@ def criterion_option(lcriteria=["eer", "min-hter", "far"], **kwargs):
     return custom_criterion_option
 
 
-def decimal_option(dflt=1, **kwargs):
+def decimal_option(dflt=1, short="-d", **kwargs):
     """Get option to get decimal value"""
 
     def custom_decimal_option(func):
@@ -545,7 +545,7 @@ def decimal_option(dflt=1, **kwargs):
             return value
 
         return click.option(
-            "-d",
+            short,
             "--decimal",
             type=click.INT,
             default=dflt,
@@ -865,7 +865,11 @@ def style_option(**kwargs):
 
 
 def metrics_command(
-    docstring, criteria=("eer", "min-hter", "far"), far_name="FAR", **kwarg
+    docstring,
+    criteria=("eer", "min-hter", "far"),
+    far_name="FAR",
+    check_criteria=True,
+    **kwarg
 ):
     def custom_metrics_command(func):
         func.__doc__ = docstring
@@ -875,7 +879,7 @@ def metrics_command(
         @eval_option()
         @table_option()
         @output_log_metric_option()
-        @criterion_option(criteria)
+        @criterion_option(criteria, check=check_criteria)
         @thresholds_option()
         @far_option(far_name=far_name)
         @legends_option()
