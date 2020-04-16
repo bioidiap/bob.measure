@@ -882,12 +882,12 @@ class GridSubplot(PlotBase):
             figure=mpl.gcf(),
         )
 
-    def create_subplot(self, n):
+    def create_subplot(self, n, shared_axis=None):
         i, j = numpy.unravel_index(n, (self._nrows, self._ncols))
         i1 = i * self._row_times + self._grid_axis_offset
         i2 = (i + 1) * self._row_times + self._grid_axis_offset
         j1, j2 = j * self._col_times, (j + 1) * self._col_times
-        axis = mpl.gcf().add_subplot(self._gs[i1:i2, j1:j2])
+        axis = mpl.gcf().add_subplot(self._gs[i1:i2, j1:j2], sharex=shared_axis)
         return axis
 
     def finalize_one_page(self):
@@ -957,6 +957,7 @@ class Hist(GridSubplot):
         dev_neg, dev_pos, eval_neg, eval_pos, threshold = self._get_neg_pos_thres(
             idx, input_scores, input_names
         )
+
         # keep id of the current system
         sys = idx
         # if the id of the current system does not match the id of the plot,
@@ -966,23 +967,34 @@ class Hist(GridSubplot):
             col = idx % self._ncols
             idx = col + self._ncols * row
 
+        dev_axis = None
+
         if not self._hide_dev or not self._eval:
-            self._print_subplot(
-                idx, sys, dev_neg, dev_pos, threshold, not self._no_line, False
+            dev_axis = self._print_subplot(
+                idx, sys, dev_neg, dev_pos, threshold, not self._no_line, False,
             )
 
         if self._eval:
             idx += self._ncols if not self._hide_dev else 0
             self._print_subplot(
-                idx, sys, eval_neg, eval_pos, threshold, not self._no_line, True
+                idx,
+                sys,
+                eval_neg,
+                eval_pos,
+                threshold,
+                not self._no_line,
+                True,
+                shared_axis=dev_axis,
             )
 
-    def _print_subplot(self, idx, sys, neg, pos, threshold, draw_line, evaluation):
+    def _print_subplot(
+        self, idx, sys, neg, pos, threshold, draw_line, evaluation, shared_axis=None
+    ):
         """ print a subplot for the given score and subplot index"""
         n = idx % self._step_print
         col = n % self._ncols
         sub_plot_idx = n + 1
-        axis = self.create_subplot(n)
+        axis = self.create_subplot(n, shared_axis)
         self._setup_hist(neg, pos)
         if col == 0:
             axis.set_ylabel(self._y_label)
@@ -1015,6 +1027,7 @@ class Hist(GridSubplot):
         # to display, save figure
         if self._step_print == sub_plot_idx or (is_lower and sys == self.n_systems - 1):
             self.finalize_one_page()
+        return axis
 
     def _get_title(self, idx, dflt=None):
         """ Get the histo title for the given idx"""
