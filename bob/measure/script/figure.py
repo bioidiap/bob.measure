@@ -14,6 +14,8 @@ from tabulate import tabulate
 from .. import far_threshold, plot, utils, ppndf
 import logging
 
+from scipy.stats.stats import ks_2samp
+
 LOGGER = logging.getLogger("bob.measure")
 
 
@@ -224,6 +226,13 @@ class Metrics(MeasureBase):
     def get_thres(self, criterion, dev_neg, dev_pos, far):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
+    def get_critical_value(self, neg, pos, alpha=0.05):
+        c_alpha = numpy.sqrt(-numpy.log(alpha / 2) / 2)
+        return c_alpha * numpy.sqrt((len(neg) + len(pos)) / (len(neg)*len(pos)))
+
+    def get_cohen_d(self, pos, neg):
+        return utils.cohen_d(pos, neg)
+
     def _numbers(self, neg, pos, threshold, fta):
         from .. import farfrr, precision_recall, f_score, roc_auc_score
 
@@ -247,6 +256,14 @@ class Metrics(MeasureBase):
         # AUC ROC
         auc = roc_auc_score(neg, pos)
         auc_log = roc_auc_score(neg, pos, log_scale=True)
+
+        # KS Stat
+        ks_stat, ks_p = ks_2samp(neg, pos)
+        ks_crit = self.get_critical_value(neg, pos)
+
+        # Cohen's d test
+        cohen_d = self.get_cohen_d(neg, pos)
+
         return (
             fta,
             fmr,
@@ -263,6 +280,10 @@ class Metrics(MeasureBase):
             f1_score,
             auc,
             auc_log,
+            ks_stat,
+            ks_p,
+            ks_crit,
+            cohen_d,
         )
 
     def _strings(self, metrics):
@@ -287,6 +308,12 @@ class Metrics(MeasureBase):
         auc_str = "%s" % format(metrics[13], n_dec)
         auc_log_str = "%s" % format(metrics[14], n_dec)
 
+        ks_stat = f"{metrics[15]:{n_dec}}"
+        ks_p = f"{metrics[16]:{n_dec}}"
+        ks_crit = f"{metrics[17]:{n_dec}}"
+
+        cohen_d = f"{metrics[18]:{n_dec}}"
+
         return (
             fta_str,
             fmr_str,
@@ -299,6 +326,10 @@ class Metrics(MeasureBase):
             f1_str,
             auc_str,
             auc_log_str,
+            ks_stat,
+            ks_p,
+            ks_crit,
+            cohen_d,
         )
 
     def _get_all_metrics(self, idx, input_scores, input_names):

@@ -122,6 +122,33 @@ def get_thres(criter, neg, pos, far=None):
         raise ValueError("Incorrect plotting criterion: ``%s``" % criter)
 
 
+def cohen_d(x, y):
+    """
+    Get Cohen's d test result computing the effect size between two distributions.
+
+    Parameters
+    ----------
+    x : :py:class:`numpy.ndarray`:
+        array of scores
+    y : :py:class:`numpy.ndarray`::
+        array of scores
+
+    Returns
+    -------
+    :py:obj:`float`
+        distance
+    """
+    size_x = len(x)
+    size_y = len(y)
+    size = size_x + size_y - 2
+    distance = (numpy.mean(x) - numpy.mean(y)) / \
+        numpy.sqrt(
+            ((size_x - 1) * numpy.std(x, ddof=1) ** 2 + (size_y - 1) * numpy.std(y, ddof=1) ** 2)
+            / size
+        )
+    return distance
+
+
 def get_colors(n):
     """get_colors
     Get a list of matplotlib colors
