@@ -1,10 +1,7 @@
 bob.extension
-bob.blitz
-bob.core > 2.0.4
-bob.math > 2
-bob.io.base
-matplotlib
-docopt
-tabulate
+bob.math
 numpy
 scipy
+h5py
+matplotlib
+tabulate

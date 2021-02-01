@@ -77,7 +77,6 @@ Generic
    bob.measure.relevance
    bob.measure.mse
    bob.measure.rmse
-   bob.measure.get_config
 
 
 Confidence interval
