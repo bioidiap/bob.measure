@@ -169,14 +169,14 @@ calculation of the threshold:
    Often, it is not numerically possible to match the requested criteria for
    calculating the threshold based on the provided scores. Instead, the closest
    possible threshold is returned. For example, using
-   :any:`bob.measure.eer_threshold` **will not** give you a threshold where
+   :py:func:`bob.measure.eer_threshold` **will not** give you a threshold where
    :math:`FPR == FNR`. Hence, you cannot report :math:`FPR` or :math:`FNR`
    instead of :math:`EER`; you should report :math:`(FPR+FNR)/2`. This
-   is also true for :any:`bob.measure.far_threshold` and
-   :any:`bob.measure.frr_threshold`. The threshold returned by those functions
+   is also true for :py:func:`bob.measure.far_threshold` and
+   :py:func:`bob.measure.frr_threshold`. The threshold returned by those functions
    does not guarantee that using that threshold you will get the requested
    :math:`FPR` or :math:`FNR` value. Instead, you should recalculate using
-   :any:`bob.measure.fprfnr`.
+   :py:func:`bob.measure.fprfnr`.
 
 .. note::
    Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which defaults to ``False``, throughout.
