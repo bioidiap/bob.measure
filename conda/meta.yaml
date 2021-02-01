@@ -25,7 +25,7 @@ requirements:
     - python {{ python }}
     - setuptools {{ setuptools }}
     - bob.extension
-    - bob.math
+    - bob.math >2
     - h5py {{ h5py }}
     - matplotlib {{ matplotlib }}
     - libblitz {{ libblitz }}
