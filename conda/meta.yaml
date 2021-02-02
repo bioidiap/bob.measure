@@ -17,10 +17,6 @@ build:
     - python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
-  build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - pkg-config {{ pkg_config }}
   host:
     - python {{ python }}
     - setuptools {{ setuptools }}
@@ -42,7 +38,6 @@ requirements:
     - {{ pin_compatible('scipy') }}
     - {{ pin_compatible('h5py') }}
     - {{ pin_compatible('matplotlib') }}
-    - docopt
     - tabulate
 
 test:
