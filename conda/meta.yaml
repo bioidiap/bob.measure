@@ -22,13 +22,11 @@ requirements:
     - setuptools {{ setuptools }}
     - bob.extension
     - bob.math >2
+    - numpy {{ numpy }}
+    - scipy {{ scipy }}
     - h5py {{ h5py }}
     - matplotlib {{ matplotlib }}
-    - libblitz {{ libblitz }}
-    - boost {{ boost }}
-    - numpy {{ numpy }}
     - tabulate {{ tabulate }}
-    - scipy {{ scipy }}
   run:
     # - bob.extension  #not required, has run_exports
     # - bob.math  #not required, has run_exports
