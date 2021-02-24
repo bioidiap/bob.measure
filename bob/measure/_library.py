@@ -7,15 +7,16 @@ Most of these were imported from older C++ implementations.
 """
 
 import sys
-import copy
 import numpy
 import numpy.linalg
+from numba import jit
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _log_values(points, min_power):
     """Computes log-scaled values between :math:`10^\text{min_power}` and 1
-
-    This function returns
 
     Parameters
     ==========
@@ -400,6 +401,7 @@ def eer_rocch(negatives, positives):
     return rocch2eer(rocch(negatives, positives))
 
 
+@jit(nopython=True)
 def _minimizing_threshold(negatives, positives, criterium):
     """Calculates the best threshold taking a predicate as input condition
 
@@ -451,8 +453,7 @@ def _minimizing_threshold(negatives, positives, criterium):
 
     if not len(negatives) or not len(positives):
         raise RuntimeError(
-            "Cannot compute threshold when no positives or "
-            "no negatives are provided"
+            "Cannot compute threshold when no positives or " "no negatives are provided"
         )
 
     # N.B.: Unoptimized version ported from C++
@@ -694,14 +695,11 @@ def epc(
     dev_neg = dev_negatives if is_sorted else numpy.sort(dev_negatives)
     dev_pos = dev_positives if is_sorted else numpy.sort(dev_positives)
     step = 1.0 / (n_points - 1.0)
-    alpha = numpy.arange(0, 1+step, step, dtype=float)
+    alpha = numpy.arange(0, 1 + step, step, dtype=float)
     thres = [
-        min_weighted_error_rate_threshold(dev_neg, dev_pos, k, True)
-        for k in alpha
+        min_weighted_error_rate_threshold(dev_neg, dev_pos, k, True) for k in alpha
     ]
-    mwer = [
-        numpy.mean(farfrr(test_negatives, test_positives, k)) for k in thres
-    ]
+    mwer = [numpy.mean(farfrr(test_negatives, test_positives, k)) for k in thres]
 
     if thresholds:
         return numpy.vstack([alpha, mwer, thres])
@@ -759,6 +757,7 @@ def f_score(negatives, positives, threshold, weight=1.0):
     return (1 + w2) * (p * r) / ((w2 * p) + r)
 
 
+@jit(nopython=True)
 def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
     """Threshold such that the real FPR is **at most** the requested ``far_value`` if possible
 
@@ -938,20 +937,17 @@ def farfrr(negatives, positives, threshold):
         return (1.0, 1.0)
 
     if not len(negatives):
-        raise RuntimeError(
-            "Cannot compute FPR (FAR) when no negatives are given"
-        )
+        raise RuntimeError("Cannot compute FPR (FAR) when no negatives are given")
 
     if not len(positives):
-        raise RuntimeError(
-            "Cannot compute FNR (FRR) when no positives are given"
-        )
+        raise RuntimeError("Cannot compute FNR (FRR) when no positives are given")
 
     return (negatives >= threshold).sum() / len(negatives), (
         positives < threshold
     ).sum() / len(positives)
 
 
+@jit(nopython=True)
 def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
     """Computes the threshold such that the real FNR is **at most** the requested ``frr_value`` if possible
 
@@ -1072,9 +1068,7 @@ def min_hter_threshold(negatives, positives, is_sorted=False):
         The threshold for which the weighted error rate is minimal
 
     """
-    return min_weighted_error_rate_threshold(
-        negatives, positives, 0.5, is_sorted
-    )
+    return min_weighted_error_rate_threshold(negatives, positives, 0.5, is_sorted)
 
 
 class _WeighedError:
@@ -1091,9 +1085,7 @@ class _WeighedError:
         return (self.weight * far) + ((1.0 - self.weight) * frr)
 
 
-def min_weighted_error_rate_threshold(
-    negatives, positives, cost, is_sorted=False
-):
+def min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted=False):
     """Calculates the threshold that minimizes the error rate
 
     The ``cost`` parameter determines the relative importance between
@@ -1227,8 +1219,7 @@ def ppndf(p):
 
     r = numpy.sqrt(-1 * numpy.log(r))
     opt2 = (
-        ((2.3212127685 * r + 4.8501412713) * r + -2.2979647913) * r
-        + -2.7871893113
+        ((2.3212127685 * r + 4.8501412713) * r + -2.2979647913) * r + -2.7871893113
     ) / ((1.6370678189 * r + 3.5438892476) * r + 1.0)
     opt2[q2 < 0] *= -1
     retval[abs_q > 0.42] = opt2
@@ -1328,8 +1319,7 @@ def precision_recall_curve(negatives, positives, n_points):
     return numpy.array(
         [
             precision_recall(negatives, positives, k)
-            for k in _meaningful_thresholds(negatives, positives, n_points,
-                -8, False)
+            for k in _meaningful_thresholds(negatives, positives, n_points, -8, False)
         ]
     ).T
 
