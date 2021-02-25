@@ -15,6 +15,27 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _lists_to_arrays(*args, **kwargs):
+    ret, retkw = list(), dict()
+    for v in args:
+        ret.append(numpy.asarray(v) if isinstance(v, list) else v)
+    for k, v in kwargs.items():
+        retkw[k] = numpy.asarray(v) if isinstance(v, list) else v
+    return ret, retkw
+
+
+def array_jit(func):
+    jit_func = jit(func, nopython=True)
+
+    def new_func(*args, **kwargs):
+        args, kwargs = _lists_to_arrays(*args, **kwargs)
+        return jit_func(*args, **kwargs)
+
+    new_func.jit_func = jit_func
+    return new_func
+
+
+@jit(nopython=True)
 def _log_values(points, min_power):
     """Computes log-scaled values between :math:`10^\text{min_power}` and 1
 
@@ -40,6 +61,7 @@ def _log_values(points, min_power):
     return 10 ** (numpy.arange(1 - points, 1) / int(points / (-min_power)))
 
 
+@jit(nopython=True)
 def _meaningful_thresholds(negatives, positives, points, min_far, is_sorted):
     """Returns non-repeatitive thresholds to generate ROC curves
 
@@ -96,14 +118,9 @@ def _meaningful_thresholds(negatives, positives, points, min_far, is_sorted):
     frr_list = _log_values(half_points, min_far)
     far_list = _log_values(points - half_points, min_far)
 
-    t = numpy.zeros(
-        [
-            points,
-        ],
-        dtype=float,
-    )
-    t[:half_points] = [frr_threshold(neg, pos, k, True) for k in frr_list]
-    t[half_points:] = [far_threshold(neg, pos, k, True) for k in far_list]
+    t = numpy.zeros((points,))
+    t[:half_points] = [_jit_frr_threshold(neg, pos, k, True) for k in frr_list]
+    t[half_points:] = [_jit_far_threshold(neg, pos, k, True) for k in far_list]
 
     t.sort()
 
@@ -277,16 +294,16 @@ def rocch(negatives, positives):
     perturb = numpy.argsort(scores, kind="stable")
 
     # Apply permutation
-    Pideal = numpy.zeros((N,), dtype=float)
+    Pideal = numpy.zeros((N,))
     Pideal[perturb < Nt] = 1.0
 
     # Applies the PAVA algorithm
-    Popt = numpy.ndarray((N,), dtype=float)
+    Popt = numpy.ndarray((N,))
     width = pavxWidth(Pideal, Popt)
 
     # Allocates output
     nbins = len(width)
-    retval = numpy.zeros((2, nbins + 1), dtype=float)  # FAR, FRR
+    retval = numpy.zeros((2, nbins + 1))  # FAR, FRR
 
     # Fills in output
     left = 0
@@ -315,6 +332,7 @@ def rocch(negatives, positives):
     return retval
 
 
+@array_jit
 def rocch2eer(pmiss_pfa):
     """Calculates the threshold that is as close as possible to the equal-error-rate (EER) given the input data
 
@@ -338,9 +356,10 @@ def rocch2eer(pmiss_pfa):
     N = pmiss_pfa.shape[1]
 
     eer = 0.0
-    XY = numpy.ndarray((2, 2), dtype=float)
-    one = numpy.ones((2,), dtype=float)
+    XY = numpy.empty((2, 2))
+    one = numpy.ones((2,))
     eerseg = 0.0
+    epsilon = numpy.finfo(numpy.float64).eps
 
     for i in range(N - 1):
 
@@ -357,7 +376,7 @@ def rocch2eer(pmiss_pfa):
         abs_dd0 = abs(XY[0, 0] - XY[1, 0])
         abs_dd1 = abs(XY[0, 1] - XY[1, 1])
 
-        if min(abs_dd0, abs_dd1) < sys.float_info.epsilon:
+        if min(abs_dd0, abs_dd1) < epsilon:
             eerseg = 0.0
 
         else:
@@ -401,8 +420,18 @@ def eer_rocch(negatives, positives):
     return rocch2eer(rocch(negatives, positives))
 
 
+@jit("float64(float64, float64, float64)", nopython=True)
+def _abs_diff(a, b, cost):
+    return abs(a - b)
+
+
+@jit("float64(float64, float64, float64)", nopython=True)
+def _weighted_err(far, frr, cost):
+    return (cost * far) + ((1.0 - cost) * frr)
+
+
 @jit(nopython=True)
-def _minimizing_threshold(negatives, positives, criterium):
+def _minimizing_threshold(negatives, positives, criterion, cost=0.5):
     """Calculates the best threshold taking a predicate as input condition
 
     This method can calculate a threshold based on a set of scores (positives
@@ -439,9 +468,11 @@ def _minimizing_threshold(negatives, positives, criterium):
     positives : numpy.ndarray (1D, float)
         Positive scores, sorted ascendantly
 
-    criterium : :py:obj:`func`
-        A predicate in the format ``predicate(fa_ratio, fr_ratio) -> float``
+    criterion : str
+        A predicate from one of ("absolute-difference", "weighted-error")
 
+    cost : float
+        Extra cost argument to be passed to criterion
 
     Returns
     =======
@@ -450,13 +481,19 @@ def _minimizing_threshold(negatives, positives, criterium):
         The optimal threshold given the predicate and the scores
 
     """
+    if criterion not in ("absolute-difference", "weighted-error"):
+        raise ValueError("Uknown criterion")
+
+    def criterium(a, b, c):
+        if criterion == "absolute-difference":
+            return _abs_diff(a, b, c)
+        else:
+            return _weighted_err(a, b, c)
 
     if not len(negatives) or not len(positives):
         raise RuntimeError(
             "Cannot compute threshold when no positives or " "no negatives are provided"
         )
-
-    # N.B.: Unoptimized version ported from C++
 
     # iterates over all possible far and frr points and compute the predicate
     # for each possible threshold...
@@ -484,7 +521,7 @@ def _minimizing_threshold(negatives, positives, criterium):
     while pos_it < max_pos and neg_it < max_neg:
 
         # compute predicate
-        current_predicate = criterium(far, frr)
+        current_predicate = criterium(far, frr, cost)
 
         if current_predicate <= min_predicate:
             min_predicate = current_predicate
@@ -533,7 +570,7 @@ def _minimizing_threshold(negatives, positives, criterium):
 
     # now, we have reached the end of one list (usually the negatives) so,
     # finally compute predicate for the last time
-    current_predicate = criterium(far, frr)
+    current_predicate = criterium(far, frr, cost)
     if current_predicate < min_predicate:
         min_predicate = current_predicate
         min_threshold = current_threshold
@@ -546,7 +583,7 @@ def _minimizing_threshold(negatives, positives, criterium):
             last_threshold = numpy.nextafter(negatives[-1], negatives[-1] + 1)
         elif pos_it < max_pos:
             last_threshold = numpy.nextafter(positives[-1], positives[-1] + 1)
-        current_predicate = criterium(0.0, 1.0)
+        current_predicate = criterium(0.0, 1.0, cost)
         if current_predicate < min_predicate:
             min_predicate = current_predicate
             min_threshold = last_threshold
@@ -601,9 +638,10 @@ def eer_threshold(negatives, positives, is_sorted=False):
     neg = negatives if is_sorted else numpy.sort(negatives)
     pos = positives if is_sorted else numpy.sort(positives)
 
-    return _minimizing_threshold(neg, pos, lambda a, b: abs(a - b))
+    return _minimizing_threshold(neg, pos, "absolute-difference")
 
 
+@array_jit
 def epc(
     dev_negatives,
     dev_positives,
@@ -695,15 +733,20 @@ def epc(
     dev_neg = dev_negatives if is_sorted else numpy.sort(dev_negatives)
     dev_pos = dev_positives if is_sorted else numpy.sort(dev_positives)
     step = 1.0 / (n_points - 1.0)
-    alpha = numpy.arange(0, 1 + step, step, dtype=float)
-    thres = [
-        min_weighted_error_rate_threshold(dev_neg, dev_pos, k, True) for k in alpha
-    ]
-    mwer = [numpy.mean(farfrr(test_negatives, test_positives, k)) for k in thres]
+    alpha = numpy.arange(0, 1 + step, step)
+    thres = numpy.empty_like(alpha)
+    mwer = numpy.empty_like(alpha)
+    for i, k in enumerate(alpha):
+        thres[i] = _jit_min_weighted_error_rate_threshold(dev_neg, dev_pos, k, True)
+        tmp = _jit_farfrr(test_negatives, test_positives, thres[i])
+        tmp2 = numpy.empty((2,))
+        tmp2[0] = tmp[0]
+        tmp2[1] = tmp[1]
+        mwer[i] = numpy.mean(tmp2)
 
     if thresholds:
-        return numpy.vstack([alpha, mwer, thres])
-    return numpy.vstack([alpha, mwer])
+        return numpy.vstack((alpha, mwer, thres))
+    return numpy.vstack((alpha, mwer))
 
 
 def f_score(negatives, positives, threshold, weight=1.0):
@@ -757,7 +800,7 @@ def f_score(negatives, positives, threshold, weight=1.0):
     return (1 + w2) * (p * r) / ((w2 * p) + r)
 
 
-@jit(nopython=True)
+@array_jit
 def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
     """Threshold such that the real FPR is **at most** the requested ``far_value`` if possible
 
@@ -803,19 +846,17 @@ def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
     # N.B.: Unoptimized version ported from C++
 
     if far_value < 0.0 or far_value > 1.0:
-        raise RuntimeError(
-            f"`far_value' cannot be {far_value} - "
-            f"the value must be in the interval [0.,1.]"
-        )
+        raise RuntimeError("`far_value' must be in the interval [0.,1.]")
 
     if len(negatives) < 2:
         raise RuntimeError("the number of negative scores must be at least 2")
 
+    epsilon = numpy.finfo(numpy.float64).eps
     # if not pre-sorted, copies and sorts
     scores = negatives if is_sorted else numpy.sort(negatives)
 
     # handles special case of far == 1 without any iterating
-    if far_value >= (1 - sys.float_info.epsilon):
+    if far_value >= (1 - epsilon):
         return numpy.nextafter(scores[0], scores[0] - 1)
 
     # Reverse negatives so the end is the start. This way the code below will
@@ -836,7 +877,6 @@ def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
         scores[current_position], scores[current_position] + 1
     )
     current_threshold = 0.0
-    future_far = 0.0
 
     while current_position < total_count:
 
@@ -858,6 +898,10 @@ def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
     return valid_threshold
 
 
+_jit_far_threshold = far_threshold.jit_func
+
+
+@array_jit
 def farfrr(negatives, positives, threshold):
     """Calculates the false-acceptance (FA) ratio and the false-rejection (FR) ratio for the given positive and negative scores and a score threshold
 
@@ -933,7 +977,7 @@ def farfrr(negatives, positives, threshold):
     """
 
     if numpy.isnan(threshold):
-        logger.error("Cannot compute FPR (FAR) or FNR (FRR) with NaN threshold")
+        print("Error: Cannot compute FPR (FAR) or FNR (FRR) with NaN threshold")
         return (1.0, 1.0)
 
     if not len(negatives):
@@ -947,7 +991,10 @@ def farfrr(negatives, positives, threshold):
     ).sum() / len(positives)
 
 
-@jit(nopython=True)
+_jit_farfrr = farfrr.jit_func
+
+
+@array_jit
 def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
     """Computes the threshold such that the real FNR is **at most** the requested ``frr_value`` if possible
 
@@ -993,19 +1040,17 @@ def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
     # N.B.: Unoptimized version ported from C++
 
     if frr_value < 0.0 or frr_value > 1.0:
-        raise RuntimeError(
-            f"`frr_value' cannot be {frr_value} - "
-            f"the value must be in the interval [0.,1.]"
-        )
+        raise RuntimeError("`frr_value' value must be in the interval [0.,1.]")
 
     if len(positives) < 2:
         raise RuntimeError("the number of positive scores must be at least 2")
 
+    epsilon = numpy.finfo(numpy.float64).eps
     # if not pre-sorted, copies and sorts
     scores = positives if is_sorted else numpy.sort(positives)
 
     # handles special case of far == 1 without any iterating
-    if frr_value >= (1 - sys.float_info.epsilon):
+    if frr_value >= (1 - epsilon):
         return numpy.nextafter(scores[-1], scores[-1] + 1)
 
     # Move towards the end of array changing the threshold until we cross the
@@ -1021,7 +1066,6 @@ def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
         scores[current_position], scores[current_position] + 1
     )
     current_threshold = 0.0
-    future_far = 0.0
 
     while current_position < total_count:
 
@@ -1041,6 +1085,9 @@ def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
         current_position += 1
 
     return valid_threshold
+
+
+_jit_frr_threshold = frr_threshold.jit_func
 
 
 def min_hter_threshold(negatives, positives, is_sorted=False):
@@ -1071,20 +1118,7 @@ def min_hter_threshold(negatives, positives, is_sorted=False):
     return min_weighted_error_rate_threshold(negatives, positives, 0.5, is_sorted)
 
 
-class _WeighedError:
-    """A functor predicate for weighted error calculation"""
-
-    def __init__(self, weight):
-        self.weight = weight
-        if weight > 1.0:
-            self.weight = 1.0
-        if weight < 0.0:
-            self.weight = 0.0
-
-    def __call__(self, far, frr):
-        return (self.weight * far) + ((1.0 - self.weight) * frr)
-
-
+@array_jit
 def min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted=False):
     """Calculates the threshold that minimizes the error rate
 
@@ -1133,10 +1167,17 @@ def min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted=Fals
     # if not pre-sorted, copies and sorts
     neg = negatives if is_sorted else numpy.sort(negatives)
     pos = positives if is_sorted else numpy.sort(positives)
+    if cost > 1.0:
+        cost = 1.0
+    elif cost < 0.0:
+        cost = 0.0
 
-    return _minimizing_threshold(neg, pos, _WeighedError(cost))
+    return _minimizing_threshold(neg, pos, "weighted-error", cost)
 
 
+_jit_min_weighted_error_rate_threshold = min_weighted_error_rate_threshold.jit_func
+
+# @jit([(numba.float64[:, :],)], nopython=True)
 def ppndf(p):
     """Returns the Deviate Scale equivalent of a false rejection/acceptance ratio
 
@@ -1180,17 +1221,19 @@ def ppndf(p):
     """
 
     # threshold
-    p = numpy.array(p, dtype=float)
-    p[p >= 1.0] = 1.0 - sys.float_info.epsilon
-    p[p <= 0.0] = sys.float_info.epsilon
+    epsilon = numpy.finfo(numpy.float64).eps
+    p_new = numpy.copy(p)
+    p_new = numpy.where(p_new >= 1.0, 1.0 - epsilon, p_new)
+    p_new = numpy.where(p_new <= 0.0, epsilon, p_new)
 
-    q = p - 0.5
-    abs_q = numpy.abs(q)
+    q = p_new - 0.5
+    abs_q_smaller = numpy.abs(q) <= 0.42
+    abs_q_bigger = ~abs_q_smaller
 
-    retval = numpy.zeros_like(p)
+    retval = numpy.zeros_like(p_new)
 
     # first part q<=0.42
-    q1 = q[abs_q <= 0.42]
+    q1 = q[abs_q_smaller]
     r = numpy.square(q1)
     opt1 = (
         q1
@@ -1207,12 +1250,12 @@ def ppndf(p):
             + 1.0
         )
     )
-    retval[abs_q <= 0.42] = opt1
+    retval[abs_q_smaller] = opt1
 
     # second part q>0.42
     # r = sqrt (log (0.5 - abs(q)));
-    q2 = q[abs_q > 0.42]
-    r = p[abs_q > 0.42]
+    q2 = q[abs_q_bigger]
+    r = p_new[abs_q_bigger]
     r[q2 > 0] = 1 - r[q2 > 0]
     if (r <= 0).any():
         raise RuntimeError("measure::ppndf(): r <= 0.0!")
@@ -1222,11 +1265,12 @@ def ppndf(p):
         ((2.3212127685 * r + 4.8501412713) * r + -2.2979647913) * r + -2.7871893113
     ) / ((1.6370678189 * r + 3.5438892476) * r + 1.0)
     opt2[q2 < 0] *= -1
-    retval[abs_q > 0.42] = opt2
+    retval[abs_q_bigger] = opt2
 
     return retval
 
 
+@array_jit
 def precision_recall(negatives, positives, threshold):
     """Calculates the precision and recall (sensitivity) values given negative and positive scores and a threshold
 
@@ -1287,6 +1331,10 @@ def precision_recall(negatives, positives, threshold):
     return TP / CP, TP / len(positives)
 
 
+_jit_precision_recall = precision_recall.jit_func
+
+
+@array_jit
 def precision_recall_curve(negatives, positives, n_points):
     """Calculates the precision-recall curve given a set of positive and negative scores and a number of desired points
 
@@ -1316,14 +1364,23 @@ def precision_recall_curve(negatives, positives, n_points):
         coordinates.
 
     """
-    return numpy.array(
-        [
-            precision_recall(negatives, positives, k)
-            for k in _meaningful_thresholds(negatives, positives, n_points, -8, False)
-        ]
-    ).T
+    curve = numpy.empty((2, n_points))
+    for i, k in enumerate(
+        _meaningful_thresholds(negatives, positives, n_points, -8, False)
+    ):
+        x, y = _jit_precision_recall(negatives, positives, k)
+        curve[0, i] = x
+        curve[1, i] = y
+    return curve
+    # return numpy.array(
+    #     [
+
+    #         for k in
+    #     ]
+    # ).T
 
 
+@array_jit
 def roc(negatives, positives, n_points, min_far=-8):
     """Calculates points of an Receiver Operating Characteristic (ROC)
 
@@ -1362,9 +1419,13 @@ def roc(negatives, positives, n_points, min_far=-8):
     """
 
     t = _meaningful_thresholds(negatives, positives, n_points, min_far, False)
-    return numpy.array([farfrr(negatives, positives, k) for k in t]).T
+    curve = numpy.empty((2, len(t)))
+    for i, k in enumerate(t):
+        curve[:, i] = _jit_farfrr(negatives, positives, k)
+    return curve
 
 
+@array_jit
 def roc_for_far(negatives, positives, far_list, is_sorted=False):
     """Calculates the ROC curve for a given set of positive and negative scores and the FPR values, for which the FNR should be computed
 
@@ -1402,9 +1463,6 @@ def roc_for_far(negatives, positives, far_list, is_sorted=False):
         the corresponding FNR values in row 1.
 
     """
-
-    n_points = len(far_list)
-
     if len(negatives) == 0:
         raise RuntimeError("The given set of negatives is empty.")
 
@@ -1417,6 +1475,7 @@ def roc_for_far(negatives, positives, far_list, is_sorted=False):
 
     # Get the threshold for the requested far values and calculate far and frr
     # values based on the threshold.
-    return numpy.array(
-        [farfrr(neg, pos, far_threshold(neg, pos, k, True)) for k in far_list]
-    ).T
+    curve = numpy.empty((2, len(far_list)))
+    for i, k in enumerate(far_list):
+        curve[:, i] = _jit_farfrr(neg, pos, _jit_far_threshold(neg, pos, k, True))
+    return curve

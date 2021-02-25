@@ -327,7 +327,7 @@ def test_plots():
     # uncomment the next line to save a reference value
     # _save("nonsep-roc.hdf5", xy)
     xyref = _load("nonsep-roc.hdf5")
-    assert numpy.array_equal(xy, xyref)
+    numpy.testing.assert_array_equal(xy, xyref)
 
     # This example will test the ROC for FAR plot calculation functionality.
     requested_far = [0.01, 0.1, 1]
@@ -335,22 +335,22 @@ def test_plots():
     expected_frr = [0.48, 0.12, 0]
     xy = roc_for_far(negatives, positives, requested_far)
 
-    assert numpy.array_equal(xy[0], expected_far)
-    assert numpy.array_equal(xy[1], expected_frr)
+    numpy.testing.assert_array_equal(xy[0], expected_far)
+    numpy.testing.assert_array_equal(xy[1], expected_frr)
 
     # This example will test the Precision-Recall plot calculation functionality.
     xy = precision_recall_curve(negatives, positives, 100)
     # uncomment the next line to save a reference value
     # _save("nonsep-precisionrecall.hdf5", xy)
     xyref = _load("nonsep-precisionrecall.hdf5")
-    assert numpy.array_equal(xy, xyref)
+    numpy.testing.assert_array_equal(xy, xyref)
 
     # This example will test the DET plot calculation functionality.
     det_xyzw = det(negatives, positives, 100)
     # uncomment the next line to save a reference value
     # _save("nonsep-det.hdf5", det_xyzw)
     det_xyzw_ref = _load("nonsep-det.hdf5")
-    assert numpy.allclose(det_xyzw, det_xyzw_ref, atol=1e-15)
+    numpy.testing.assert_allclose(det_xyzw, det_xyzw_ref, atol=1e-5, rtol=1e-6)
 
     # This example will test the EPC plot calculation functionality. For the
     # EPC curve, you need to have a development and a test set. We will split,
@@ -362,7 +362,8 @@ def test_plots():
     test_positives = positives[(positives.shape[0] // 2) :]
     xy = epc(dev_negatives, dev_positives, test_negatives, test_positives, 100)
     xyref = _load("nonsep-epc.hdf5")
-    assert numpy.allclose(xy, xyref[:2], atol=1e-15)
+    numpy.testing.assert_allclose(xy[0], xyref[0], atol=1e-5, rtol=1e-6)
+    numpy.testing.assert_allclose(xy[1], xyref[1], atol=1e-5, rtol=1e-6)
     xy = epc(
         dev_negatives,
         dev_positives,
@@ -374,7 +375,9 @@ def test_plots():
     )
     # uncomment the next line to save a reference value
     # _save("nonsep-epc.hdf5", xy)
-    assert numpy.allclose(xy, xyref, atol=1e-15)
+    numpy.testing.assert_allclose(xy[2], xyref[2], atol=1e-5, rtol=1e-6)
+    numpy.testing.assert_allclose(xy[0], xyref[0], atol=1e-5, rtol=1e-6)
+    numpy.testing.assert_allclose(xy[1], xyref[1], atol=1e-5, rtol=1e-6)
 
 
 def test_rocch():
@@ -390,7 +393,7 @@ def test_rocch():
     eer_ref = 0.0
     # Computes
     pmiss_pfa = rocch(negatives, positives)
-    assert numpy.allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
+    numpy.testing.assert_allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
     eer = rocch2eer(pmiss_pfa)
     assert abs(eer - eer_ref) < 1e-4
     eer = eer_rocch(negatives, positives)
@@ -409,7 +412,7 @@ def test_rocch():
     eer_ref = 0.116363636363636
     # Computes
     pmiss_pfa = rocch(negatives, positives)
-    assert numpy.allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
+    numpy.testing.assert_allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
     eer = rocch2eer(pmiss_pfa)
     assert abs(eer - eer_ref) < 1e-4
     eer = eer_rocch(negatives, positives)
@@ -569,13 +572,13 @@ def test_roc_auc_score():
     # oracle = oracle_auc(y_true, y_score)
     oracle = 0.9326
 
-    assert numpy.allclose(
+    numpy.testing.assert_allclose(
         auc, oracle
     ), f"Expected {oracle} but got {auc} instead."
 
     # test the function on log scale as well
     auc = roc_auc_score(negatives, positives, log_scale=True)
     oracle = 1.4183699583300993
-    assert numpy.allclose(
+    numpy.testing.assert_allclose(
         auc, oracle
     ), f"Expected {oracle} but got {auc} instead."
