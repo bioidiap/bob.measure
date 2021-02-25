@@ -27,6 +27,7 @@ requirements:
     - h5py {{ h5py }}
     - matplotlib {{ matplotlib }}
     - tabulate {{ tabulate }}
+    - numba
   run:
     # - bob.extension  #not required, has run_exports
     # - bob.math  #not required, has run_exports
@@ -36,7 +37,8 @@ requirements:
     - {{ pin_compatible('scipy') }}
     - {{ pin_compatible('h5py') }}
     - {{ pin_compatible('matplotlib') }}
-    - tabulate
+    - {{ pin_compatible('tabulate') }}
+    - {{ pin_compatible('numba') }}
 
 test:
   imports:

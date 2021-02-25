@@ -5,3 +5,4 @@ scipy
 h5py
 matplotlib
 tabulate
+numba
