@@ -6,10 +6,9 @@
 Most of these were imported from older C++ implementations.
 """
 
-import sys
 import numpy
 import numpy.linalg
-from numba import jit
+from numba import jit, objmode
 import logging
 
 logger = logging.getLogger(__name__)
@@ -733,7 +732,9 @@ def epc(
     dev_neg = dev_negatives if is_sorted else numpy.sort(dev_negatives)
     dev_pos = dev_positives if is_sorted else numpy.sort(dev_positives)
     step = 1.0 / (n_points - 1.0)
-    alpha = numpy.arange(0, 1 + step, step)
+    # TODO(amir): calling numpy.arange from Python until https://github.com/numba/numba/issues/6768 is fixed
+    with objmode(alpha="float64[:]"):
+        alpha = numpy.arange(0, 1 + step, step)
     thres = numpy.empty_like(alpha)
     mwer = numpy.empty_like(alpha)
     for i, k in enumerate(alpha):
