@@ -731,10 +731,8 @@ def epc(
     # if not pre-sorted, copies and sorts
     dev_neg = dev_negatives if is_sorted else numpy.sort(dev_negatives)
     dev_pos = dev_positives if is_sorted else numpy.sort(dev_positives)
-    step = 1.0 / (n_points - 1.0)
-    # TODO(amir): calling numpy.arange from Python until https://github.com/numba/numba/issues/6768 is fixed
-    with objmode(alpha="float64[:]"):
-        alpha = numpy.arange(0, 1 + step, step)
+    # numpy.linspace is more stable than numpy.arange for non-integer steps
+    alpha = numpy.linspace(0, numpy.nextafter(1.0, 1.1), n_points)
     thres = numpy.empty_like(alpha)
     mwer = numpy.empty_like(alpha)
     for i, k in enumerate(alpha):
