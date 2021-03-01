@@ -732,6 +732,8 @@ def epc(
     dev_neg = dev_negatives if is_sorted else numpy.sort(dev_negatives)
     dev_pos = dev_positives if is_sorted else numpy.sort(dev_positives)
     # numpy.linspace is more stable than numpy.arange for non-integer steps
+    # using 1 + eps instead of 1.0 in numpy.linspace to avoid
+    # https://github.com/numba/numba/issues/6768
     alpha = numpy.linspace(0, numpy.nextafter(1.0, 1.1), n_points)
     thres = numpy.empty_like(alpha)
     mwer = numpy.empty_like(alpha)
