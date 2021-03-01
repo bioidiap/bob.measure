@@ -751,7 +751,7 @@ def epc(
 
 
 def f_score(negatives, positives, threshold, weight=1.0):
-    """Computes the F-score of the accuracy of the classification
+    r"""Computes the F-score of the accuracy of the classification
 
     The F-score is a weighted mean of precision and recall measurements, see
     :py:func:`precision_recall`.  It is computed as:
@@ -1273,7 +1273,7 @@ def ppndf(p):
 
 @array_jit
 def precision_recall(negatives, positives, threshold):
-    """Calculates the precision and recall (sensitivity) values given negative and positive scores and a threshold
+    r"""Calculates the precision and recall (sensitivity) values given negative and positive scores and a threshold
 
     Precision and recall are computed as:
 
