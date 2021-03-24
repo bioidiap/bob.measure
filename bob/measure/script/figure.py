@@ -719,7 +719,7 @@ class Det(PlotBase):
         self._y_label = self._y_label or "FNR (%)"
         self._legend_loc = self._legend_loc or "upper right"
         if self._far_at is not None:
-            self._trans_far_val = [ppndf(float(k)) for k in self._far_at]
+            self._trans_far_val = ppndf(self._far_at)
         # custom defaults here
         if self._x_rotation is None:
             self._x_rotation = 50

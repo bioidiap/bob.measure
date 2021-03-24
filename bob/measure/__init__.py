@@ -1,11 +1,5 @@
 # import Libraries of other lib packages
-import bob.math
-import bob.io.base
-
 from ._library import *
-from . import version
-from .version import module as __version__
-
 from . import plot
 from . import calibration
 from . import load
@@ -511,14 +505,3 @@ def roc_auc_score(negatives, positives, npoints=2000, min_far=-8, log_scale=Fals
 
   area = -1 * numpy.trapz(tpr, fpr)
   return area
-
-
-def get_config():
-  """Returns a string containing the configuration information.
-  """
-  import bob.extension
-  return bob.extension.get_config(__name__, version.externals)
-
-
-# gets sphinx autodoc done right - don't remove it
-__all__ = [_ for _ in dir() if not _.startswith('_')]

@@ -83,13 +83,13 @@ def min_cllr(negatives, positives):
       n += 1
 
   # compute the pool adjacent violaters method on the ideal LLR scores
-  popt = numpy.ndarray(ideal.shape, dtype=numpy.float)
-  pavx(ideal, popt)
+  ghat = numpy.ndarray(ideal.shape, dtype=numpy.float)
+  pavx(ideal, ghat)
 
   # disable runtime warnings for a short time since log(0) will raise a warning
   old_warn_setup = numpy.seterr(divide='ignore')
   # ... compute logs
-  posterior_log_odds = numpy.log(popt) - numpy.log(1. - popt)
+  posterior_log_odds = numpy.log(ghat) - numpy.log(1. - ghat)
   log_prior_odds = math.log(float(P) / float(N))
   # ... activate old warnings
   numpy.seterr(**old_warn_setup)

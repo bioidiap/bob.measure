@@ -422,7 +422,7 @@ def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
   retval = pyplot.plot(out[0, :], out[1, :], **kwargs)
 
   # now the trick: we must plot the tick marks by hand using the PPNDF method
-  pticks = [ppndf(float(v)) for v in desiredTicks]
+  pticks = ppndf(numpy.array(desiredTicks, dtype=float))
   ax = pyplot.gca()  # and finally we set our own tick marks
   ax.set_xticks(pticks)
   ax.set_xticklabels(desiredLabels)
