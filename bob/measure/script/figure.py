@@ -853,6 +853,7 @@ class GridSubplot(PlotBase):
             raise ValueError(
                 "Only best, upper-*, and lower-* legend locations are supported!"
             )
+        self._nlegends = ctx.meta.get("legends_ncol", 3)
 
         # subplot grid
         self._nrows = ctx.meta.get("n_row", 1)
@@ -891,7 +892,7 @@ class GridSubplot(PlotBase):
         self._create_grid_spec()
 
     def plot_legends(self):
-        """ Print legend on current page"""
+        """Print legend on current page"""
         if not self._disp_legend:
             return
 
@@ -908,13 +909,19 @@ class GridSubplot(PlotBase):
         # create legend on the top or bottom axis
         fig = mpl.gcf()
         if "upper" in self._legend_loc:
-            bbox_to_anchor = (0.0, 1.1, 1.0, 0.1)
+            # Set anchor to top of figure
+            bbox_to_anchor = (0.0, 1.0, 1.0, 0.0)
+            # Legend will be anchored with its bottom side, so switch the loc
+            anchored_loc = self._legend_loc.replace("upper", "lower")
         else:
-            bbox_to_anchor = (0.0, -0.2, 1.0, 0.1)
+            # Set anchor to bottom of figure
+            bbox_to_anchor = (0.0, 0.0, 1.0, 0.0)
+            # Legend will be anchored with its top side, so switch the loc
+            anchored_loc = self._legend_loc.replace("lower", "upper")
         leg = fig.legend(
             lines,
             labels,
-            loc=self._legend_loc,
+            loc=anchored_loc,
             ncol=self._nlegends,
             bbox_to_anchor=bbox_to_anchor,
         )
