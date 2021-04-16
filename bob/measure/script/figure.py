@@ -598,7 +598,7 @@ class PlotBase(MeasureBase):
                 mpl.ylabel(self._y_label)
                 mpl.grid(True, color=self._grid_color)
                 if self._disp_legend:
-                    mpl.legend(loc=self._legend_loc)
+                    self.plot_legends()
                 self._set_axis()
                 mpl.xticks(rotation=self._x_rotation)
                 self._pdf_page.savefig(fig)
@@ -608,6 +608,31 @@ class PlotBase(MeasureBase):
             "closef" not in self._ctx.meta or self._ctx.meta["closef"]
         ):
             self._pdf_page.close()
+
+    def plot_legends(self):
+        """Print legend on current plot"""
+        if not self._disp_legend:
+            return
+
+        lines = []
+        labels = []
+        for ax in mpl.gcf().get_axes():
+            ali, ala = ax.get_legend_handles_labels()
+            # avoid duplicates in legend
+            for li, la in zip(ali, ala):
+                if la not in labels:
+                    lines.append(li)
+                    labels.append(la)
+
+        # create legend on the top or bottom axis
+        leg = mpl.legend(
+            lines,
+            labels,
+            loc=self._legend_loc,
+            ncol=1,
+        )
+
+        return leg
 
     # common protected functions
 
