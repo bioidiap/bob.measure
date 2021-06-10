@@ -1,4 +1,3 @@
 include LICENSE README.rst buildout.cfg develop.cfg requirements.txt version.txt
 recursive-include doc conf.py *.rst
-recursive-include bob *.h *.cpp
 recursive-include bob/measure/data *.*
