@@ -18,3 +18,4 @@ build
 *.egg
 src/
 record.txt
+.coverage

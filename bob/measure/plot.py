@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Mon 23 May 2011 14:36:14 CEST
+
 import numpy
 import warnings
 
@@ -48,7 +49,7 @@ def _semilogx(x, y, **kwargs):
   return pyplot.semilogx(x, y, **kwargs)
 
 
-def roc(negatives, positives, npoints=2000, CAR=None, min_far=-8, tpr=False, semilogx=False, **kwargs):
+def roc(negatives, positives, npoints=2000, CAR=None, min_fpr=-8, tpr=False, semilogx=False, **kwargs):
   """Plots Receiver Operating Characteristic (ROC) curve.
 
   This method will call ``matplotlib`` to plot the ROC curve for a system which
@@ -59,7 +60,7 @@ def roc(negatives, positives, npoints=2000, CAR=None, min_far=-8, tpr=False, sem
 
   The plot will represent the false-alarm on the horizontal axis and the
   false-rejection on the vertical axis.  The values for the axis will be
-  computed using :py:func:`bob.measure.roc`.
+  computed using :py:func:`bob.measure.curves.roc`.
 
   .. note::
 
@@ -73,18 +74,18 @@ def roc(negatives, positives, npoints=2000, CAR=None, min_far=-8, tpr=False, sem
   negatives : array
       1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier. See
-      (:py:func:`bob.measure.roc`)
+      (:py:func:`bob.measure.curves.roc`)
 
   positives : array
       1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
-      (:py:func:`bob.measure.roc`)
+      (:py:func:`bob.measure.curves.roc`)
 
   npoints : :py:class:`int`, optional
       The number of points for the plot. See
-      (:py:func:`bob.measure.roc`)
+      (:py:func:`bob.measure.curves.roc`)
 
-  min_far : float, optional
+  min_fpr : float, optional
       The minimum value of FPR and FNR that is used for ROC computations.
 
   tpr : bool, optional
@@ -115,8 +116,8 @@ def roc(negatives, positives, npoints=2000, CAR=None, min_far=-8, tpr=False, sem
     tpr = semilogx = CAR
 
   from matplotlib import pyplot
-  from . import roc as calc
-  fpr, fnr = calc(negatives, positives, npoints, min_far=min_far)
+  from .curves import roc as calc
+  fpr, fnr = calc(negatives, positives, npoints, min_fpr=min_fpr)
 
   if tpr:
     fnr = 1 - fnr  # plot tpr instead of fnr
@@ -139,7 +140,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
 
   The plot will represent the False Positive Rate (FPR) on the horizontal
   axis and the Correct Positive Rate (CPR) on the vertical axis.  The values
-  for the axis will be computed using :py:func:`bob.measure.roc_for_far`.
+  for the axis will be computed using :py:func:`bob.measure.curves.roc_for_far`.
 
   .. note::
 
@@ -152,11 +153,11 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
 
     negatives (array): 1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier. See
-      (:py:func:`bob.measure.roc`)
+      (:py:func:`bob.measure.curves.roc`)
 
     positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
-      (:py:func:`bob.measure.roc`)
+      (:py:func:`bob.measure.curves.roc`)
 
     far_values (:py:class:`list`, optional): The values for the FPR, where the
       CPR (CAR) should be plotted; each value should be in range [0,1].
@@ -179,7 +180,7 @@ def roc_for_far(negatives, positives, far_values=log_values(), CAR=True,
   warnings.warn("roc_for_far is deprecated. Please use the roc function instead.")
 
   from matplotlib import pyplot
-  from . import roc_for_far as calc
+  from .curves import roc_for_far as calc
   out = calc(negatives, positives, far_values)
   if not CAR:
     return pyplot.plot(out[0, :], out[1, :], **kwargs)
@@ -208,14 +209,14 @@ def precision_recall_curve(negatives, positives, npoints=2000, **kwargs):
 
     negatives (array): 1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier. See
-      (:py:func:`bob.measure.precision_recall_curve`)
+      (:py:func:`bob.measure.curves.precision_recall`)
 
     positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
-      (:py:func:`bob.measure.precision_recall_curve`)
+      (:py:func:`bob.measure.curves.precision_recall`)
 
     npoints (:py:class:`int`, optional): The number of points for the plot. See
-      (:py:func:`bob.measure.precision_recall_curve`)
+      (:py:func:`bob.measure.curves.precision_recall`)
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
@@ -230,7 +231,7 @@ def precision_recall_curve(negatives, positives, npoints=2000, **kwargs):
   """
 
   from matplotlib import pyplot
-  from . import precision_recall_curve as calc
+  from .curves import precision_recall as calc
   out = calc(negatives, positives, npoints)
   return pyplot.plot(100.0 * out[0, :], 100.0 * out[1, :], **kwargs)
 
@@ -265,22 +266,22 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
 
     dev_negatives (array): 1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier, from the
-      development set. See (:py:func:`bob.measure.epc`)
+      development set. See (:py:func:`bob.measure.curves.epc`)
 
     dev_positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier, from the
-      development set. See (:py:func:`bob.measure.epc`)
+      development set. See (:py:func:`bob.measure.curves.epc`)
 
     test_negatives (array): 1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier, from the test
-      set. See (:py:func:`bob.measure.epc`)
+      set. See (:py:func:`bob.measure.curves.epc`)
 
     test_positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier, from the test set.
-      See (:py:func:`bob.measure.epc`)
+      See (:py:func:`bob.measure.curves.epc`)
 
     npoints (:py:class:`int`, optional): The number of points for the plot. See
-      (:py:func:`bob.measure.epc`)
+      (:py:func:`bob.measure.curves.epc`)
 
     kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
       passed directly to :py:func:`matplotlib.pyplot.plot`.
@@ -295,14 +296,14 @@ def epc(dev_negatives, dev_positives, test_negatives, test_positives,
   """
 
   from matplotlib import pyplot
-  from . import epc as calc
+  from .curves import epc as calc
 
   out = calc(dev_negatives, dev_positives, test_negatives, test_positives,
              npoints)
   return pyplot.plot(out[0, :], 100.0 * out[1, :], **kwargs)
 
 
-def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
+def det(negatives, positives, npoints=2000, min_fpr=-8, **kwargs):
   """Plots Detection Error Trade-off (DET) curve as defined in the paper:
 
   Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
@@ -335,8 +336,8 @@ def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
     If you wish to reset axis zooming, you must use the Gaussian scale rather
     than the visual marks showed at the plot, which are just there for
     displaying purposes. The real axis scale is based on
-    :py:func:`bob.measure.ppndf`.  For example, if you wish to set the x and y
-    axis to display data between 1% and 40% here is the recipe:
+    :py:func:`bob.measure.curves.ppndf`.  For example, if you wish to set the x
+    and y axis to display data between 1% and 40% here is the recipe:
 
     .. code-block:: python
 
@@ -344,7 +345,7 @@ def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
       from matplotlib import pyplot
       bob.measure.plot.det(...) #call this as many times as you need
       #AFTER you plot the DET curve, just set the axis in this way:
-      pyplot.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)])
+      pyplot.axis([bob.measure.curves.ppndf(k/100.0) for k in (1, 40, 1, 40)])
 
     We provide a convenient way for you to do the above in this module. So,
     optionally, you may use the :py:func:`bob.measure.plot.det_axis` method
@@ -362,14 +363,14 @@ def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
 
     negatives (array): 1D float array that contains the scores of the
       "negative" (noise, non-class) samples of your classifier. See
-      (:py:func:`bob.measure.det`)
+      (:py:func:`bob.measure.curves.det`)
 
     positives (array): 1D float array that contains the scores of the
       "positive" (signal, class) samples of your classifier. See
-      (:py:func:`bob.measure.det`)
+      (:py:func:`bob.measure.curves.det`)
 
     npoints (:py:class:`int`, optional): The number of points for the plot. See
-      (:py:func:`bob.measure.det`)
+      (:py:func:`bob.measure.curves.det`)
 
     axisfontsize (:py:class:`str`, optional): The size to be used by
       x/y-tick-labels to set the font size on the axis
@@ -415,10 +416,10 @@ def det(negatives, positives, npoints=2000, min_far=-8, **kwargs):
 
   # this will actually do the plotting
   from matplotlib import pyplot
-  from . import det as calc
-  from . import ppndf
+  from .curves import det as calc
+  from .curves import ppndf
 
-  out = calc(negatives, positives, npoints, min_far)
+  out = calc(negatives, positives, npoints, min_fpr)
   retval = pyplot.plot(out[0, :], out[1, :], **kwargs)
 
   # now the trick: we must plot the tick marks by hand using the PPNDF method
@@ -436,8 +437,8 @@ def det_axis(v, **kwargs):
   """Sets the axis in a DET plot.
 
   This method wraps the :py:func:`matplotlib.pyplot.axis` by calling
-  :py:func:`bob.measure.ppndf` on the values passed by the user so they are
-  meaningful in a DET plot as performed by :py:func:`bob.measure.plot.det`.
+  :py:func:`bob.measure.curves.ppndf` on the values passed by the user so they
+  are meaningful in a DET plot as performed by :py:func:`bob.measure.plot.det`.
 
 
   Parameters:
@@ -462,7 +463,7 @@ def det_axis(v, **kwargs):
   logger = logging.getLogger("bob.measure")
 
   from matplotlib import pyplot
-  from . import ppndf
+  from .curves import ppndf
 
   # treat input
   try:
@@ -503,7 +504,7 @@ def cmc(cmc_scores, logx=True, **kwargs):
   Parameters:
 
     cmc_scores (array): 1D float array containing the CMC values (See
-      :py:func:`bob.measure.cmc`)
+      :py:func:`bob.measure.cmc.cmc`)
 
     logx (:py:class:`bool`, optional): If set (the default), plots the rank
       axis in logarithmic scale using :py:func:`matplotlib.pyplot.semilogx` or
@@ -520,7 +521,7 @@ def cmc(cmc_scores, logx=True, **kwargs):
   """
 
   from matplotlib import pyplot
-  from . import cmc as calc
+  from .cmc import cmc as calc
 
   out = calc(cmc_scores)
 
@@ -552,7 +553,7 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
   Parameters:
 
     cmc_scores (array): 1D float array containing the CMC values (See
-      :py:func:`bob.measure.cmc`)
+      :py:func:`bob.measure.cmc.cmc`)
 
     rank (:py:class:`int`, optional): The rank for which the curve should be
       plotted
@@ -579,7 +580,8 @@ def detection_identification_curve(cmc_scores, far_values=log_values(), rank=1, 
   import numpy
   import math
   from matplotlib import pyplot
-  from . import far_threshold, detection_identification_rate
+  from .brute_force import far_threshold
+  from .cmc import detection_identification_rate
 
   # for each probe, for which no positives exists, get the highest negative
   # score; and sort them to compute the FAR thresholds

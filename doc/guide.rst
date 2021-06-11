@@ -1,45 +1,40 @@
-.. vim: set fileencoding=utf-8 :
-.. Andre Anjos <andre.dos.anjos@gmail.com>
-.. Tue 15 Oct 17:41:52 2013
+.. coding=utf-8
 
 .. testsetup:: *
 
-  import numpy
-  positives = numpy.random.normal(1,1,100)
-  negatives = numpy.random.normal(-1,1,100)
-  import matplotlib
-  if not hasattr(matplotlib, 'backends'):
-    matplotlib.use('pdf') #non-interactive avoids exception on display
-  import bob.measure
+   import numpy
+   positives = numpy.random.normal(1,1,100)
+   negatives = numpy.random.normal(-1,1,100)
+   import matplotlib
+   if not hasattr(matplotlib, 'backends'):
+     matplotlib.use('pdf') #non-interactive avoids exception on display
+   import bob.measure.binary
+   import bob.measure.cmc
+   import bob.measure.brute_force
+   import bob.measure.curves
+   import bob.measure.plot
 
-============
- User Guide
-============
+.. _bob.measure.user_guide:
+
+User Guide
+==========
 
 Methods in the :py:mod:`bob.measure` module can help you to quickly and easily
-evaluate error for multi-class or binary classification problems. If you are
+evaluate error for multi-class or binary classification problems.  If you are
 not yet familiarized with aspects of performance evaluation, we recommend the
-following papers and book chapters for an overview of some of the implemented
-methods.
-
-* Bengio, S., Keller, M., Mariéthoz, J. (2004). `The Expected Performance
-  Curve`_.  International Conference on Machine Learning ICML Workshop on ROC
-  Analysis in Machine Learning, 136(1), 1963–1966.
-* Martin, A., Doddington, G., Kamm, T., Ordowski, M., & Przybocki, M. (1997).
-  `The DET curve in assessment of detection task performance`_. Fifth European
-  Conference on Speech Communication and Technology (pp. 1895-1898).
-* Li, S., Jain, A.K. (2005), `Handbook of Face Recognition`, Chapter 14, Springer
+papers and book chapters on the :ref:`bob.measure.references` section for an
+overview of some of the implemented methods.
 
 
 Overview
 --------
 
-A classifier is subject to two types of errors, either the event one wishes to detect
-is rejected (false negative) or an the noise or background one wishes to discard is accepted
-(false positive). A possible way to measure the detection performance is to
-use the Half Total Error Rate (HTER), which combines the False Negative Rate
-(FNR) and the False Positive Rate (FPR) and is defined in the following
-formula:
+A classifier is subject to two types of errors, either the event one wishes to
+detect is rejected (false negative) or an the noise or background one wishes to
+discard is accepted (false positive). A possible way to measure the detection
+performance is to use the half-total error rate (HTER), which combines the
+False Negative Rate (FNR) and the False Positive Rate (FPR) and is defined in
+the following formula:
 
 .. math::
 
@@ -56,7 +51,7 @@ widely used measure to summarise the performance of a system is the Equal Error
 Rate (EER), defined as the point along the ROC or DET curve where the FPR
 equals the FNR.
 
-However, it was noted in by Bengio et al. (2004) that ROC and DET curves may be
+However, it was noted in by [BENGIO-2004]_ that ROC and DET curves may be
 misleading when comparing systems. Hence, the so-called Expected Performance
 Curve (EPC) was proposed and consists of an unbiased estimate of the reachable
 performance of a system at various operating points.  Indeed, in real-world
@@ -69,68 +64,69 @@ The optimal threshold :math:`\tau^*` is then computed using different values of
 :math:`\beta`, corresponding to different operating points:
 
 .. math::
-  \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FPR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FNR}(\tau, \mathcal{D}_{d})
+
+   \tau^{*} = \arg\!\min_{\tau} \quad \beta \cdot \textrm{FPR}(\tau, \mathcal{D}_{d}) + (1-\beta) \cdot \textrm{FNR}(\tau, \mathcal{D}_{d})
 
 
 where :math:`\mathcal{D}_{d}` denotes the development set and should be
 completely separate to the evaluation set :math:`\mathcal{D}`.
 
 Performance for different values of :math:`\beta` is then computed on the
-evaluation
-set :math:`\mathcal{D}_{t}` using the previously derived threshold. Note that
-setting :math:`\beta` to 0.5 yields to the Half Total Error Rate (HTER) as
-defined in the first equation.
+evaluation set :math:`\mathcal{D}_{t}` using the previously derived threshold.
+Note that setting :math:`\beta` to 0.5 yields to the Half Total Error Rate
+(HTER) as defined in the first equation.
 
 .. note::
 
-  Most of the methods available in this module require as input a set of 2
-  :py:class:`numpy.ndarray` objects that contain the scores obtained by the
-  classification system to be evaluated, without specific order. Most of the
-  classes that are defined to deal with two-class problems. Therefore, in this
-  setting, and throughout this manual, we have defined that the **negatives**
-  represents the impostor attacks or false class accesses (that is when a
-  sample of class A is given to the classifier of another class, such as class
-  B) for of the classifier. The second set, referred as the **positives**
-  represents the true class accesses or signal response of the classifier. The
-  vectors are called this way because the procedures implemented in this module
-  expects that the scores of **negatives** to be statistically distributed to
-  the left of the signal scores (the **positives**). If that is not the case,
-  one should either invert the input to the methods or multiply all scores
-  available by -1, in order to have them inverted.
+   Most of the methods available in this module require as input a set of 2
+   :py:class:`numpy.ndarray` objects that contain the scores obtained by the
+   classification system to be evaluated, without specific order. Most of the
+   classes that are defined to deal with two-class problems. Therefore, in this
+   setting, and throughout this manual, we have defined that the **negatives**
+   represents the impostor attacks or false class accesses (that is when a
+   sample of class A is given to the classifier of another class, such as class
+   B) for of the classifier. The second set, referred as the **positives**
+   represents the true class accesses or signal response of the classifier. The
+   vectors are called this way because the procedures implemented in this
+   module expects that the scores of **negatives** to be statistically
+   distributed to the left of the signal scores (the **positives**). If that is
+   not the case, one should either invert the input to the methods or multiply
+   all scores available by -1, in order to have them inverted.
 
-  The input to create these two vectors is generated by experiments conducted
-  by the user and normally sits in files that may need some parsing before
-  these vectors can be extracted. While it is not possible to provide a parser
-  for every individual file that may be generated in different experimental
-  frameworks, we do provide a parser for a generic two columns format
-  where the first column contains -1/1 for negative/positive and the second column
-  contains score values. Please refer to the documentation of
-  :py:func:`bob.measure.load.split` for more details.
+   The input to create these two vectors is generated by experiments conducted
+   by the user and normally sits in files that may need some parsing before
+   these vectors can be extracted. While it is not possible to provide a parser
+   for every individual file that may be generated in different experimental
+   frameworks, we do provide a parser for a generic two columns format where
+   the first column contains -1/1 for negative/positive and the second column
+   contains score values. Please refer to the documentation of
+   :py:func:`bob.measure.load.split` for more details.
 
-  In the remainder of this section we assume you have successfully parsed and
-  loaded your scores in two 1D float64 vectors and are ready to evaluate the
-  performance of the classifier.
+   In the remainder of this section we assume you have successfully parsed and
+   loaded your scores in two 1D float64 vectors and are ready to evaluate the
+   performance of the classifier.
+
 
 Verification
 ------------
 
-To count the number of correctly classified positives and negatives you can use
-the following techniques:
+To count the number of correctly classified (true) positives and negatives you
+can use the following techniques:
 
 .. doctest::
 
    >>> # negatives, positives = parse_my_scores(...) # write parser if not provided!
    >>> T = 0.0 #Threshold: later we explain how one can calculate these
-   >>> correct_negatives = bob.measure.correctly_classified_negatives(negatives, T)
+   >>> correct_negatives = bob.measure.binary.true_negatives(negatives, T)
    >>> FPR = 1 - (float(correct_negatives.sum())/negatives.size)
-   >>> correct_positives = bob.measure.correctly_classified_positives(positives, T)
+   >>> correct_positives = bob.measure.binary.true_positives(positives, T)
    >>> FNR = 1 - (float(correct_positives.sum())/positives.size)
 
 We do provide a method to calculate the FPR and FNR in a single shot:
 
 .. doctest::
 
-   >>> FPR, FNR = bob.measure.fprfnr(negatives, positives, T)
+   >>> FPR, FNR = bob.measure.binary.fprfnr(negatives, positives, T)
 
 The threshold ``T`` is normally calculated by looking at the distribution of
 negatives and positives in a development (or validation) set, selecting a
@@ -143,13 +139,13 @@ calculation of the threshold:
 
   .. doctest::
 
-    >>> T = bob.measure.eer_threshold(negatives, positives)
+     >>> T = bob.measure.binary.eer_threshold(negatives, positives)
 
 * Threshold for the minimum HTER
 
   .. doctest::
 
-    >>> T = bob.measure.min_hter_threshold(negatives, positives)
+     >>> T = bob.measure.brute_force.min_hter_threshold(negatives, positives)
 
 * Threshold for the minimum weighted error rate (MWER) given a certain cost
   :math:`\beta`.
@@ -157,47 +153,52 @@ calculation of the threshold:
   .. doctest:: python
 
      >>> cost = 0.3 #or "beta"
-     >>> T = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost)
+     >>> T = bob.measure.brute_force.min_weighted_error_rate_threshold(negatives, positives, cost)
 
   .. note::
 
      By setting cost to 0.5 is equivalent to use
-     :py:func:`bob.measure.min_hter_threshold`.
+     :py:func:`bob.measure.brute_force.min_hter_threshold`.
 
 
 .. important::
+
    Often, it is not numerically possible to match the requested criteria for
    calculating the threshold based on the provided scores. Instead, the closest
    possible threshold is returned. For example, using
-   :py:func:`bob.measure.eer_threshold` **will not** give you a threshold where
-   :math:`FPR == FNR`. Hence, you cannot report :math:`FPR` or :math:`FNR`
-   instead of :math:`EER`; you should report :math:`(FPR+FNR)/2`. This
-   is also true for :py:func:`bob.measure.far_threshold` and
-   :py:func:`bob.measure.frr_threshold`. The threshold returned by those functions
-   does not guarantee that using that threshold you will get the requested
-   :math:`FPR` or :math:`FNR` value. Instead, you should recalculate using
-   :py:func:`bob.measure.fprfnr`.
+   :py:func:`bob.measure.brute_force.eer_threshold` **will not** give you a
+   threshold where :math:`FPR == FNR`. Hence, you cannot report :math:`FPR` or
+   :math:`FNR` instead of :math:`EER`; you should report :math:`(FPR+FNR)/2`.
+   This is also true for :py:func:`bob.measure.brute_force.fpr_threshold` and
+   :py:func:`bob.measure.brute_force.fnr_threshold`. The threshold returned by
+   those functions does not guarantee that using that threshold you will get
+   the requested :math:`FPR` or :math:`FNR` value. Instead, you should
+   recalculate using :py:func:`bob.measure.binary.fprfnr`.
 
 .. note::
-   Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which defaults to ``False``, throughout.
-   However, these functions need sorted ``positive`` and/or ``negative`` scores.
-   If scores are not in ascendantly sorted order, internally, they will be copied -- twice!
-   To avoid scores to be copied, you might want to sort the scores in ascending order, e.g., by:
+
+   Many functions in ``bob.measure`` have an ``is_sorted`` parameter, which
+   defaults to ``False``, throughout.  However, these functions need sorted
+   ``positive`` and/or ``negative`` scores.  If scores are not in ascendantly
+   sorted order, internally, they will be copied -- twice!  To avoid scores to
+   be copied, you might want to sort the scores in ascending order, e.g., by:
 
    .. doctest:: python
 
       >>> negatives.sort()
       >>> positives.sort()
-      >>> t = bob.measure.min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted = True)
+      >>> t = bob.measure.brute_force.min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted = True)
       >>> assert T == t
 
 Identification
 --------------
 
-For identification, the Recognition Rate is one of the standard measures.
-To compute recognition rates, you can use the :py:func:`bob.measure.recognition_rate` function.
-This function expects a relatively complex data structure, which is the same as for the `CMC`_ below.
-For each probe item, the scores for negative and positive comparisons are computed, and collected for all probe items:
+For identification, the Recognition Rate is one of the standard measures.  To
+compute recognition rates, you can use the
+:py:func:`bob.measure.cmc.recognition_rate` function.  This function expects a
+relatively complex data structure, which is the same as for the `CMC`_ below.
+For each probe item, the scores for negative and positive comparisons are
+computed, and collected for all probe items:
 
 .. doctest::
 
@@ -206,13 +207,17 @@ For each probe item, the scores for negative and positive comparisons are comput
    ...   pos = numpy.random.normal(1, 1, 1)
    ...   neg = numpy.random.normal(0, 1, 19)
    ...   rr_scores.append((neg, pos))
-   >>> rr = bob.measure.recognition_rate(rr_scores, rank=1)
+   >>> rr = bob.measure.cmc.recognition_rate(rr_scores, rank=1)
 
-For open set identification, according to Li and Jain (2005) there are two different error measures defined.
-The first measure is the :py:func:`bob.measure.detection_identification_rate`, which counts the number of correctly classified in-gallery probe items.
-The second measure is the :py:func:`bob.measure.false_alarm_rate`, which counts, how often an out-of-gallery probe item was incorrectly accepted.
-Both rates can be computed using the same data structure, with one exception.
-Both functions require that at least one probe item exists, which has no according gallery item, i.e., where the positives are empty or ``None``:
+For open set identification, according to Li and Jain (2005) there are two
+different error measures defined.  The first measure is the
+:py:func:`bob.measure.cmc.detection_identification_rate`, which counts the
+number of correctly classified in-gallery probe items.  The second measure is
+the :py:func:`bob.measure.cmc.false_alarm_rate`, which counts, how often an
+out-of-gallery probe item was incorrectly accepted.  Both rates can be computed
+using the same data structure, with one exception.  Both functions require that
+at least one probe item exists, which has no according gallery item, i.e.,
+where the positives are empty or ``None``:
 
 (continued from above...)
 
@@ -222,53 +227,55 @@ Both functions require that at least one probe item exists, which has no accordi
    ...   pos = None
    ...   neg = numpy.random.normal(-2, 1, 10)
    ...   rr_scores.append((neg, pos))
-   >>> dir = bob.measure.detection_identification_rate(rr_scores, threshold = 0, rank=1)
-   >>> far = bob.measure.false_alarm_rate(rr_scores, threshold = 0)
+   >>> dir = bob.measure.cmc.detection_identification_rate(rr_scores, threshold = 0, rank=1)
+   >>> fpr = bob.measure.cmc.false_alarm_rate(rr_scores, threshold = 0)
+
 
 Confidence interval
 -------------------
 
-A confidence interval for parameter :math:`x` consists of a lower
-estimate :math:`L`, and an upper estimate :math:`U`, such that the probability
-of the true value being within the interval estimate is equal to :math:`\alpha`.
-For example, a 95% confidence interval (i.e. :math:`\alpha = 0.95`) for a
-parameter :math:`x` is given by :math:`[L, U]` such that
+A confidence interval for parameter :math:`x` consists of a lower estimate
+:math:`L`, and an upper estimate :math:`U`, such that the probability of the
+true value being within the interval estimate is equal to :math:`\alpha`.  For
+example, a 95% confidence interval (i.e. :math:`\alpha = 0.95`) for a parameter
+:math:`x` is given by :math:`[L, U]` such that
 
-.. math:: Prob(x∈[L,U]) = 95%
+.. math:: Prob(x ∈ [L,U]) = 95%
 
-The smaller the test size, the wider the confidence
-interval will be, and the greater :math:`\alpha`, the smaller the confidence interval
-will be.
+The smaller the test size, the wider the confidence interval will be, and the
+greater :math:`\alpha`, the smaller the confidence interval will be.
 
-`The Clopper-Pearson interval`_, a common method for calculating
-confidence intervals, is function of the number of success, the number of trials
-and confidence
-value :math:`\alpha` is used as :py:func:`bob.measure.utils.confidence_for_indicator_variable`.
-It is based on the cumulative probabilities of the binomial distribution. This
-method is quite conservative, meaning that the true coverage rate of a 95%
-Clopper–Pearson interval may be well above 95%.
+[CLOPPER-1934]_ develops a common method for calculating confidence intervals,
+as function of the number of success, the number of trials and confidence value
+:math:`\alpha` is used as
+:py:func:`bob.measure.confidence_interval.clopper_pearson`.  It is based on the
+cumulative probabilities of the binomial distribution. This method is quite
+conservative, meaning that the true coverage rate of a 95% Clopper–Pearson
+interval may be well above 95%.
 
-For example, we want to evaluate the reliability of a system to
-identify registered persons. Let's say that among 10,000 accepted
-transactions, 9856 are true matches. The 95% confidence interval for true match
-rate is then:
+For example, we want to evaluate the reliability of a system to identify
+registered persons.  Let's say that among 10,000 accepted transactions, 9856 are
+true matches. The 95% confidence interval for true match rate is then:
+
 .. doctest:: python
 
-    >>> numpy.allclose(bob.measure.utils.confidence_for_indicator_variable(9856, 10000),(0.98306835053282549, 0.98784270928084694))
-    True
+   >>> numpy.allclose(bob.measure.confidence_interval.clopper_pearson(9856, 10000),(0.98306835053282549, 0.98784270928084694))
+   True
 
-meaning there is a 95% probability that the true match rate is inside :math:`[0.983,
-0.988]`.
+meaning there is a 95% probability that the true match rate is inside
+:math:`[0.983, 0.988]`.
+
 
 Plotting
 --------
 
 An image is worth 1000 words, they say. You can combine the capabilities of
-`Matplotlib`_ with |project| to plot a number of curves. However, you must have
-that package installed though. In this section we describe a few recipes.
+`matplotlib`_ with functions in this package to plot a number of curves.
+However, you must have that package installed.  In this section we describe a
+few recipes.
 
 ROC
-===
+^^^
 
 The Receiver Operating Characteristic (ROC) curve is one of the oldest plots in
 town. To plot an ROC curve, in possession of your **negatives** and
@@ -285,7 +292,7 @@ town. To plot an ROC curve, in possession of your **negatives** and
    >>> pyplot.grid(True)
    >>> pyplot.show() # doctest: +SKIP
    >>> # You can also compute the area under the ROC curve:
-   >>> bob.measure.roc_auc_score(negatives, positives)
+   >>> bob.measure.curves.roc_auc_score(negatives, positives)
    0.8958
 
 You should see an image like the following one:
@@ -320,22 +327,24 @@ even the label.  For an overview of the keywords accepted, please refer to the
 axis labels, grids, legends should be controlled directly using the relevant
 `Matplotlib`_'s controls.
 
-DET
-===
 
-A DET curve can be drawn using similar commands such as the ones for the ROC curve:
+DET
+^^^
+
+A DET curve can be drawn using similar commands such as the ones for the ROC
+curve:
 
 .. doctest::
 
-  >>> from matplotlib import pyplot
-  >>> # we assume you have your negatives and positives already split
-  >>> npoints = 100
-  >>> bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
-  >>> bob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
-  >>> pyplot.xlabel('FPR (%)') # doctest: +SKIP
-  >>> pyplot.ylabel('FNR (%)') # doctest: +SKIP
-  >>> pyplot.grid(True)
-  >>> pyplot.show() # doctest: +SKIP
+   >>> from matplotlib import pyplot
+   >>> # we assume you have your negatives and positives already split
+   >>> npoints = 100
+   >>> bob.measure.plot.det(negatives, positives, npoints, color=(0,0,0), linestyle='-', label='test') # doctest: +SKIP
+   >>> bob.measure.plot.det_axis([0.01, 40, 0.01, 40]) # doctest: +SKIP
+   >>> pyplot.xlabel('FPR (%)') # doctest: +SKIP
+   >>> pyplot.ylabel('FNR (%)') # doctest: +SKIP
+   >>> pyplot.grid(True)
+   >>> pyplot.show() # doctest: +SKIP
 
 This will produce an image like the following one:
 
@@ -360,33 +369,35 @@ This will produce an image like the following one:
 .. note::
 
   If you wish to reset axis zooming, you must use the Gaussian scale rather
-  than the visual marks showed at the plot, which are just there for
-  displaying purposes. The real axis scale is based on the
-  :py:func:`bob.measure.ppndf` method. For example, if you wish to set the x and y
-  axis to display data between 1% and 40% here is the recipe:
+  than the visual marks showed at the plot, which are just there for displaying
+  purposes. The real axis scale is based on the
+  :py:func:`bob.measure.curves.ppndf` method. For example, if you wish to set
+  the x and y axis to display data between 1% and 40% here is the recipe:
 
   .. doctest::
 
-    >>> #AFTER you plot the DET curve, just set the axis in this way:
-    >>> pyplot.axis([bob.measure.ppndf(k/100.0) for k in (1, 40, 1, 40)]) # doctest: +SKIP
+     >>> #AFTER you plot the DET curve, just set the axis in this way:
+     >>> pyplot.axis([bob.measure.curves.ppndf(k/100.0) for k in (1, 40, 1, 40)]) # doctest: +SKIP
 
   We provide a convenient way for you to do the above in this module. So,
   optionally, you may use the ``bob.measure.plot.det_axis`` method like this:
 
   .. doctest::
 
-    >>> bob.measure.plot.det_axis([1, 40, 1, 40]) # doctest: +SKIP
+     >>> bob.measure.plot.det_axis([1, 40, 1, 40]) # doctest: +SKIP
+
 
 EPC
-===
+^^^
 
-Drawing an EPC requires that both the development set negatives and positives are provided alongside
-the evaluation set ones. Because of this the API is slightly modified:
+Drawing an EPC requires that both the development set negatives and positives
+are provided alongside the evaluation set ones. Because of this the API is
+slightly modified:
 
 .. doctest::
 
-  >>> bob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-') # doctest: +SKIP
-  >>> pyplot.show() # doctest: +SKIP
+   >>> bob.measure.plot.epc(dev_neg, dev_pos, test_neg, test_pos, npoints, color=(0,0,0), linestyle='-') # doctest: +SKIP
+   >>> pyplot.show() # doctest: +SKIP
 
 This will produce an image like the following one:
 
@@ -408,7 +419,7 @@ This will produce an image like the following one:
 
 
 CMC
-===
+^^^
 
 The Cumulative Match Characteristics (CMC) curve estimates the probability that
 the correct model is in the *N* models with the highest similarity to a given
@@ -425,9 +436,9 @@ which defines a pair of positive and negative scores **per probe**:
 
    cmc_scores = []
    for probe in range(10):
-     positives = numpy.random.normal(1, 1, 1)
-     negatives = numpy.random.normal(0, 1, 19)
-     cmc_scores.append((negatives, positives))
+       positives = numpy.random.normal(1, 1, 1)
+       negatives = numpy.random.normal(0, 1, 19)
+       cmc_scores.append((negatives, positives))
    bob.measure.plot.cmc(cmc_scores, logx=False)
    pyplot.grid(True)
    pyplot.title('CMC')
@@ -441,7 +452,7 @@ Usually, there is only a single positive score per probe, but this is not a fixe
 
 
 Detection & Identification Curve
-================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The detection & identification curve is designed to evaluate open set
 identification tasks.  It can be plotted using the
@@ -477,15 +488,16 @@ obtained in the CMC plot above.
 
 
 Fine-tunning
-============
+^^^^^^^^^^^^
 
 The methods inside :py:mod:`bob.measure.plot` are only provided as a
-`Matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
+`matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
 only calculate the points without doing any plotting. You may prefer to tweak
 the plotting or even use a different plotting system such as gnuplot. Have a
 look at the implementations at :py:mod:`bob.measure.plot` to understand how to
 use the |project| methods to compute the curves and interlace that in the way
 that best suits you.
+
 
 .. _bob.measure.command_line:
 
@@ -498,7 +510,7 @@ take as input generic 2-column data format as specified in the documentation of
 :py:func:`bob.measure.load.split`
 
 Metrics
-=======
+^^^^^^^
 
 To calculate the threshold using a certain criterion (EER (default) or min.HTER)
 on a development set and conduct the threshold computation and its performance
@@ -520,15 +532,15 @@ on an evaluation set, after setting up |project|, just do:
     F1-score             0.8               0.8
     ===================  ================  ================
 
-The output will present the threshold together with the FPR, FNR, Precision, Recall, F1-score and
-HTER on the given set, calculated using such a threshold. The relative counts of FAs
-and FRs are also displayed between parenthesis.
+The output will present the threshold together with the FPR, FNR, Precision,
+Recall, F1-score and HTER on the given set, calculated using such a threshold.
+The relative counts of FAs and FRs are also displayed between parenthesis.
 
 .. note::
-    Several scores files can be given at once and the metrics will be computed
-    for each of them separatly. Development and evaluation files must be given by
-    pairs. When evaluation files are provided, ``--eval`` flag
-    must be given.
+
+   Several scores files can be given at once and the metrics will be computed
+   for each of them separatly. Development and evaluation files must be given
+   by pairs. When evaluation files are provided, ``--eval`` flag must be given.
 
 
 To evaluate the performance of a new score file with a given threshold, use
@@ -550,27 +562,26 @@ To evaluate the performance of a new score file with a given threshold, use
     ===================  ================
 
 
-You can simultaneously conduct the threshold computation and its performance
-on an evaluation set:
+You can simultaneously conduct the threshold computation and its performance on
+an evaluation set:
 
 .. note::
-    Table format can be changed using ``--tablefmt`` option, the default format
-    being ``rst``. Please refer to ``bob measure metrics --help`` for more details.
+
+   Table format can be changed using ``--tablefmt`` option, the default format
+   being ``rst``. Please refer to ``bob measure metrics --help`` for more
+   details.
 
 
 Plots
-=====
+^^^^^
 
-Customizable plotting commands are available in the :py:mod:`bob.measure` module.
-They take a list of development and/or evaluation files and generate a single PDF
-file containing the plots. Available plots are:
+Customizable plotting commands are available in the :py:mod:`bob.measure`
+module.  They take a list of development and/or evaluation files and generate a
+single PDF file containing the plots. Available plots are:
 
 *  ``roc`` (receiver operating characteristic)
-
 *  ``det`` (detection error trade-off)
-
 *  ``epc`` (expected performance curve)
-
 *  ``hist`` (histograms of positive and negatives)
 
 Use the ``--help`` option on the above-cited commands to find-out about more
@@ -586,34 +597,31 @@ For example, to generate a DET curve from development and evaluation datasets:
 where `my_det.pdf` will contain DET plots for the two experiments.
 
 .. note::
-    By default, ``det`` and ``roc`` plot development and evaluation curves on
-    different plots. You can force gather everything in the same plot using
-    ``--no-split`` option.
+
+   By default, ``det`` and ``roc`` plot development and evaluation curves on
+   different plots. You can force gather everything in the same plot using
+   ``--no-split`` option.
 
 .. note::
-    The ``--figsize`` and ``--style`` options are two powerful options that can
-    dramatically change the appearance of your figures. Try them! (e.g.
-    ``--figsize 12,10 --style grayscale``)
+
+   The ``--figsize`` and ``--style`` options are two powerful options that can
+   dramatically change the appearance of your figures. Try them! (e.g.
+   ``--figsize 12,10 --style grayscale``)
+
 
 Evaluate
-========
+^^^^^^^^
 
 A convenient command ``evaluate`` is provided to generate multiple metrics and
 plots for a list of experiments. It generates two ``metrics`` outputs with ERR
-and min-HTER criteria along with ``roc``, ``det``, ``epc``, ``hist`` plots for each
-experiment. For example:
+and min-HTER criteria along with ``roc``, ``det``, ``epc``, ``hist`` plots for
+each experiment. For example:
 
 .. code-block:: sh
 
     $bob measure evaluate -e -v -l 'my_metrics.txt' -o 'my_plots.pdf' {sys1,sys2}/{dev,eval}
 
 will output metrics and plots for the two experiments (dev and eval pairs) in
-`my_metrics.txt` and `my_plots.pdf`, respectively.
+``my_metrics.txt`` and ``my_plots.pdf``, respectively.
 
 .. include:: links.rst
-
-.. Place youre references here:
-
-.. _`The Expected Performance Curve`: http://publications.idiap.ch/downloads/reports/2005/bengio_2005_icml.pdf
-.. _`The DET curve in assessment of detection task performance`: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&rep=rep1&type=pdf
-.. _`The Clopper-Pearson interval`: https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Clopper-Pearson_interval

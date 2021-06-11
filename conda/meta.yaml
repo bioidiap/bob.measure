@@ -39,7 +39,6 @@ requirements:
     - {{ pin_compatible('h5py') }}
     - {{ pin_compatible('matplotlib') }}
     - {{ pin_compatible('tabulate') }}
-    - {{ pin_compatible('numba') }}
 
 test:
   imports:

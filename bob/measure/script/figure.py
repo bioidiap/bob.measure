@@ -11,10 +11,13 @@ import matplotlib.pyplot as mpl
 from matplotlib import gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 from tabulate import tabulate
-from .. import far_threshold, plot, utils, ppndf
 import logging
 
-LOGGER = logging.getLogger("bob.measure")
+from ..brute_force import far_threshold
+from ..curves import ppndf
+from .. import plot, utils
+
+logger = logging.getLogger("bob.measure")
 
 
 def check_list_value(values, desired_number, name, name2="systems"):
@@ -65,7 +68,8 @@ class MeasureBase(object):
         self._min_arg = ctx.meta.get("min_arg", 1)
         if len(scores) < 1 or len(scores) % self._min_arg != 0:
             raise click.BadParameter(
-                "Number of argument must be a non-zero multiple of %d" % self._min_arg
+                "Number of argument must be a non-zero multiple of %d"
+                % self._min_arg
             )
         self.n_systems = int(len(scores) / self._min_arg)
         if self._legends is not None and len(self._legends) < self.n_systems:
@@ -100,16 +104,16 @@ class MeasureBase(object):
                 #    index idx * self._min_arg
                 self._scores[idx * self._min_arg : (idx + 1) * self._min_arg]
             )
-            LOGGER.info("-----Input files for system %d-----", idx + 1)
+            logger.info("-----Input files for system %d-----", idx + 1)
             for i, name in enumerate(input_names):
                 if not self._eval:
-                    LOGGER.info("Dev. score %d: %s", i + 1, name)
+                    logger.info("Dev. score %d: %s", i + 1, name)
                 else:
                     if i % 2 == 0:
-                        LOGGER.info("Dev. score %d: %s", i / 2 + 1, name)
+                        logger.info("Dev. score %d: %s", i / 2 + 1, name)
                     else:
-                        LOGGER.info("Eval. score %d: %s", i / 2 + 1, name)
-            LOGGER.info("----------------------------------")
+                        logger.info("Eval. score %d: %s", i / 2 + 1, name)
+            logger.info("----------------------------------")
 
             self.compute(idx, input_scores, input_names)
         # setup final configuration, plotting properties, ...
@@ -225,7 +229,8 @@ class Metrics(MeasureBase):
         return utils.get_thres(criterion, dev_neg, dev_pos, far)
 
     def _numbers(self, neg, pos, threshold, fta):
-        from .. import farfrr, precision_recall, f_score, roc_auc_score
+        from ..binary import farfrr, f1_score, precision_recall
+        from ..curves import roc_auc_score
 
         # fpr and fnr
         fmr, fnmr = farfrr(neg, pos, threshold)
@@ -241,8 +246,7 @@ class Metrics(MeasureBase):
         # precision and recall
         precision, recall = precision_recall(neg, pos, threshold)
 
-        # f_score
-        f1_score = f_score(neg, pos, threshold, 1)
+        f1_score = f1_score(neg, pos, threshold)
 
         # AUC ROC
         auc = roc_auc_score(neg, pos)
@@ -302,7 +306,7 @@ class Metrics(MeasureBase):
         )
 
     def _get_all_metrics(self, idx, input_scores, input_names):
-        """ Compute all metrics for dev and eval scores"""
+        """Compute all metrics for dev and eval scores"""
         neg_list, pos_list, fta_list = utils.get_fta_list(input_scores)
         dev_neg, dev_pos, dev_fta = neg_list[0], pos_list[0], fta_list[0]
         dev_file = input_names[0]
@@ -322,7 +326,12 @@ class Metrics(MeasureBase):
                 far_str = str(self._far)
             click.echo(
                 "[Min. criterion: %s %s] Threshold on Development set `%s`: %e"
-                % (self._criterion.upper(), far_str, title or dev_file, threshold),
+                % (
+                    self._criterion.upper(),
+                    far_str,
+                    title or dev_file,
+                    threshold,
+                ),
                 file=self.log_file,
             )
         else:
@@ -333,13 +342,17 @@ class Metrics(MeasureBase):
             )
 
         res = []
-        res.append(self._strings(self._numbers(dev_neg, dev_pos, threshold, dev_fta)))
+        res.append(
+            self._strings(self._numbers(dev_neg, dev_pos, threshold, dev_fta))
+        )
 
         if self._eval:
             # computes statistics for the eval set based on the threshold a
             # priori
             res.append(
-                self._strings(self._numbers(eval_neg, eval_pos, threshold, eval_fta))
+                self._strings(
+                    self._numbers(eval_neg, eval_pos, threshold, eval_fta)
+                )
             )
         else:
             res.append(None)
@@ -354,7 +367,7 @@ class Metrics(MeasureBase):
         all_metrics = self._get_all_metrics(idx, input_scores, input_names)
         fta_dev = float(all_metrics[0][0].replace("%", ""))
         if fta_dev > 0.0:
-            LOGGER.warn(
+            logger.warning(
                 "NaNs scores (%s) were found in %s amd removed",
                 all_metrics[0][0],
                 dev_file,
@@ -374,7 +387,7 @@ class Metrics(MeasureBase):
             eval_file = input_names[1]
             fta_eval = float(all_metrics[1][0].replace("%", ""))
             if fta_eval > 0.0:
-                LOGGER.warn(
+                logger.warning(
                     "NaNs scores (%s) were found in %s and removed.",
                     all_metrics[1][0],
                     eval_file,
@@ -393,7 +406,7 @@ class Metrics(MeasureBase):
         click.echo(tabulate(rows, headers, self._tablefmt), file=self.log_file)
 
     def end_process(self):
-        """ Close log file if needed"""
+        """Close log file if needed"""
         if self._log is not None:
             self.log_file.close()
 
@@ -435,17 +448,45 @@ class MultiMetrics(Metrics):
         self.rows = []
 
     def _strings(self, metrics):
-        ftam, fmrm, fnmrm, hterm, farm, frrm, _, _, _, _, _, _, _ = metrics.mean(axis=0)
-        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = metrics.std(axis=0)
+        (
+            ftam,
+            fmrm,
+            fnmrm,
+            hterm,
+            farm,
+            frrm,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = metrics.mean(axis=0)
+        ftas, fmrs, fnmrs, hters, fars, frrs, _, _, _, _, _, _, _ = metrics.std(
+            axis=0
+        )
         n_dec = ".%df" % self._decimal
-        fta_str = "%s%% (%s%%)" % (format(100 * ftam, n_dec), format(100 * ftas, n_dec))
-        fmr_str = "%s%% (%s%%)" % (format(100 * fmrm, n_dec), format(100 * fmrs, n_dec))
+        fta_str = "%s%% (%s%%)" % (
+            format(100 * ftam, n_dec),
+            format(100 * ftas, n_dec),
+        )
+        fmr_str = "%s%% (%s%%)" % (
+            format(100 * fmrm, n_dec),
+            format(100 * fmrs, n_dec),
+        )
         fnmr_str = "%s%% (%s%%)" % (
             format(100 * fnmrm, n_dec),
             format(100 * fnmrs, n_dec),
         )
-        far_str = "%s%% (%s%%)" % (format(100 * farm, n_dec), format(100 * fars, n_dec))
-        frr_str = "%s%% (%s%%)" % (format(100 * frrm, n_dec), format(100 * frrs, n_dec))
+        far_str = "%s%% (%s%%)" % (
+            format(100 * farm, n_dec),
+            format(100 * fars, n_dec),
+        )
+        frr_str = "%s%% (%s%%)" % (
+            format(100 * frrm, n_dec),
+            format(100 * frrs, n_dec),
+        )
         hter_str = "%s%% (%s%%)" % (
             format(100 * hterm, n_dec),
             format(100 * hters, n_dec),
@@ -474,7 +515,9 @@ class MultiMetrics(Metrics):
             for i in range(1, len(input_scores), step):
                 neg, pos, fta = neg_list[i], pos_list[i], fta_list[i]
                 threshold = self._thresholds[i // 2]
-                self._eval_metrics.append(self._numbers(neg, pos, threshold, fta))
+                self._eval_metrics.append(
+                    self._numbers(neg, pos, threshold, fta)
+                )
             self._eval_metrics = numpy.array(self._eval_metrics)
 
         title = self._legends[idx] if self._legends is not None else None
@@ -493,9 +536,14 @@ class MultiMetrics(Metrics):
         if self._eval:
             # computes statistics for the eval set based on the threshold a
             # priori
-            fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str = self._strings(
-                self._eval_metrics
-            )
+            (
+                fta_str,
+                fmr_str,
+                fnmr_str,
+                far_str,
+                frr_str,
+                hter_str,
+            ) = self._strings(self._eval_metrics)
 
             self.rows[-1].extend(
                 [fta_str, fmr_str, fnmr_str, far_str, frr_str, hter_str]
@@ -503,7 +551,8 @@ class MultiMetrics(Metrics):
 
     def end_process(self):
         click.echo(
-            tabulate(self.rows, self.headers, self._tablefmt), file=self.log_file
+            tabulate(self.rows, self.headers, self._tablefmt),
+            file=self.log_file,
         )
         super(MultiMetrics, self).end_process()
 
@@ -542,7 +591,9 @@ class PlotBase(MeasureBase):
         self._nb_figs = 2 if self._eval and self._split else 1
         self._colors = utils.get_colors(self.n_systems)
         self._line_linestyles = ctx.meta.get("line_styles", False)
-        self._linestyles = utils.get_linestyles(self.n_systems, self._line_linestyles)
+        self._linestyles = utils.get_linestyles(
+            self.n_systems, self._line_linestyles
+        )
         self._titles = ctx.meta.get("titles", []) * 2
         # for compatibility
         self._title = ctx.meta.get("title")
@@ -556,7 +607,7 @@ class PlotBase(MeasureBase):
         self._end_setup_plot = True
 
     def init_process(self):
-        """ Open pdf and set axis font size if provided """
+        """Open pdf and set axis font size if provided"""
         if not hasattr(matplotlib, "backends"):
             matplotlib.use("pdf")
 
@@ -579,12 +630,19 @@ class PlotBase(MeasureBase):
         if self._far_at is not None:
             for (line, line_trans) in zip(self._far_at, self._trans_far_val):
                 mpl.figure(1)
-                mpl.plot([line_trans, line_trans], [-100.0, 100.0], "--", color="black")
+                mpl.plot(
+                    [line_trans, line_trans],
+                    [-100.0, 100.0],
+                    "--",
+                    color="black",
+                )
                 if self._eval and self._split:
                     mpl.figure(2)
                     x_values = [i for i, _ in self._eval_points[line]]
                     y_values = [j for _, j in self._eval_points[line]]
-                    sort_indice = sorted(range(len(x_values)), key=x_values.__getitem__)
+                    sort_indice = sorted(
+                        range(len(x_values)), key=x_values.__getitem__
+                    )
                     x_values = [x_values[i] for i in sort_indice]
                     y_values = [y_values[i] for i in sort_indice]
                     mpl.plot(x_values, y_values, "--", color="black")
@@ -649,7 +707,7 @@ class PlotBase(MeasureBase):
 
 
 class Roc(PlotBase):
-    """ Handles the plotting of ROC"""
+    """Handles the plotting of ROC"""
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Roc, self).__init__(ctx, scores, evaluation, func_load)
@@ -678,14 +736,14 @@ class Roc(PlotBase):
 
         mpl.figure(1)
         if self._eval:
-            LOGGER.info("ROC dev. curve using %s", dev_file)
+            logger.info("ROC dev. curve using %s", dev_file)
             plot.roc(
                 dev_neg,
                 dev_pos,
                 npoints=self._points,
                 semilogx=self._semilogx,
                 tpr=self._tpr,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label("dev", idx),
@@ -695,7 +753,7 @@ class Roc(PlotBase):
                 mpl.figure(2)
 
             linestyle = "--" if not self._split else self._linestyles[idx]
-            LOGGER.info("ROC eval. curve using %s", eval_file)
+            logger.info("ROC eval. curve using %s", eval_file)
             plot.roc(
                 eval_neg,
                 eval_pos,
@@ -703,13 +761,13 @@ class Roc(PlotBase):
                 npoints=self._points,
                 semilogx=self._semilogx,
                 tpr=self._tpr,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 label=self._label("eval.", idx),
                 alpha=self._alpha,
             )
             if self._far_at is not None:
-                from .. import fprfnr
+                from ..binary import fprfnr
 
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
@@ -719,14 +777,14 @@ class Roc(PlotBase):
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
-            LOGGER.info("ROC dev. curve using %s", dev_file)
+            logger.info("ROC dev. curve using %s", dev_file)
             plot.roc(
                 dev_neg,
                 dev_pos,
                 npoints=self._points,
                 semilogx=self._semilogx,
                 tpr=self._tpr,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label("dev", idx),
@@ -735,7 +793,7 @@ class Roc(PlotBase):
 
 
 class Det(PlotBase):
-    """ Handles the plotting of DET """
+    """Handles the plotting of DET"""
 
     def __init__(self, ctx, scores, evaluation, func_load):
         super(Det, self).__init__(ctx, scores, evaluation, func_load)
@@ -769,12 +827,12 @@ class Det(PlotBase):
 
         mpl.figure(1)
         if self._eval and eval_neg is not None:
-            LOGGER.info("DET dev. curve using %s", dev_file)
+            logger.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg,
                 dev_pos,
                 self._points,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label("dev.", idx),
@@ -783,33 +841,33 @@ class Det(PlotBase):
             if self._split:
                 mpl.figure(2)
             linestyle = "--" if not self._split else self._linestyles[idx]
-            LOGGER.info("DET eval. curve using %s", eval_file)
+            logger.info("DET eval. curve using %s", eval_file)
             plot.det(
                 eval_neg,
                 eval_pos,
                 self._points,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 linestyle=linestyle,
                 label=self._label("eval.", idx),
                 alpha=self._alpha,
             )
             if self._far_at is not None:
-                from .. import farfrr
+                from ..binary import fprfnr
 
                 for line in self._far_at:
                     thres_line = far_threshold(dev_neg, dev_pos, line)
-                    eval_fmr, eval_fnmr = farfrr(eval_neg, eval_pos, thres_line)
+                    eval_fmr, eval_fnmr = fprfnr(eval_neg, eval_pos, thres_line)
                     eval_fmr, eval_fnmr = ppndf(eval_fmr), ppndf(eval_fnmr)
                     mpl.scatter(eval_fmr, eval_fnmr, c=self._colors[idx], s=30)
                     self._eval_points[line].append((eval_fmr, eval_fnmr))
         else:
-            LOGGER.info("DET dev. curve using %s", dev_file)
+            logger.info("DET dev. curve using %s", dev_file)
             plot.det(
                 dev_neg,
                 dev_pos,
                 self._points,
-                min_far=self._min_dig,
+                min_fpr=self._min_dig,
                 color=self._colors[idx],
                 linestyle=self._linestyles[idx],
                 label=self._label("dev.", idx),
@@ -821,7 +879,7 @@ class Det(PlotBase):
 
 
 class Epc(PlotBase):
-    """ Handles the plotting of EPC """
+    """Handles the plotting of EPC"""
 
     def __init__(self, ctx, scores, evaluation, func_load, hter="HTER"):
         super(Epc, self).__init__(ctx, scores, evaluation, func_load)
@@ -837,7 +895,7 @@ class Epc(PlotBase):
         self._far_at = None
 
     def compute(self, idx, input_scores, input_names):
-        """ Plot EPC using :py:func:`bob.measure.plot.epc` """
+        """Plot EPC using :py:func:`bob.measure.plot.epc`"""
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         dev_neg, dev_pos = neg_list[0], pos_list[0]
         dev_file = input_names[0]
@@ -845,7 +903,7 @@ class Epc(PlotBase):
             eval_neg, eval_pos = neg_list[1], pos_list[1]
             eval_file = input_names[1]
 
-        LOGGER.info("EPC using %s", dev_file + "_" + eval_file)
+        logger.info("EPC using %s", dev_file + "_" + eval_file)
         plot.epc(
             dev_neg,
             dev_pos,
@@ -898,7 +956,9 @@ class GridSubplot(PlotBase):
 
     def create_subplot(self, n, shared_axis=None):
         i, j = numpy.unravel_index(n, (self._nrows, self._ncols))
-        axis = mpl.gcf().add_subplot(self._gs[i : i + 1, j : j + 1], sharex=shared_axis)
+        axis = mpl.gcf().add_subplot(
+            self._gs[i : i + 1, j : j + 1], sharex=shared_axis
+        )
         return axis
 
     def finalize_one_page(self):
@@ -907,9 +967,9 @@ class GridSubplot(PlotBase):
         fig = mpl.gcf()
         axes = fig.get_axes()
 
-        LOGGER.debug("%s contains %d axes:", fig, len(axes))
+        logger.debug("%s contains %d axes:", fig, len(axes))
         for i, ax in enumerate(axes, start=1):
-            LOGGER.debug("Axes %d: %s", i, ax)
+            logger.debug("Axes %d: %s", i, ax)
 
         self._pdf_page.savefig(bbox_inches="tight")
         mpl.clf()
@@ -955,7 +1015,7 @@ class GridSubplot(PlotBase):
 
 
 class Hist(GridSubplot):
-    """ Functional base class for histograms"""
+    """Functional base class for histograms"""
 
     def __init__(self, ctx, scores, evaluation, func_load, nhist_per_system=2):
         super(Hist, self).__init__(ctx, scores, evaluation, func_load)
@@ -965,14 +1025,18 @@ class Hist(GridSubplot):
             self._nbins, nhist_per_system, "n_bins", "histograms"
         )
         self._thres = ctx.meta.get("thres")
-        self._thres = check_list_value(self._thres, self.n_systems, "thresholds")
+        self._thres = check_list_value(
+            self._thres, self.n_systems, "thresholds"
+        )
         self._criterion = ctx.meta.get("criterion")
         # no vertical (threshold) is displayed
         self._no_line = ctx.meta.get("no_line", False)
         # do not display dev histo
         self._hide_dev = ctx.meta.get("hide_dev", False)
         if self._hide_dev and not self._eval:
-            raise click.BadParameter("You can only use --hide-dev along with --eval")
+            raise click.BadParameter(
+                "You can only use --hide-dev along with --eval"
+            )
         # dev hist are displayed next to eval hist
         self._nrows *= 1 if self._hide_dev or not self._eval else 2
         self._nlegends = ctx.meta.get("legends_ncol", 3)
@@ -987,10 +1051,14 @@ class Hist(GridSubplot):
         self._titles = ctx.meta.get("titles", []) * 2
 
     def compute(self, idx, input_scores, input_names):
-        """ Draw histograms of negative and positive scores."""
-        dev_neg, dev_pos, eval_neg, eval_pos, threshold = self._get_neg_pos_thres(
-            idx, input_scores, input_names
-        )
+        """Draw histograms of negative and positive scores."""
+        (
+            dev_neg,
+            dev_pos,
+            eval_neg,
+            eval_pos,
+            threshold,
+        ) = self._get_neg_pos_thres(idx, input_scores, input_names)
 
         # keep id of the current system
         sys = idx
@@ -1028,9 +1096,17 @@ class Hist(GridSubplot):
             )
 
     def _print_subplot(
-        self, idx, sys, neg, pos, threshold, draw_line, evaluation, shared_axis=None
+        self,
+        idx,
+        sys,
+        neg,
+        pos,
+        threshold,
+        draw_line,
+        evaluation,
+        shared_axis=None,
     ):
-        """ print a subplot for the given score and subplot index"""
+        """print a subplot for the given score and subplot index"""
         n = idx % self._step_print
         col = n % self._ncols
         sub_plot_idx = n + 1
@@ -1039,7 +1115,9 @@ class Hist(GridSubplot):
         if col == 0:
             axis.set_ylabel(self._y_label)
         # systems per page
-        sys_per_page = self._step_print / (1 if self._hide_dev or not self._eval else 2)
+        sys_per_page = self._step_print / (
+            1 if self._hide_dev or not self._eval else 2
+        )
         # rest to be printed
         sys_idx = sys % sys_per_page
         rest_print = self.n_systems - int(sys / sys_per_page) * sys_per_page
@@ -1065,23 +1143,27 @@ class Hist(GridSubplot):
 
         # if it was the last subplot of the page or the last subplot
         # to display, save figure
-        if self._step_print == sub_plot_idx or (is_lower and sys == self.n_systems - 1):
+        if self._step_print == sub_plot_idx or (
+            is_lower and sys == self.n_systems - 1
+        ):
             self.finalize_one_page()
         return axis
 
     def _get_title(self, idx, dflt=None):
-        """ Get the histo title for the given idx"""
+        """Get the histo title for the given idx"""
         title = (
             self._titles[idx]
             if self._titles is not None and idx < len(self._titles)
             else dflt
         )
         title = title or self._title_base
-        title = "" if title is not None and not title.replace(" ", "") else title
+        title = (
+            "" if title is not None and not title.replace(" ", "") else title
+        )
         return title or ""
 
     def _get_neg_pos_thres(self, idx, input_scores, input_names):
-        """ Get scores and threshod for the given system at index idx"""
+        """Get scores and threshod for the given system at index idx"""
         neg_list, pos_list, _ = utils.get_fta_list(input_scores)
         length = len(neg_list)
         # lists returned by get_fta_list contains all the following items:
@@ -1110,12 +1192,16 @@ class Hist(GridSubplot):
         return dev_neg, dev_pos, eval_neg, eval_pos, threshold
 
     def _density_hist(self, scores, n, **kwargs):
-        """ Plots one density histo"""
-        n, bins, patches = mpl.hist(scores, density=True, bins=self._nbins[n], **kwargs)
+        """Plots one density histo"""
+        n, bins, patches = mpl.hist(
+            scores, density=True, bins=self._nbins[n], **kwargs
+        )
         return (n, bins, patches)
 
-    def _lines(self, threshold, label=None, neg=None, pos=None, idx=None, **kwargs):
-        """ Plots vertical line at threshold """
+    def _lines(
+        self, threshold, label=None, neg=None, pos=None, idx=None, **kwargs
+    ):
+        """Plots vertical line at threshold"""
         label = label or "Threshold"
         kwargs.setdefault("color", "C3")
         kwargs.setdefault("linestyle", "--")
@@ -1129,5 +1215,9 @@ class Hist(GridSubplot):
         Plots all the density histo required in one plot. Here negative and
         positive scores densities.
         """
-        self._density_hist(neg[0], n=0, label="Negatives", alpha=0.5, color="C3")
-        self._density_hist(pos[0], n=1, label="Positives", alpha=0.5, color="C0")
+        self._density_hist(
+            neg[0], n=0, label="Negatives", alpha=0.5, color="C3"
+        )
+        self._density_hist(
+            pos[0], n=1, label="Positives", alpha=0.5, color="C0"
+        )
