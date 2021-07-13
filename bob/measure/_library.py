@@ -10,6 +10,7 @@ import numpy
 import numpy.linalg
 from numba import jit, objmode
 import logging
+from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def _lists_to_arrays(*args, **kwargs):
 def array_jit(func):
     jit_func = jit(func, nopython=True)
 
+    @wraps(jit_func)
     def new_func(*args, **kwargs):
         args, kwargs = _lists_to_arrays(*args, **kwargs)
         return jit_func(*args, **kwargs)
