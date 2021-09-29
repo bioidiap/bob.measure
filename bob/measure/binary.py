@@ -563,7 +563,7 @@ def precision_recall(*args):
     """
     if isinstance(args[0], numbers.Integral):
         return precision(args[0], args[1]), recall(args[1], args[2])
-    elif (not len(args[0]) or not len(args[1])):
+    elif not len(args[0]) or not len(args[1]):
         raise RuntimeError("negatives or positives should not be empty")
     return precision_recall(
         false_positives(args[0], args[2]).sum(),  # fp
@@ -623,7 +623,7 @@ def fprfnr(*args):
         return false_positive_rate(args[0], args[1]), false_negative_rate(
             args[2], args[3]
         )
-    elif (not len(args[0]) or not len(args[1])):
+    elif not len(args[0]) or not len(args[1]):
         raise RuntimeError("negatives or positives should not be empty")
     return fprfnr(
         false_positives(args[0], args[2]).sum(),  # fp
