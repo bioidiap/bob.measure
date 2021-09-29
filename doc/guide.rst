@@ -139,7 +139,7 @@ calculation of the threshold:
 
   .. doctest::
 
-     >>> T = bob.measure.binary.eer_threshold(negatives, positives)
+     >>> T = bob.measure.brute_force.eer_threshold(negatives, positives)
 
 * Threshold for the minimum HTER
 
