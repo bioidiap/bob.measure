@@ -410,7 +410,7 @@ def precision(*args):
 
     .. math::
 
-       \mathrm{ppv} = \frac{tp}{tp + fp}
+       \\mathrm{ppv} = \\frac{tp}{tp + fp}
 
     Notice that, in the case ``tp+fp == 0``, this function returns 0.0,
     exceptionally.  TP and FP may be calculated from both ``negative`` and
@@ -468,7 +468,7 @@ def negative_predictive_value(*args):
 
     .. math::
 
-       \mathrm{npv} = \frac{tn}{tn + fn}
+       \\mathrm{npv} = \\frac{tn}{tn + fn}
 
     Notice that, in the case ``tn+fn == 0``, this function returns 0.0,
     exceptionally.  TP and FP may be calculated from both ``negative`` and
@@ -644,7 +644,7 @@ def f1_score(*args):
 
     .. math::
 
-       \mathrm{\text{f-score}}(w) = (1 + w^2)\frac{\mathrm{precision}\cdot{}\mathrm{recall}}{w^2\cdot{}\mathrm{precision} + \mathrm{recall}}
+       \\mathrm{\\text{f-score}}(w) = (1 + w^2)\\frac{\\mathrm{precision}\\cdot{}\\mathrm{recall}}{w^2\\cdot{}\\mathrm{precision} + \\mathrm{recall}}
 
     The weight :math:`w` needs to be non-negative real value. In case the
     weight parameter is 1 (current implementation), the F-score is called F1
@@ -697,8 +697,8 @@ def accuracy(*args):
 
     .. math::
 
-       \mathrm{Acc} &= \frac{\mathrm{tn}+\mathrm{tp}}{\mathrm{tn}+\mathrm{fp}+\mathrm{tp}+\mathrm{fn}} \\
-       \mathrm{Acc} &= \frac{\mathrm{tn}+\mathrm{tp}}{\mathrm{ttn}+\mathrm{ttp}}
+       \\mathrm{Acc} &= \\frac{\\mathrm{tn}+\\mathrm{tp}}{\\mathrm{tn}+\\mathrm{fp}+\\mathrm{tp}+\\mathrm{fn}} \\\\
+       \\mathrm{Acc} &= \\frac{\\mathrm{tn}+\\mathrm{tp}}{\\mathrm{ttn}+\\mathrm{ttp}}
 
     In the special case where ``ttn+ttp == 0``, this function returns zero for
     accuracy.
@@ -757,7 +757,7 @@ def balanced_accuracy(*args):
 
     .. math::
 
-       \mathrm{BA} = \frac{\mathrm{tnr}+\mathrm{tpr}}{2}
+       \\mathrm{BA} = \\frac{\\mathrm{tnr}+\\mathrm{tpr}}{2}
 
     This function has two signatures:
 
@@ -808,10 +808,10 @@ def half_total_error_rate(*args):
 
     .. math::
 
-       \mathrm{HTER} &= \frac{\mathrm{fpr}+\mathrm{fnr}}{2} \\
-       \mathrm{HTER} &= \frac{(1-\mathrm{tnr})+(1-\mathrm{tpr})}{2} \\
-       \mathrm{HTER} &= 1 - \frac{\mathrm{tnr}+\mathrm{tpr}}{2} \\
-       \mathrm{HTER} &= 1 - BA
+       \\mathrm{HTER} &= \frac{\\mathrm{fpr}+\\mathrm{fnr}}{2} \\\\
+       \\mathrm{HTER} &= \frac{(1-\\mathrm{tnr})+(1-\\mathrm{tpr})}{2} \\\\
+       \\mathrm{HTER} &= 1 - \frac{\\mathrm{tnr}+\\mathrm{tpr}}{2} \\\\
+       \\mathrm{HTER} &= 1 - BA
 
     * See :py:func:`balanced_accuracy`
 
@@ -857,8 +857,8 @@ def jaccard_index(*args):
 
     .. math::
 
-       \mathrm{J} = \frac{\mathrm{tp}}{\mathrm{fp}+\mathrm{tp}+\mathrm{fn}}
-       \mathrm{J} = \frac{\mathrm{tp}}{\mathrm{fp}+\mathrm{ttp}}
+       \\mathrm{J} = \frac{\\mathrm{tp}}{\\mathrm{fp}+\\mathrm{tp}+\\mathrm{fn}}
+       \\mathrm{J} = \frac{\\mathrm{tp}}{\\mathrm{fp}+\\mathrm{ttp}}
 
     In the special case where ``tn+fp+fn == 0``, this function returns zero for
     the Jaccard index.
@@ -922,7 +922,7 @@ def matthews_correlation_coefficient(*args):
 
     .. math::
 
-       \mathrm{MCC} = \frac{\mathrm{tp}\mathrm{tn} - \mathrm{fp}\mathrm{fn}}{\sqrt{(\mathrm{tp}+\mathrm{fp})(\mathrm{tp}+\mathrm{fn})(\mathrm{tn}+\mathrm{fp})(\mathrm{tn}+\mathrm{fn})}}
+       \\mathrm{MCC} = \\frac{\\mathrm{tp}\\mathrm{tn} - \\mathrm{fp}\\mathrm{fn}}{\\sqrt{(\\mathrm{tp}+\\mathrm{fp})(\\mathrm{tp}+\\mathrm{fn})(\\mathrm{tn}+\\mathrm{fp})(\\mathrm{tn}+\\mathrm{fn})}}
 
     In the special case where the denominator is ``0.0``, this function returns
     zero for the MCC.
