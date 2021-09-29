@@ -37,11 +37,11 @@ def beta(k, l, lambda_, coverage):
     closer to the extremes (0 or 1) is lower than expected (but still greater
     than 85%).
 
-    This implemetnation is based on [GOUTTE-2005]_.  It assumes :math:`k`
+    This implementation is based on [GOUTTE-2005]_.  It assumes :math:`k`
     successes and :math:`l` failures (:math:`n = k+l` total trials) are issued
     from a series of Bernoulli trials (likelihood is binomial).  The posterior
-    is derivated using the Bayes Theorem with a beta prior.  As there is no
-    reason to favour high vs.  low precision, we use a symmetric Beta prior
+    is derived using the Bayes Theorem with a beta prior.  As there is no
+    reason to favour high vs. low precision, we use a symmetric Beta prior
     (:math:`\\alpha=\\beta`):
 
     .. math::
