@@ -16,13 +16,13 @@
    Workshop on ROC Analysis in Machine Learning, 136(1), 1963–1966, 2004.
    https://publications.idiap.ch/downloads/reports/2003/rr03-85.pdf
 
-.. [MARTIN-1999] *A. Martin, G. Doddington, T. Kamm, M. Ordowski and M.
+.. .. [MARTIN-1999] *A. Martin, G. Doddington, T. Kamm, M. Ordowski and M.
    Przybocki*, **The DET curve in assessment of detection task performance**.
    Fifth European Conference on Speech Communication and Technology (pp.
    1895-1898), 1999.
    http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.117.4489
 
-.. [LI-2005] *P. J. Phillips, P. Grother, and R. Micheals*, **Evaluation
+.. .. [LI-2005] *P. J. Phillips, P. Grother, and R. Micheals*, **Evaluation
    Methods in Face Recognition**. in Handbook of Face Recognition, S. Z. Li and
    A. K. Jain, Eds. London: Springer London, 2011, pp. 551–574.
    https://doi.org/10.1007/978-0-85729-932-1_21
