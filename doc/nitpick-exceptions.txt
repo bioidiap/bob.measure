@@ -1,5 +1,3 @@
-# ignores stuff that does not exist in Python 2.7 manual
-py:class list
 # ignores stuff that does not exist but makes sense
 py:class array
 py:class array_like
