@@ -20,3 +20,5 @@ src/
 record.txt
 .coverage
 doc/api/
+.ipynb_checkpoints/
+coverage.xml
