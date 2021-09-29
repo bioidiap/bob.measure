@@ -12,4 +12,3 @@
 .. _credible interval: https://en.wikipedia.org/wiki/Credible_interval
 .. _confidence interval: https://en.wikipedia.org/wiki/Confidence_interval
 .. _beta distribution: https://en.wikipedia.org/wiki/Beta_distribution
-.. _matplotlib: https://matplotlib.org
