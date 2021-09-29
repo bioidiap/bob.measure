@@ -11,6 +11,8 @@ context of proportion)**.
 
 See a discussion in `Five Confidence Intervals for Proportions That You
 Should Know About <ci-evaluation_>`_.
+
+.. include:: ../links.rst
 """
 
 import numbers

@@ -18,9 +18,11 @@ methods.
 
 .. note::
 
-   For a disambiguation with `Confidence Interval <confidence-interval_>`_ (the
+   For a disambiguation with `Confidence Interval <confidence interval_>`_ (the
    frequentist approach), read `Credible Regions or Intervals
-   <credible-interval_>`_.
+   <credible interval_>`_.
+
+.. include:: ../links.rst
 """
 
 import numbers

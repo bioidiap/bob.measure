@@ -240,4 +240,4 @@ if os.path.exists(sphinx_requirements):
 else:
   intersphinx_mapping = link_documentation()
 
-
+# Makes all links in links.rst available by default

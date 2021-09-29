@@ -6,6 +6,8 @@
 Code in this module expresses classic performance curves for system performance
 evaluation as sets of coordinates.  Use the module :py:mod:`plot` to make
 graphical representations.
+
+.. include:: ../links.rst
 """
 
 import sys
@@ -123,7 +125,7 @@ def roc(negatives, positives, n_points, min_fpr=-8):
     Parameters
     ==========
 
-    ``negatives, positives`` : numpy.ndarray (1D, float)
+    negatives, positives : numpy.ndarray (1D, float)
 
         The negative and positive scores, for which the ROC curve should be
         calculated.
@@ -231,6 +233,7 @@ def precision_recall(negatives, positives, n_points):
 
     """
     from .binary import precision_recall
+
     # evaluates all interesting thresholds worth plotting
     return numpy.array(
         [
@@ -312,17 +315,17 @@ def ppndf(p):
     this function is the Normal deviate that corresponds to that probability.
     For example:
 
-    -------+--------
-     INPUT | OUTPUT
-    -------+--------
-     0.001 | -3.090
-     0.01  | -2.326
-     0.1   | -1.282
-     0.5   |  0.0
-     0.9   |  1.282
-     0.99  |  2.326
-     0.999 |  3.090
-    -------+--------
+    ======= ========
+     INPUT   OUTPUT
+    ======= ========
+     0.001   -3.090
+     0.01    -2.326
+     0.1     -1.282
+     0.5      0.0
+     0.9      1.282
+     0.99     2.326
+     0.999    3.090
+    ======= ========
 
 
     Parameters
@@ -550,16 +553,16 @@ def eer_threshold_from_roc(curve):
         dx = np.diff(x)
         return np.all(dx <= 0) or np.all(dx >= 0)
 
-    assert curve.shape[0] == 2  #error or success rates
-    N = curve.shape[1]  #number of points on the curve
+    assert curve.shape[0] == 2  # error or success rates
+    N = curve.shape[1]  # number of points on the curve
     assert monotonic(curve)
 
-    threshold = 0.0  #the threshold that will be returned
+    threshold = 0.0  # the threshold that will be returned
     one = numpy.ones((2,), dtype=float)
     threshold_candidate = 0.0
 
     for i in range(N - 1):
-        XY = curve[:,i:(i+2)].T
+        XY = curve[:, i : (i + 2)].T
 
         # computes the width and height of this segment
         if (XY[0] - XY[1]).abs().min() < sys.float_info.epsilon:
@@ -777,14 +780,16 @@ def estimated_ci_coverage(f, n=100, expected_coverage=0.95):
     """
 
     coverage = []
-    size = 10000  #how many experiments to do at each try
+    size = 10000  # how many experiments to do at each try
     r = numpy.arange(0.001, 1.0, step=0.01)
 
     for p in r:
         k = numpy.random.binomial(n=n, p=p, size=size)
         covered = numpy.zeros((n,), dtype=bool)
-        regions = f(k, n-k, expected_coverage)
-        covered = numpy.asarray((regions[0] < p) & (p < regions[1]), dtype=float)
+        regions = f(k, n - k, expected_coverage)
+        covered = numpy.asarray(
+            (regions[0] < p) & (p < regions[1]), dtype=float
+        )
         coverage.append(covered.mean())
 
     return numpy.vstack((r, numpy.asarray(coverage, dtype=float)))

@@ -404,7 +404,7 @@ false_rejection_rate = false_negative_rate
 
 
 def precision(*args):
-    """Calculates the precision or positive-predictive value (PPV)
+    r"""Calculates the precision or positive-predictive value (PPV)
 
     The precision or positive predictive value (PPV) is defined by:
 
@@ -462,13 +462,13 @@ positive_predictive_value = precision
 
 
 def negative_predictive_value(*args):
-    """Calculates the negative-predictive value (NPV)
+    r"""Calculates the negative-predictive value (NPV)
 
     The negative predictive value (NPV) is defined by:
 
     .. math::
 
-       \\mathrm{npv} = \\frac{tn}{tn + fn}
+       \mathrm{npv} = \frac{tn}{tn + fn}
 
     Notice that, in the case ``tn+fn == 0``, this function returns 0.0,
     exceptionally.  TP and FP may be calculated from both ``negative`` and
@@ -637,14 +637,14 @@ farfrr = fprfnr
 
 
 def f1_score(*args):
-    """Computes the F-score of the accuracy of the classification
+    r"""Computes the F-score of the accuracy of the classification
 
     The F-score is a weighted mean of precision and recall measurements, see
     :py:func:`precision_recall`.  It is computed as:
 
     .. math::
 
-       \\mathrm{\\text{f-score}}(w) = (1 + w^2)\\frac{\\mathrm{precision}\\cdot{}\\mathrm{recall}}{w^2\\cdot{}\\mathrm{precision} + \\mathrm{recall}}
+       \mathrm{\text{f-score}}(w) = (1 + w^2)\frac{\mathrm{precision}\cdot{}\mathrm{recall}}{w^2\cdot{}\mathrm{precision} + \mathrm{recall}}
 
     The weight :math:`w` needs to be non-negative real value. In case the
     weight parameter is 1 (current implementation), the F-score is called F1
@@ -689,16 +689,19 @@ def f1_score(*args):
 
 
 def accuracy(*args):
-    """Computes the the accuracy of classification
+    r"""Computes the the accuracy of classification
 
     Accuracy is the proportion of correct predictions (both true positives and
     true negatives) among the total number of elements examined.  It
     corresponds arithmetically to:
 
     .. math::
+       :nowrap:
 
-       \\mathrm{Acc} &= \\frac{\\mathrm{tn}+\\mathrm{tp}}{\\mathrm{tn}+\\mathrm{fp}+\\mathrm{tp}+\\mathrm{fn}} \\\\
-       \\mathrm{Acc} &= \\frac{\\mathrm{tn}+\\mathrm{tp}}{\\mathrm{ttn}+\\mathrm{ttp}}
+       \begin{align*}
+           \mathrm{Acc} &= \frac{\mathrm{tn}+\mathrm{tp}}{\mathrm{tn}+\mathrm{fp}+\mathrm{tp}+\mathrm{fn}} \\
+           \mathrm{Acc} &= \frac{\mathrm{tn}+\mathrm{tp}}{\mathrm{ttn}+\mathrm{ttp}}
+       \end{align*}
 
     In the special case where ``ttn+ttp == 0``, this function returns zero for
     accuracy.
@@ -751,13 +754,13 @@ def accuracy(*args):
 
 
 def balanced_accuracy(*args):
-    """Computes the the balanced accuracy of classification
+    r"""Computes the the balanced accuracy of classification
 
     Balance accuracy corresponds arithmetically to:
 
     .. math::
 
-       \\mathrm{BA} = \\frac{\\mathrm{tnr}+\\mathrm{tpr}}{2}
+       \mathrm{BA} = \frac{\mathrm{tnr}+\mathrm{tpr}}{2}
 
     This function has two signatures:
 
@@ -802,16 +805,19 @@ def balanced_accuracy(*args):
 
 
 def half_total_error_rate(*args):
-    """Computes the the half-total error rate (HTER) of classification
+    r"""Computes the the half-total error rate (HTER) of classification
 
     The HTER corresponds arithmetically to:
 
     .. math::
+       :nowrap:
 
-       \\mathrm{HTER} &= \frac{\\mathrm{fpr}+\\mathrm{fnr}}{2} \\\\
-       \\mathrm{HTER} &= \frac{(1-\\mathrm{tnr})+(1-\\mathrm{tpr})}{2} \\\\
-       \\mathrm{HTER} &= 1 - \frac{\\mathrm{tnr}+\\mathrm{tpr}}{2} \\\\
-       \\mathrm{HTER} &= 1 - BA
+       \begin{align*}
+           \mathrm{HTER} &= \frac{\mathrm{fpr}+\mathrm{fnr}}{2} \\
+           \mathrm{HTER} &= \frac{(1-\mathrm{tnr})+(1-\mathrm{tpr})}{2} \\
+           \mathrm{HTER} &= 1 - \frac{\mathrm{tnr}+\mathrm{tpr}}{2} \\
+           \mathrm{HTER} &= 1 - BA
+       \end{align*}
 
     * See :py:func:`balanced_accuracy`
 
@@ -851,14 +857,17 @@ def half_total_error_rate(*args):
 
 
 def jaccard_index(*args):
-    """Computes the Jaccard or Similarity index of a classifier
+    r"""Computes the Jaccard or Similarity index of a classifier
 
     The Jaccard-index corresponds arithmetically:
 
     .. math::
+       :nowrap:
 
-       \\mathrm{J} = \frac{\\mathrm{tp}}{\\mathrm{fp}+\\mathrm{tp}+\\mathrm{fn}}
-       \\mathrm{J} = \frac{\\mathrm{tp}}{\\mathrm{fp}+\\mathrm{ttp}}
+       \begin{align*}
+           \mathrm{J} &= \frac{\mathrm{tp}}{\mathrm{fp}+\mathrm{tp}+\mathrm{fn}} \\
+           \mathrm{J} &= \frac{\mathrm{tp}}{\mathrm{fp}+\mathrm{ttp}}
+       \end{align*}
 
     In the special case where ``tn+fp+fn == 0``, this function returns zero for
     the Jaccard index.
@@ -916,13 +925,13 @@ similarly_index = jaccard_index
 
 
 def matthews_correlation_coefficient(*args):
-    """Computes the Matthews Correlation Coefficient (MCC) or Phi Coefficient of a classifier
+    r"""Computes the Matthews Correlation Coefficient (MCC) or Phi Coefficient of a classifier
 
     The MCC corresponds arithmetically:
 
     .. math::
 
-       \\mathrm{MCC} = \\frac{\\mathrm{tp}\\mathrm{tn} - \\mathrm{fp}\\mathrm{fn}}{\\sqrt{(\\mathrm{tp}+\\mathrm{fp})(\\mathrm{tp}+\\mathrm{fn})(\\mathrm{tn}+\\mathrm{fp})(\\mathrm{tn}+\\mathrm{fn})}}
+       \mathrm{MCC} = \frac{\mathrm{tp}\mathrm{tn} - \mathrm{fp}\mathrm{fn}}{\sqrt{(\mathrm{tp}+\mathrm{fp})(\mathrm{tp}+\mathrm{fn})(\mathrm{tn}+\mathrm{fp})(\mathrm{tn}+\mathrm{fn})}}
 
     In the special case where the denominator is ``0.0``, this function returns
     zero for the MCC.

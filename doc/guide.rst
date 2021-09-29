@@ -235,7 +235,7 @@ Plotting
 --------
 
 An image is worth 1000 words, they say. You can combine the capabilities of
-`matplotlib`_ with functions in this package to plot a number of curves.
+:py:mod:`matplotlib` with functions in this package to plot a number of curves.
 However, you must have that package installed.  In this section we describe a
 few recipes.
 
@@ -288,9 +288,9 @@ indication of the number of points the curve must contain.
 As in the :py:func:`matplotlib.pyplot.plot` command, you can pass optional
 parameters for the line as shown in the example to setup its color, shape and
 even the label.  For an overview of the keywords accepted, please refer to the
-`Matplotlib`_'s Documentation. Other plot properties such as the plot title,
+:py:mod:`matplotlib` Documentation. Other plot properties such as the plot title,
 axis labels, grids, legends should be controlled directly using the relevant
-`Matplotlib`_'s controls.
+:py:mod:`matplotlib`'s controls.
 
 
 DET
@@ -456,12 +456,12 @@ Fine-tunning
 ^^^^^^^^^^^^
 
 The methods inside :py:mod:`bob.measure.plot` are only provided as a
-`matplotlib`_ wrapper to equivalent methods in :py:mod:`bob.measure` that can
-only calculate the points without doing any plotting. You may prefer to tweak
-the plotting or even use a different plotting system such as gnuplot. Have a
-look at the implementations at :py:mod:`bob.measure.plot` to understand how to
-use the |project| methods to compute the curves and interlace that in the way
-that best suits you.
+:py:mod:`matplotlib` wrapper to equivalent methods in :py:mod:`bob.measure`
+that can only calculate the points without doing any plotting. You may prefer
+to tweak the plotting or even use a different plotting system such as gnuplot.
+Have a look at the implementations at :py:mod:`bob.measure.plot` to understand
+how to use the |project| methods to compute the curves and interlace that in
+the way that best suits you.
 
 
 .. _bob.measure.command_line:
@@ -588,5 +588,3 @@ each experiment. For example:
 
 will output metrics and plots for the two experiments (dev and eval pairs) in
 ``my_metrics.txt`` and ``my_plots.pdf``, respectively.
-
-.. include:: links.rst
