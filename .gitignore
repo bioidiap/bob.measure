@@ -19,3 +19,4 @@ build
 src/
 record.txt
 .coverage
+doc/api/
