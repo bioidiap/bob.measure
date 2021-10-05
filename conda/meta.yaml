@@ -12,14 +12,15 @@ build:
   script:
     - cd {{ project_dir }}
     {% if environ.get('BUILD_EGG') %}
-    - python setup.py sdist --formats=zip
+    - "{{ PYTHON }} setup.py sdist --formats=zip"
     {% endif %}
-    - python setup.py install --single-version-externally-managed --record record.txt
+    - "{{ PYTHON }} -m pip install . -vv"
 
 requirements:
   host:
     - python {{ python }}
     - setuptools {{ setuptools }}
+    - pip {{ pip }}
     - bob.extension
     - bob.math >2
     - numpy {{ numpy }}
@@ -50,11 +51,11 @@ test:
     - conda inspect linkages -p $PREFIX {{ name }}  # [not win]
     - conda inspect objects -p $PREFIX {{ name }}  # [osx]
   requires:
-    - pytest
-    - pytest-cov
-    - coverage
-    - sphinx
-    - sphinx_rtd_theme
+    - pytest {{ pytest }}
+    - pytest-cov {{ pytest_cov }}
+    - coverage {{ coverage }}
+    - sphinx {{ sphinx }}
+    - sphinx_rtd_theme {{ sphinx_rtd_theme }}
 
 about:
   home: https://www.idiap.ch/software/bob/
