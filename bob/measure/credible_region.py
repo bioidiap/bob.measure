@@ -18,11 +18,9 @@ methods.
 
 .. note::
 
-   For a disambiguation with `Confidence Interval <confidence interval_>`_ (the
+   For a disambiguation with `Confidence Interval <confidence-interval_>`_ (the
    frequentist approach), read `Credible Regions or Intervals
-   <credible interval_>`_.
-
-.. include:: ../links.rst
+   <credible-interval_>`_.
 """
 
 import numbers
@@ -42,8 +40,8 @@ def beta(k, l, lambda_, coverage):
     This implementation is based on [GOUTTE-2005]_.  It assumes :math:`k`
     successes and :math:`l` failures (:math:`n = k+l` total trials) are issued
     from a series of Bernoulli trials (likelihood is binomial).  The posterior
-    is derived using the Bayes Theorem with a beta prior.  As there is no
-    reason to favour high vs. low precision, we use a symmetric Beta prior
+    is derivated using the Bayes Theorem with a beta prior.  As there is no
+    reason to favour high vs.  low precision, we use a symmetric Beta prior
     (:math:`\\alpha=\\beta`):
 
     .. math::
@@ -173,7 +171,76 @@ def beta(k, l, lambda_, coverage):
     else:
         return E, mode, lower, upper
 
+def randomgamma(nbsamples, shape, scale):
+    gammageneration = numpy.empty(nbsamples)
+    for i in range(nbsamples):
+        gammageneration[i] = random.gammavariate(shape, scale)
+    return gammageneration
 
+def f1score(tp, fp, tn, fn, lambda_, coverage):
+    """
+    Returns the mean, mode, upper and lower bounds of the credible
+    region of the F1 score.
+
+    This implementation is based on [GOUTTE-2005]_.
+    
+
+    Parameters
+    ----------
+
+    tp : int
+        True positive count, AKA "hit"
+
+    fp : int
+        False positive count, AKA "false alarm", or "Type I error"
+
+    tn : int
+        True negative count, AKA "correct rejection"
+
+    fn : int
+        False Negative count, AKA "miss", or "Type II error"
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    coverage : float
+        A floating-point number between 0 and 1.0 indicating the coverage
+        you're expecting.  A value of 0.95 will ensure 95% of the area under
+        the probability density of the posterior is covered by the returned
+        equal-tailed interval.
+
+
+    Returns
+    -------
+    
+    f1_score : (float, float, float, float)
+        F1, mean, mode and credible intervals (95% CI). See `F1-score
+        <https://en.wikipedia.org/wiki/F1_score>`_.  It corresponds
+        arithmetically to ``2*P*R/(P+R)`` or ``2*tp/(2*tp+fp+fn)``.  The F1 or
+        Dice score depends on a TP-only numerator, similarly to the Jaccard
+        index.  For regions where there are no annotations, the F1-score will
+        always be zero, irrespective of the model output.  Accuracy may be a
+        better proxy if one needs to consider the true abscence of annotations
+        in a region as part of the measure.
+
+    """
+
+    nbsample = 100000
+    U = randomgamma(nbsample, shape=tp+lambda_, scale=2)
+    V = randomgamma(nbsample, fp+fn+2*lambda_, scale=1)
+    F1scores = U/(U+V)
+    F1scores = numpy.around(F1scores, 3)
+    coverageLeftHalf = (1-coverage)/2
+    sortedScores = numpy.sort(F1scores)
+    lowerIndex = int(round(nbsample * coverageLeftHalf))
+    upperIndex = int(round(nbsample * (1 - coverageLeftHalf)))
+    lower = sortedScores[lowerIndex - 1]
+    upper = sortedScores[upperIndex - 1]
+    return numpy.mean(F1scores), scipy.stats.mode(F1scores)[0][0], lower, upper
+
+    
 def measures(tp, fp, tn, fn, lambda_, coverage):
     """Calculates mean and mode from true/false positive and negative counts
     with credible regions
@@ -268,5 +335,69 @@ def measures(tp, fp, tn, fn, lambda_, coverage):
             beta(tn, fp, lambda_, coverage),  #specificity
             beta(tp+tn, fp+fn, lambda_, coverage),  #accuracy
             beta(tp, fp+fn, lambda_, coverage),  #jaccard index
-            beta(2*tp, fp+fn, lambda_, coverage),  #f1-score
+            f1score(tp, fp, tn, fn, lambda_, coverage),  #f1-score
             )
+
+def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
+    """Compare the credible regions of 2 systems 
+
+
+    Parameters
+    ----------
+
+    tp1/2 : int
+        True positive count for 1st/2nd system, AKA "hit"
+
+    fp1/2 : int
+        False positive count for 1st/2nd system, AKA "false alarm", or "Type I error"
+
+    tn1/2 : int
+        True negative count for 1st/2nd system, AKA "correct rejection"
+
+    fn1/2 : int
+        False Negative count for 1st/2nd system, AKA "miss", or "Type II error"
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+
+    Returns
+    -------
+    
+    result : string
+        A string describing the statistical comparison between the two systems for 
+        the different performance measures
+
+    """
+
+    coverage = 0.95
+    system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
+    system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
+    measure = ['precision', 'recall', 'specificity', 'accuracy', 'Jaccard index', 'F1 score']
+    result = ""
+    for i in range(len(measure)):
+        result += "For the %s we can say that : \n " % (measure[i])
+        if system1[i][2] > system2[i][3]:
+            # lower bound from system 1 is greater than the upper bound from system 2 
+            result += "System 1 is better than system 2 with convincing evidence \n"
+        elif  system2[i][2] > system1[i][3]:
+            # lower bound from system 2 is greater than the upper bound from system 1 
+            result += "System 2 is better than system 1 with convincing evidence \n"
+        else :
+            # the confidence intervals overlap so we compute the 85% confidence intervals to compare them
+            # (cf. https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm and
+            # https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means)
+            coverage = 0.85
+            system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
+            system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
+            if system1[i][2] > system2[i][3]:
+                # lower bound from system 1 is greater than the upper bound from system 2 
+                result += "System 1 is better than system 2 with \"significance\" at the 5% level. \n"
+            elif  system2[i][2] > system1[i][3]:
+                # lower bound from system 2 is greater than the upper bound from system 1 
+                result += "System 2 is better than system 1 with \"significance\" at the 5% level. \n"
+            else : 
+                result += "There is no statistical difference between the 2 CIs \n"
+    return result
