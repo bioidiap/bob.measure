@@ -26,6 +26,7 @@ methods.
 import numbers
 import numpy
 import scipy.special
+import random
 
 
 def beta(k, l, lambda_, coverage):
@@ -177,7 +178,55 @@ def randomgamma(nbsamples, shape, scale):
         gammageneration[i] = random.gammavariate(shape, scale)
     return gammageneration
 
-def f1score(tp, fp, tn, fn, lambda_, coverage):
+def comparef1score(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_, nbsamples):
+    """
+    Returns the probability that the F1-score from 1 system is bigger than the F1-score of a second system
+
+    This implementation is based on [GOUTTE-2005]_.
+    
+
+    Parameters
+    ----------
+
+    tp1/2 : int
+        True positive count, AKA "hit"
+
+    fp1/2 : int
+        False positive count, AKA "false alarm", or "Type I error"
+
+    tn1/2 : int
+        True negative count, AKA "correct rejection"
+
+    fn1/2 : int
+        False Negative count, AKA "miss", or "Type II error"
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    nbsample : int
+        number of generated gamma distribution values
+
+
+    Returns
+    -------
+    
+    f1_score : float
+        A number between 0.0 and 1.0 that describes the probability that the first system is bigger than the second
+
+    """
+
+    U1 = randomgamma(nbsamples, shape=tp1+lambda_, scale=2)
+    V1 = randomgamma(nbsamples, fp1+fn1+2*lambda_, scale=1)
+    F1scores1 = U1/(U1+V1)
+    U2 = randomgamma(nbsamples, tp2+lambda_, scale=2)
+    V2 = randomgamma(nbsamples, tp2+fn2+2*lambda_, scale=1)
+    F1scores2 = U2/(U2+V2)
+    return numpy.count_nonzero(F1scores1 > F1scores2) / nbsamples
+
+
+def f1score(tp, fp, tn, fn, lambda_, coverage, nbsample):
     """
     Returns the mean, mode, upper and lower bounds of the credible
     region of the F1 score.
@@ -211,6 +260,9 @@ def f1score(tp, fp, tn, fn, lambda_, coverage):
         the probability density of the posterior is covered by the returned
         equal-tailed interval.
 
+    nbsample : int
+        number of generated gamma distribution values
+
 
     Returns
     -------
@@ -227,7 +279,6 @@ def f1score(tp, fp, tn, fn, lambda_, coverage):
 
     """
 
-    nbsample = 100000
     U = randomgamma(nbsample, shape=tp+lambda_, scale=2)
     V = randomgamma(nbsample, fp+fn+2*lambda_, scale=1)
     F1scores = U/(U+V)
@@ -335,69 +386,6 @@ def measures(tp, fp, tn, fn, lambda_, coverage):
             beta(tn, fp, lambda_, coverage),  #specificity
             beta(tp+tn, fp+fn, lambda_, coverage),  #accuracy
             beta(tp, fp+fn, lambda_, coverage),  #jaccard index
-            f1score(tp, fp, tn, fn, lambda_, coverage),  #f1-score
+            f1score(tp, fp, tn, fn, lambda_, coverage, 100000),  #f1-score
             )
 
-def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
-    """Compare the credible regions of 2 systems 
-
-
-    Parameters
-    ----------
-
-    tp1/2 : int
-        True positive count for 1st/2nd system, AKA "hit"
-
-    fp1/2 : int
-        False positive count for 1st/2nd system, AKA "false alarm", or "Type I error"
-
-    tn1/2 : int
-        True negative count for 1st/2nd system, AKA "correct rejection"
-
-    fn1/2 : int
-        False Negative count for 1st/2nd system, AKA "miss", or "Type II error"
-
-    lambda_ : float
-        The parameterisation of the Beta prior to consider. Use
-        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
-        Jeffrey's prior.
-
-
-    Returns
-    -------
-    
-    result : string
-        A string describing the statistical comparison between the two systems for 
-        the different performance measures
-
-    """
-
-    coverage = 0.95
-    system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
-    system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
-    measure = ['precision', 'recall', 'specificity', 'accuracy', 'Jaccard index', 'F1 score']
-    result = ""
-    for i in range(len(measure)):
-        result += "For the %s we can say that : \n " % (measure[i])
-        if system1[i][2] > system2[i][3]:
-            # lower bound from system 1 is greater than the upper bound from system 2 
-            result += "System 1 is better than system 2 with convincing evidence \n"
-        elif  system2[i][2] > system1[i][3]:
-            # lower bound from system 2 is greater than the upper bound from system 1 
-            result += "System 2 is better than system 1 with convincing evidence \n"
-        else :
-            # the confidence intervals overlap so we compute the 85% confidence intervals to compare them
-            # (cf. https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm and
-            # https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means)
-            coverage = 0.85
-            system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
-            system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
-            if system1[i][2] > system2[i][3]:
-                # lower bound from system 1 is greater than the upper bound from system 2 
-                result += "System 1 is better than system 2 with \"significance\" at the 5% level. \n"
-            elif  system2[i][2] > system1[i][3]:
-                # lower bound from system 2 is greater than the upper bound from system 1 
-                result += "System 2 is better than system 1 with \"significance\" at the 5% level. \n"
-            else : 
-                result += "There is no statistical difference between the 2 CIs \n"
-    return result
