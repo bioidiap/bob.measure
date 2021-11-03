@@ -18,7 +18,7 @@ Should Know About <ci-evaluation_>`_.
 import numbers
 import numpy
 import scipy.stats
-from credible_region import measures
+from .credible_region import measures
 
 
 def clopper_pearson(k, l, coverage=0.95):
@@ -192,10 +192,10 @@ def wilson(k, l, coverage=0.95):
 
 def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
     """
-    Compare the credible regions of 2 systems for different performance measures 
+    Compare the credible regions of 2 systems for different performance measures
     'precision', 'recall', 'specificity', 'accuracy', 'Jaccard index' and 'F1 score'.
-    The method used to compare them is described in this two articles 
-    https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm and 
+    The method used to compare them is described in this two articles
+    https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm and
     https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means
 
     Parameters
@@ -221,14 +221,14 @@ def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
 
     Returns
     -------
-    
-    dictionary : a dictionary indicating which confidence interval is better for each measure. 
+
+    dictionary : a dictionary indicating which confidence interval is better for each measure.
     It returns a tuple that indicates the direction ">", "<", and the CI (0.95, 0.85).
     retval["F1-score"] = (">", 0.85) means that system 1 is better than system 2 with a 5% uncertainty considering a 0.85 CI.
     retval["precision"] = ("=", None) means that system 1 and system 2 are comparable according to that metric.
 
     """
-    
+
     coverage = 0.95
     system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
     system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
@@ -236,10 +236,10 @@ def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
     dictionary = {}
     for i in range(len(measure)):
         if system1[i][2] > system2[i][3]:
-            # lower bound from system 1 is greater than the upper bound from system 2 
+            # lower bound from system 1 is greater than the upper bound from system 2
             dictionary[measure[i]] = ('>', 0.95)
         elif  system2[i][2] > system1[i][3]:
-            # lower bound from system 2 is greater than the upper bound from system 1 
+            # lower bound from system 2 is greater than the upper bound from system 1
             dictionary[measure[i]] = ('<', 0.95)
         else :
             # the confidence intervals overlap so we compute the 85% confidence intervals to compare them
@@ -247,12 +247,12 @@ def compare(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_):
             system1 = measures(tp1, fp1, tn1, fn1, lambda_, coverage)
             system2 = measures(tp2, fp2, tn2, fn2, lambda_, coverage)
             if system1[i][2] > system2[i][3]:
-                # lower bound from system 1 is greater than the upper bound from system 2 
+                # lower bound from system 1 is greater than the upper bound from system 2
                 dictionary[measure[i]] = ('>', 0.85)
             elif  system2[i][2] > system1[i][3]:
-                # lower bound from system 2 is greater than the upper bound from system 1 
+                # lower bound from system 2 is greater than the upper bound from system 1
                 dictionary[measure[i]] = ('<', 0.85)
-            else : 
+            else :
                 dictionary[measure[i]] = ('=', None)
     return dictionary
 
@@ -271,10 +271,10 @@ def compareToString(dictionary) :
 
     Returns
     -------
-    
-    result : a string explaining which confidence interval is better for each measure. 
+
+    result : a string explaining which confidence interval is better for each measure.
     It translates the tuple given from the compare function.
-    dictionary["F1-score"] = (">", 0.85) means that system 1 is better than system 2 with \"significance\" at the 5% level for 
+    dictionary["F1-score"] = (">", 0.85) means that system 1 is better than system 2 with \"significance\" at the 5% level for
     the F1-score
     dictionary["accuracy"] = ("<", 0.95) means that System 2 is better than system 1 with convincing evidence for the accuracy
 
@@ -283,15 +283,15 @@ def compareToString(dictionary) :
     result = ""
     for key in dictionary:
         result += "For the %s we can say that : \n " % (key)
-        if dictionary[key][0] == '>' : 
+        if dictionary[key][0] == '>' :
             if dictionary[key][1] == 0.95 :
                 result += "System 1 is better than system 2 with convincing evidence \n"
-            else : 
+            else :
                 result += "System 1 is better than system 2 with \"significance\" at the 5% level. \n"
         elif dictionary[key][0] == '<' :
             if dictionary[key][1] == 0.95 :
                 result += "System 2 is better than system 1 with convincing evidence \n"
-            else : 
+            else :
                 result += "System 2 is better than system 1 with \"significance\" at the 5% level. \n"
         else :
             result += "There is no statistical difference between the 2 CIs \n"
