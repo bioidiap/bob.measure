@@ -13,12 +13,12 @@
 Credible Interval (or Region)
 -----------------------------
 
-A `credible interval`_ or region (for multi-dimensional cases) for parameter
-:math:`x` consists of a lower estimate :math:`L`, and an upper estimate
-:math:`U`, such that the probability of the true value being within the
-interval estimate is equal to :math:`\alpha`.  For example, a 95% credible
-interval (i.e.  :math:`\alpha = 0.95`) for a parameter :math:`x` is given by
-:math:`[L, U]` such that
+A `Credible Interval <credible-interval_>`_ or region (for multi-dimensional
+cases) for parameter :math:`x` consists of a lower estimate :math:`L`, and an
+upper estimate :math:`U`, such that the probability of the true value being
+within the interval estimate is equal to :math:`\alpha`.  For example, a 95%
+credible interval (i.e.  :math:`\alpha = 0.95`) for a parameter :math:`x` is
+given by :math:`[L, U]` such that
 
 .. math::
    P(k \in [L,U]) = 95%

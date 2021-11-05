@@ -21,6 +21,8 @@ methods.
    For a disambiguation with `Confidence Interval <confidence-interval_>`_ (the
    frequentist approach), read `Credible Regions or Intervals
    <credible-interval_>`_.
+
+.. include:: ../links.rst
 """
 
 import numbers
@@ -183,7 +185,7 @@ def comparef1score(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_, nbsamples):
     Returns the probability that the F1-score from 1 system is bigger than the F1-score of a second system
 
     This implementation is based on [GOUTTE-2005]_.
-    
+
 
     Parameters
     ----------
@@ -211,7 +213,7 @@ def comparef1score(tp1, fp1, tn1, fn1, tp2, fp2, tn2, fn2, lambda_, nbsamples):
 
     Returns
     -------
-    
+
     f1_score : float
         A number between 0.0 and 1.0 that describes the probability that the first system is bigger than the second
 
@@ -232,7 +234,7 @@ def f1score(tp, fp, tn, fn, lambda_, coverage, nbsample):
     region of the F1 score.
 
     This implementation is based on [GOUTTE-2005]_.
-    
+
 
     Parameters
     ----------
@@ -266,7 +268,7 @@ def f1score(tp, fp, tn, fn, lambda_, coverage, nbsample):
 
     Returns
     -------
-    
+
     f1_score : (float, float, float, float)
         F1, mean, mode and credible intervals (95% CI). See `F1-score
         <https://en.wikipedia.org/wiki/F1_score>`_.  It corresponds
@@ -291,7 +293,7 @@ def f1score(tp, fp, tn, fn, lambda_, coverage, nbsample):
     upper = sortedScores[upperIndex - 1]
     return numpy.mean(F1scores), scipy.stats.mode(F1scores)[0][0], lower, upper
 
-    
+
 def measures(tp, fp, tn, fn, lambda_, coverage):
     """Calculates mean and mode from true/false positive and negative counts
     with credible regions
