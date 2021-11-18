@@ -22,3 +22,4 @@ record.txt
 doc/api/
 .ipynb_checkpoints/
 coverage.xml
+.DS_Store

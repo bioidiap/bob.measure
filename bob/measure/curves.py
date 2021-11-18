@@ -153,8 +153,414 @@ def roc(negatives, positives, n_points, min_fpr=-8):
     """
     from .binary import fprfnr
 
-    t = _meaningful_thresholds(negatives, positives, n_points, min_fpr, False)
+    t = _meaningful_thresholds(
+        negatives, positives, n_points, min_fpr, is_sorted=False
+    )
     return numpy.array([fprfnr(negatives, positives, k) for k in t]).T
+
+
+def roc_ci(
+    negatives,
+    positives,
+    n_points,
+    min_fpr=-8,
+    axes=("tpr", "tnr"),
+    technique="bayesian|flat",
+    coverage=0.95,
+):
+    """Calculates points and error bars of a ROC
+
+    Calculates the ROC curve (true-positive rate against true-negative rate)
+    given a set of negative and positive scores, a desired number of points,
+    the technique to calculate confidence/credible intervals and the expected
+    coverage.
+
+    .. warning::
+
+       This method differs from :py:func:`bob.measure.curves.roc` as by
+       default, it returns TPR and TNR instead of FPR and FNR.
+
+
+    Parameters
+    ==========
+
+    negatives, positives : numpy.ndarray (1D, float)
+
+        The negative and positive scores, for which the ROC curve should be
+        calculated.
+
+    n_points : int
+
+        The number of points, in which the ROC curve are calculated, which are
+        distributed uniformly in the range ``[min(negatives, positives),
+        max(negatives, positives)]``
+
+    min_fpr : :py:class:`int`, Optional
+
+        Minimum FAR in terms of :math:`10^(\text{min_fpr}`. This value is also
+        used for ``min_fnr``. Values should be negative.
+
+    axes : :py:class:`tuple`, Optional
+
+        Which axes to calculate the curve for.  Variables can be chosen from
+        ``tpr``, ``tnr``, ``fnr``, and ``fpr``.  Note not all combinations make
+        sense.  You should not try to plot, for example, ``tpr`` against
+        ``fnr`` as these rates are complementary to 1.0.
+
+    technique : :py:class:`str`, Optional
+
+        The technique to be used for calculating the confidence/credible
+        regions leading to the error bars for each TPR/TNR point.  Available
+        implementations are:
+
+        * `bayesian|flat`: uses :py:func:`bob.measure.credible_region.beta`
+          with a flat prior (:math:`\lambda=1`)
+        * `bayesian|jeffreys`: uses :py:func:`bob.measure.credible_region.beta`
+          with Jeffrey's prior (:math:`\lambda=0.5`)
+        * `clopper_pearson`: uses
+          :py:func:`bob.measure.confidence_interval.clopper_pearson`
+        * `agresti_coull`: uses
+          :py:func:`bob.measure.confidence_interval.agresti_coull`
+        * `wilson`: uses
+          :py:func:`bob.measure.confidence_interval.wilson`
+
+    coverage : :py:class:`float`, Optional
+        A floating-point number between 0 and 1.0 indicating the
+        coverage you're expecting.  A value of 0.95 will ensure 95%
+        of the area under the probability density of the posterior
+        is covered by the returned equal-tailed interval.
+
+
+    Returns
+    =======
+
+    curve : numpy.ndarray (2D, float)
+
+        A two-dimensional array of floats that express the selected rates for
+        each axis, upper and lower bounds.  The array contains the points along
+        the second dimension, and the TPR, TNR, TPR-lower, TPR-upper, TNR-lower
+        and TPR-upper on the first dimension.
+
+    """
+
+    from .binary import (
+        true_positives,
+        true_negatives,
+        false_negatives,
+        false_positives,
+    )
+
+    # auto-detects if this is a curve starting at [0,0] and finishing at [1,1]
+    # or the reverse - this requires special treatment when considering upper
+    # and lower bounds
+    assert len(axes) == 2, "`axes' should have 2 entries"
+
+    assert axes[0] in ("tpr", "tnr", "fpr", "fnr")
+    assert axes[1] in ("tpr", "tnr", "fpr", "fnr")
+
+    def _tpr(_, pos, thres):
+        tp = true_positives(pos, thres).sum()
+        fn = len(pos) - tp
+        return tp, fn  # k,l
+
+    def _fnr(_, pos, thres):
+        fn = false_negatives(pos, thres).sum()
+        tp = len(pos) - fn
+        return fn, tp  # k,l
+
+    def _tnr(neg, _, thres):
+        tn = true_negatives(neg, thres).sum()
+        fp = len(neg) - tn
+        return tn, fp  # k,l
+
+    def _fpr(neg, _, thres):
+        fp = false_positives(neg, thres).sum()
+        tn = len(neg) - fp
+        return fp, tn  # k,l
+
+    if axes[0] == "tpr":
+        func1 = _tpr
+    elif axes[0] == "tnr":
+        func1 = _tnr
+    elif axes[0] == "fnr":
+        func1 = _fnr
+    elif axes[0] == "fpr":
+        func1 = _fpr
+    else:
+        raise RuntimeError(
+            f"type for axes[0] `{axes[0]}' is unknown - read function documentation for valid values"
+        )
+
+    if axes[1] == "tpr":
+        func2 = _tpr
+    elif axes[1] == "tnr":
+        func2 = _tnr
+    elif axes[1] == "fnr":
+        func2 = _fnr
+    elif axes[1] == "fpr":
+        func2 = _fpr
+    else:
+        raise RuntimeError(
+            f"type for axes[1] `{axes[1]}' is unknown - read function documentation for valid values"
+        )
+
+    def _bayesian(neg, pos, thres, lambda_):
+        from .credible_region import beta
+
+        k1, l1 = func1(neg, pos, thres)
+        k2, l2 = func2(neg, pos, thres)
+
+        _, r1, r1_low, r1_high = beta(k1, l1, lambda_, coverage)
+        _, r2, r2_low, r2_high = beta(k2, l2, lambda_, coverage)
+
+        return r1, r2, r1_low, r1_high, r2_low, r2_high
+
+    def _bayesian_flat(neg, pos, thres):
+        return _bayesian(neg, pos, thres, 1.0)
+
+    def _bayesian_jeffreys(neg, pos, thres):
+        return _bayesian(neg, pos, thres, 0.5)
+
+    def _freq(neg, pos, thres, f):
+
+        k1, l1 = func1(neg, pos, thres)
+        k2, l2 = func2(neg, pos, thres)
+
+        r1 = k1 / (k1 + l1)
+        r1_low, r1_high = f(k1, l1, coverage)
+
+        r2 = k2 / (k2 + l2)
+        r2_low, r2_high = f(k2, l2, coverage)
+
+        return r1, r2, r1_low, r1_high, r2_low, r2_high
+
+    def _clopper_pearson(neg, pos, thres):
+        from .confidence_interval import clopper_pearson
+
+        return _freq(neg, pos, thres, clopper_pearson)
+
+    def _agresti_coull(neg, pos, thres):
+        from .confidence_interval import agresti_coull
+
+        return _freq(neg, pos, thres, agresti_coull)
+
+    def _wilson(neg, pos, thres):
+        from .confidence_interval import wilson
+
+        return _freq(neg, pos, thres, wilson)
+
+    if technique == "bayesian|flat":
+        method = _bayesian_flat
+    elif technique == "bayesian|jeffreys":
+        method = _bayesian_jeffreys
+    elif technique == "clopper_pearson":
+        method = _clopper_pearson
+    elif technique == "agresti_coull":
+        method = _agresti_coull
+    elif technique == "wilson":
+        method = _wilson
+    else:
+        raise RuntimeError(
+            f"technique `{technique}' is unknown - read function documentation for valid values"
+        )
+
+    t = _meaningful_thresholds(negatives, positives, n_points, min_fpr, False)
+    retval = numpy.array([method(negatives, positives, k) for k in t]).T
+
+    # ensure we have no lower that is higher than the modes and vice-versa
+    retval[2] = numpy.min((retval[0], retval[2]), axis=0)
+    retval[3] = numpy.max((retval[0], retval[3]), axis=0)
+    retval[4] = numpy.min((retval[1], retval[4]), axis=0)
+    retval[5] = numpy.max((retval[1], retval[5]), axis=0)
+
+    return retval
+
+
+def curve_ci(curve, mixed_rates=False):
+    """Calculates lower and upper confidence intervals of a curve
+
+    This function calculates the hulls for 2 curves that are formed from points
+    defining the lower and upper bounds of the curve's credible/confidence
+    intervals for each measured threshold.
+
+    It returns the curve (no changes), as well as the lower and upper bounds of
+    the (central) curve.
+
+    To calculate the upper and lower curves, we do not consider the extremities
+    of the upper and lower bounds, as those points would translate to
+    pessimistic estimations of the true confidence interval bounds.  Instead,
+    we simply find the intersection of a straight line from the origin (0,0)
+    and the ellipse 90-degree sector inscribed in the appropriate quarter of a
+    rectangle centered at the ROC point, and its lower and upper bound CI
+    estimates on both directions (horizontal and vertical).
+
+
+    Parameters
+    ==========
+
+    curve : numpy.ndarray (2D, float)
+
+        A two-dimensional array of doubles that express the y, x, y lower
+        and upper bounds, and x lower and upper bounds, in this order.  The
+        array contains the points in the second dimension, and the y, x,
+        y-lower, y-upper, x-lower and x-upper on the first dimension.
+
+    mixed_rates : :py:class:`bool`, Optional
+
+        To calculate the upper hull, we consider two distinct cases: if
+        ``mixed_rates`` is ``False`` (default), then we consider the curve
+        starts (or finishes) at coordinate ``(x,y) = (1,0)`` and finishes (or
+        starts) at ``(x,y) = (0,1)``.  This is the case if the user is plotting
+        TPR against TNR or FPR against FNR.  If ``mixed_rates`` is ``True``,
+        then we consider the curve starts (or finishes) at ``(x,y) = (0,0)``,
+        and finishes (or starts) at ``(x,y) = (1,1)``.
+
+        If ``mixed_rates`` is ``False`` (default), each point of the curve to
+        extrapolates to the right and upper points defined by the upper bounds
+        of the credible/confidence intervals, and to the left and lower points
+        defined by the lower bounds of the intervals.
+
+        If ``mixed_rates`` is ``True``, each point of the curve to extrapolates
+        to the left and upper points defined by the upper bounds of the
+        credible/confidence intervals, and to the right and lower points
+        defined by the lower bounds of the intervals.
+
+
+    Returns
+    =======
+
+    middle : numpy.ndarray (2D, float)
+
+        A two-dimensional array of doubles that expresses the middle curve of
+        the plot.  Various points are layed along the second dimension, the
+        first dimension represents y and x coordinates of the point.
+
+    lower : numpy.ndarray (2D, float)
+
+        A two-dimensional array of doubles that expresses the lower-bound of
+        curve.  Various points are layed along the second dimension, the
+        first dimension represents y and x coordinates of the point.
+
+    upper : numpy.ndarray (2D, float)
+
+        A two-dimensional array of doubles that expresses the upper-bound of
+        curve.  Various points are layed along the second dimension, the
+        first dimension represents y and x coordinates of the point.
+
+    """
+
+    def _ellipse_intersect(b, a, j, i, quadrant):
+        """Calculates the radius components of an ellipse, given an angle
+
+        .. math::
+
+           x &= \frac{1}{\sqrt{\frac{1}{a^2}+\frac{j^2}{b^2 i^2}}} \\
+           y &= x \frac{j}{i}
+
+
+        Parameters
+        ==========
+
+        a: float
+
+            width of the ellipse
+
+        b: float
+
+            height of the ellipse
+
+        j: float
+
+            height of the reference vector (to compute angle)
+
+        i: float
+
+            width of the reference vector (to compute angle)
+
+        quadrant: str
+
+            the quadrant applicable to the vector direction either "tl"
+            (top-left), "tr" (top-right), "bl" (bottom-left) or "br"
+            (bottom-right).
+
+
+        Returns
+        =======
+
+        y: float
+
+            width of the resulting vector, pre-added to j
+
+        x: float
+
+            height of the resulting vector, pre-added to i
+
+        """
+
+        # radius calculation, without direction
+        eps = 1e-8
+        den = (b ** 2) * (i ** 2) + (a ** 2) * (j ** 2)
+        num = (a ** 2) * (b ** 2) * (i ** 2)
+        x = numpy.sqrt(
+            numpy.divide(num, den, out=numpy.zeros_like(a), where=(den > eps))
+        )
+        y = numpy.divide(x * j, i, out=numpy.zeros_like(a), where=(i > eps))
+        if quadrant == "tr":  # add on both directions
+            return numpy.vstack((j + y, i + x))
+        elif quadrant == "tl":  # add on y direction, subtract on x
+            return numpy.vstack((j + y, (1-i) - x))
+        elif quadrant == "bl":  # subtract on both directions
+            return numpy.vstack((j - y, i - x))
+        elif quadrant == "br":  # subtract on y direction, add on x
+            return numpy.vstack((j - y, (1-i) + x))
+        else:
+            raise RuntimeError("quadrant must be tl, tr, bl or br")
+
+    if not mixed_rates:  # sectors are lower left or upper right
+
+        # N.B.: distance to origin is approximately symmetric considering the
+        # whole curve
+
+        # (y, x) -> (y_low, x_low)
+        lower = _ellipse_intersect(
+            numpy.abs(curve[2] - curve[0]),
+            numpy.abs(curve[4] - curve[1]),
+            curve[0],
+            curve[1],
+            "bl",
+        )
+        # (y, x) -> (y_high, x_high)
+        upper = _ellipse_intersect(
+            numpy.abs(curve[3] - curve[0]),
+            numpy.abs(curve[5] - curve[1]),
+            curve[0],
+            curve[1],
+            "tr",
+        )
+
+    else:  # sectors are lower right or upper left
+
+        # N.B.: angles must be taken with respect to (1,0) and not (0,0) as the
+        # curve is facing the other direction.
+
+        # (y, x) -> (y_low, x_high)
+        lower = _ellipse_intersect(
+            numpy.abs(curve[2] - curve[0]),
+            numpy.abs(curve[5] - curve[1]),
+            curve[0],
+            1 - curve[1],
+            "br",
+        )
+        # (y, x) -> (y_high, x_low)
+        upper = _ellipse_intersect(
+            numpy.abs(curve[3] - curve[0]),
+            numpy.abs(curve[4] - curve[1]),
+            curve[0],
+            1 - curve[1],
+            "tl",
+        )
+
+    return curve[[0, 1]], lower, upper
 
 
 def det(negatives, positives, n_points, min_fpr=-8):
@@ -245,6 +651,146 @@ def precision_recall(negatives, positives, n_points):
     ).T
 
 
+def precision_recall_ci(
+    negatives,
+    positives,
+    n_points,
+    min_fpr=-8,
+    technique="bayesian|flat",
+    coverage=0.95,
+):
+    """Calculates points and error bars of a Precision-Recall curve
+
+    Calculates the PR curve (true-positive rate against precision/positive
+    predictive value) given a set of negative and positive scores, a desired
+    number of points, the technique to calculate confidence/credible intervals
+    and the expected coverage.
+
+
+    Parameters
+    ==========
+
+    negatives, positives : numpy.ndarray (1D, float)
+
+        The negative and positive scores, for which the PR curve should be
+        calculated.
+
+    n_points : int
+
+        The number of points, in which the ROC curve are calculated, which are
+        distributed uniformly in the range ``[min(negatives, positives),
+        max(negatives, positives)]``
+
+    min_fpr : :py:class:`int`, Optional
+
+        Minimum FAR in terms of :math:`10^(\text{min_fpr}`. This value is also
+        used for ``min_fnr``. Values should be negative.
+
+    technique : :py:class:`str`, Optional
+
+        The technique to be used for calculating the confidence/credible
+        regions leading to the error bars for each TPR/TNR point.  Available
+        implementations are:
+
+        * `bayesian|flat`: uses :py:func:`bob.measure.credible_region.beta`
+           with a flat prior (:math:`\lambda=1`)
+        * `bayesian|jeffreys`: uses :py:func:`bob.measure.credible_region.beta`
+           with Jeffrey's prior (:math:`\lambda=0.5`)
+        * `clopper_pearson`: uses
+          :py:func:`bob.measure.confidence_interval.clopper_pearson`
+        * `agresti_coull`: uses
+          :py:func:`bob.measure.confidence_interval.agresti_coull`
+        * `wilson`: uses
+          :py:func:`bob.measure.confidence_interval.wilson`
+
+    coverage : :py:class:`float`, Optional
+        A floating-point number between 0 and 1.0 indicating the
+        coverage you're expecting.  A value of 0.95 will ensure 95%
+        of the area under the probability density of the posterior
+        is covered by the returned equal-tailed interval.
+
+
+    Returns
+    =======
+
+    curve : numpy.ndarray (2D, float)
+
+        A two-dimensional array of doubles that express the Precision (or PPV),
+        Recall (or TPR), Precision lower and upper bounds, and Recall lower and
+        upper bounds, in this order.  The array contains the points in the
+        first dimension, and the Precision, Recall,
+        Precision-lower, Precision-upper, Recall-lower and Recall-upper on the
+        second dimension.
+
+    """
+    from .binary import true_positives, false_positives
+
+    def _bayesian(neg, pos, thres, lambda_):
+        from .credible_region import beta
+
+        tp = true_positives(pos, thres).sum()
+        fn = len(pos) - tp
+        fp = false_positives(neg, thres).sum()
+
+        _, precision, prec_low, prec_high = beta(tp, fp, lambda_, coverage)
+        _, recall, recall_low, recall_high = beta(tp, fn, lambda_, coverage)
+
+        return precision, recall, prec_low, prec_high, recall_low, recall_high
+
+    def _bayesian_flat(neg, pos, thres):
+        return _bayesian(neg, pos, thres, 1.0)
+
+    def _bayesian_jeffreys(neg, pos, thres):
+        return _bayesian(neg, pos, thres, 0.5)
+
+    def _freq(neg, pos, thres, f):
+
+        tp = true_positives(pos, thres).sum()
+        fn = len(pos) - tp
+        fp = false_positives(neg, thres).sum()
+
+        precision = tp / (tp + fp)
+        prec_low, prec_high = f(tp, fp, coverage)
+
+        recall = tp / len(pos)
+        recall_low, recall_high = f(tp, fn, coverage)
+
+        return precision, recall, prec_low, prec_high, recall_low, recall_high
+
+    def _clopper_pearson(neg, pos, thres):
+        from .confidence_interval import clopper_pearson
+
+        return _freq(neg, pos, thres, clopper_pearson)
+
+    def _agresti_coull(neg, pos, thres):
+        from .confidence_interval import agresti_coull
+
+        return _freq(neg, pos, thres, agresti_coull)
+
+    def _wilson(neg, pos, thres):
+        from .confidence_interval import wilson
+
+        return _freq(neg, pos, thres, wilson)
+
+    if technique == "bayesian|flat":
+        method = _bayesian_flat
+    elif technique == "bayesian|jeffreys":
+        method = _bayesian_jeffreys
+    elif technique == "clopper_pearson":
+        method = _clopper_pearson
+    elif technique == "agresti_coull":
+        method = _agresti_coull
+    elif technique == "wilson":
+        method = _wilson
+    else:
+        raise RuntimeError(
+            f"technique `{technique}' is unknown - read function documentation for valid values"
+        )
+
+    t = _meaningful_thresholds(negatives, positives, n_points, min_fpr, False)
+    return numpy.array([method(negatives, positives, k) for k in t]).T
+
+
 def roc_for_far(negatives, positives, fpr_list, is_sorted=False):
     """Calculates the ROC curve for a given set of positive and negative scores and the FPR values, for which the FNR should be computed
 
@@ -283,8 +829,6 @@ def roc_for_far(negatives, positives, fpr_list, is_sorted=False):
 
     """
     from .binary import fprfnr
-
-    n_points = len(fpr_list)
 
     if len(negatives) == 0:
         raise RuntimeError("The given set of negatives is empty.")
@@ -685,6 +1229,32 @@ def rocch(negatives, positives):
     return retval
 
 
+def area_under_the_curve(curve):
+    """Calculates the area under a curve
+
+
+    Parameters
+    ==========
+
+    curve : numpy.ndarray (2D, float)
+
+        A 2D numpy array of floats representing the curve from which to
+        calculate the area.  The columns in the input array represents the y
+        and x coordinates of the curve, respectively.
+
+
+    Returns
+    =======
+
+    auc : float
+
+        The area under the curve
+
+    """
+
+    return numpy.abs(numpy.trapz(curve[0], curve[1]))
+
+
 def roc_auc_score(
     negatives, positives, n_points=2000, min_fpr=-8, log_scale=False
 ):
@@ -734,8 +1304,7 @@ def roc_auc_score(
         fpr, tpr = fpr[fpr_pos], tpr[fpr_pos]
         fpr = numpy.log10(fpr)
 
-    area = -1 * numpy.trapz(tpr, fpr)
-    return area
+    return area_under_the_curve(numpy.vstack(fpr, tpr).T)
 
 
 def estimated_ci_coverage(f, n=100, expected_coverage=0.95):

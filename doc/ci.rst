@@ -5,10 +5,14 @@
    from matplotlib import pyplot as plt
    import bob.measure
 
+.. _bob.measure.ci:
+
 ===================================
  Credible and Confidence Intervals
 ===================================
 
+
+.. _bob.measure.ci.credible:
 
 Credible Interval (or Region)
 -----------------------------
@@ -101,6 +105,8 @@ using a flat or Jeoffrey's prior, use
 (typically 0.95 - 95%).
 
 
+.. _bob.measure.ci.figures:
+
 Applicability to Figures of Merit in Classification
 ===================================================
 
@@ -114,7 +120,6 @@ section:
   :math:`k=TP`, :math:`l=FN`
 * Specificity or True Negative Rage: :math:`s = TN/(TN+FP)`, so :math:`k=TN`,
   :math:`l=FP`
-* F1-score: :math:`f1 = 2TP/(2TP+FP+FN)`, so :math:`k=2TP`, :math:`l=FP+FN`
 * Accuracy: :math:`acc = TP+TN/(TP+TN+FP+FN)`, so :math:`k=TP+TN`,
   :math:`l=FP+FN`
 * Jaccard Index: :math:`j = TP/(TP+FP+FN)`, so :math:`k=TP`, :math:`l=FP+FN`
@@ -123,6 +128,13 @@ The function :py:func:`bob.measure.credible_region.measures` can calculate the
 above quantites in a single shot from counts of true and false, positives and
 negatives, the :math:`\lambda` parameter, and the desired coverage.
 
+.. note::
+
+   For comparing two systems according to their F1-score, please see
+   :ref:`bob.measure.ci.compare`.
+
+
+.. _bob.measure.ci.confidence:
 
 Confidence Interval
 -------------------
@@ -149,6 +161,8 @@ drop-in replacement for :py:func:`bob.measure.credible_region.beta`:
 * Agresti-Coull, 1998, [AGRESTI-1998]_:
   :py:func:`bob.measure.confidence_interval.agresti_coull`
 
+
+.. _bob.measure.ci.conservativeness:
 
 Conservativeness
 ----------------
@@ -225,6 +239,313 @@ this package:
    plt.show()
 
 
+.. _bob.measure.ci.compare:
+
+Comparing 2 systems
+-------------------
+
+According to [GOUTTE-2005]_, 2 distincsystems may be compared by considering
+either two specific use-cases: if both systems are exposed to the same (paired
+comparison) or different data (unpaired).  As a rule of thumb, paired tests
+carry stronger constraints and therefore have the potential provide more
+accurate credible intervals.  Currently, only unpaired comparison is
+implemented.
+
+
+Unpaired comparison
+===================
+
+To perform an unpaired comparison of two systems, we first assume each system
+have a fixed threshold and therefore can produce two sets of true and false
+positive and negative scores.  Under these conditions, one may compare two
+figures of merit (:ref:`bob.measure.ci.figures`), taken as base their posterior
+beta distributions.  This cannot be done analytically, so we resort to a `Monte
+Carlo simulation`_.  In the following example, we compare the precision and
+recall of two systems previously tuned.
+
+.. plot::
+
+   import numpy
+   import scipy.stats
+   from matplotlib import pyplot as plt
+   import bob.measure.credible_region
+
+   TP1 = 10; FN1 = 5; TN1 = 5; FP1 = 10  # system 1 performance
+   TP2 =  3; FN2 = 3; TN1 = 4; FP2 =  2  # system 2 performance
+
+   nb_samples = 10000 # Sample size, higher makes it more precise
+   lambda_ = 1.0 # use 1.0 for a flat prior, or 0.5 for Jeffrey's prior
+
+   # precision: TP / TP + FP, k=TP, l=FP
+
+   # now we calculate what is the probability that system 2's precision
+   # measurement is better than that of system 1
+   prob = bob.measure.credible_region.compare_beta_posteriors(
+        TP2, FP2, TP1, FP1, lambda_, nb_samples
+        )
+
+   # we then visualize the posteriors of the precision for both systems
+   # together with the probability that system 1 is better than system 2
+   x = numpy.linspace(0.01, 0.99, nb_samples)
+   pdf1 = scipy.stats.beta.pdf(x, TP1 + lambda_, FP1 + lambda_)
+   pdf2 = scipy.stats.beta.pdf(x, TP2 + lambda_, FP2 + lambda_)
+   plt.plot(x, pdf1, label=f"TP1 = {TP1}, FP1 = {FP1}")
+   plt.plot(x, pdf2, label=f"TP2 = {TP2}, FP2 = {FP2}")
+   plt.title(
+             f"Posterior Precision - Monte Carlo - "
+             f"($\mathbb{{P}}(P_2>P_1)$: {(100*prob):.0f}%)"
+             )
+   plt.grid()
+   plt.legend()
+   plt.show()
+
+
+From this, we can assert that system's 2 precision is only 64% (empirically)
+likely to be better than system's 1 precision.  A test for a 95% credible
+interval, in this case, would fail.  Of course, we can apply the same reasoning
+for the recall.
+
+.. plot::
+
+   import numpy
+   import scipy.stats
+   from matplotlib import pyplot as plt
+   import bob.measure.credible_region
+
+   TP1 = 10; FN1 = 5; TN1 = 5; FP1 = 10  # system 1 performance
+   TP2 =  3; FN2 = 3; TN1 = 4; FP2 =  2  # system 2 performance
+
+   nb_samples = 10000 # Sample size, higher makes it more precise
+   lambda_ = 1.0 # use 1.0 for a flat prior, or 0.5 for Jeffrey's prior
+
+   # recall: TP / TP + FN, k=TP, l=FN
+
+   # now we calculate what is the probability that system 2's recall
+   # measurement is better than system 1
+   prob = bob.measure.credible_region.compare_beta_posteriors(
+        TP2, FN2, TP1, FN1, lambda_, nb_samples
+        )
+
+   # we then visualize the posteriors of the recall for both systems
+   # together with the probability that system 1 is better than system 2
+   x = numpy.linspace(0.01, 0.99, nb_samples)
+   pdf1 = scipy.stats.beta.pdf(x, TP1 + lambda_, FN1 + lambda_)
+   pdf2 = scipy.stats.beta.pdf(x, TP2 + lambda_, FN2 + lambda_)
+   plt.plot(x, pdf1, label=f"TP1 = {TP1}, FN1 = {FN1}")
+   plt.plot(x, pdf2, label=f"TP2 = {TP2}, FN2 = {FN2}")
+   plt.title(
+             f"Posterior Recall - Monte Carlo - "
+             f"($\mathbb{{P}}(R_2>R_1)$: {(100*prob):.0f}%)"
+             )
+   plt.grid()
+   plt.legend()
+   plt.show()
+
+Here, we see that there is only a 32% probability that system's 2 recall is
+better than system 1.  Again, a check for a 95% margin would fail.
+
+Comparing F1-Scores
+~~~~~~~~~~~~~~~~~~~
+
+Comparing F1-scores cannot be done with the procedure above, using a Beta
+posterior, according to [GOUTTE-2005]_.  We resort again to Monte Carlo
+simulations for this.
+
+.. plot::
+
+   import numpy
+   import scipy.stats
+   from matplotlib import pyplot as plt
+   import bob.measure.credible_region
+
+   TP1 = 10; FN1 = 5; TN1 = 5; FP1 = 10  # system 1 performance
+   TP2 = 3; FN2 = 3; TN1 = 4; FP2 = 2  # system 2 performance
+
+   nb_samples = 100000  # Sample size, higher makes it more precise
+   lambda_ = 1.0  # use 1.0 for a flat prior, or 0.5 for Jeffrey's prior
+
+   # now we calculate what is the probability that system 2's recall
+   # measurement is better than system 1
+
+   prob = bob.measure.credible_region.compare_f1_scores(
+       TP2, FP2, FN2, TP1, FP1, FN1, lambda_, nb_samples
+   )
+
+   # we then visualize the posteriors of the F1-score for both systems
+   # together with the probability that system 1 is better than system 2
+   pdf1 = bob.measure.credible_region.f1_posterior(
+       TP1, FP1, FN1, lambda_, nb_samples
+   )
+   pdf2 = bob.measure.credible_region.f1_posterior(
+       TP2, FP2, FN2, lambda_, nb_samples
+   )
+   h1 = plt.hist(pdf1, bins=200, alpha=0.3,
+            label=f"TP1 = {TP1}, FP1 = {FP1}, FN1 = {FN1}")
+   plt.hist(pdf1, bins=200, color=h1[2][0].get_facecolor()[:3], histtype="step")
+   h2 = plt.hist(pdf2, bins=200, alpha=0.3,
+            label=f"TP2 = {TP2}, FP1 = {FP1}, FN2 = {FN2}")
+   plt.hist(pdf2, bins=200, color=h2[2][0].get_facecolor()[:3], histtype="step")
+   plt.title(f"Posterior F1-Score - Monte Carlo - "
+             f"($\mathbb{{P}}(F1_2>F1_1)$: {(100*prob):.0f}%)")
+   plt.grid()
+   plt.legend()
+   plt.show()
+
+
+From this, we cannot assert that neither system's 1 or 2 F1-score is greater
+than the other one with a 95% confidence.
+
+
+ROC and Precision Recall Curves
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is often useful to explore multiple thresholds at the same time, instead of
+tuning each system to a set of thresholds.  This package allows you to plot ROC
+and Precision-Recall curves including credible/confidence interval bounds.  We
+simply repeat the procedure above for each threshold and plot the results.  The
+bounds of the curve are calculated taking into consideration the credible
+interval at that particular point, in all four directions.  The calculation of
+the upper bound is examplified in the figure below:
+
+.. figure:: img/curve-estimation-algorithm.svg
+   :width: 80%
+
+
+Here is an example on how to use the built-in procedures for plotting ROC
+curves:
+
+.. plot::
+
+   import numpy
+   from matplotlib import pyplot as plt
+   import bob.measure.plot
+
+   # we simulate scores for 2 hypothethical systems.  Scores are beta distributed
+   # for a "perfect" example
+   nb_samples1 = 200  # Sample size, higher makes it more precise (thinner CI)
+   a1 = 6
+   b1 = 10
+   nb_samples2 = 100  # Sample size, higher makes it more precise (thinner CI)
+   a2 = 7
+   b2 = 10
+   numpy.random.seed(42)
+
+   negatives1 = numpy.random.beta(a=a1, b=b1, size=nb_samples1)
+   # ph = plt.hist(negatives, bins=100, alpha=0.3, label="Negatives")
+   # plt.hist(negatives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   positives1 = numpy.random.beta(a=b1, b=a1, size=nb_samples1)
+   # nh = plt.hist(positives, bins=100, alpha=0.3, label="Positives")
+   # plt.hist(positives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   negatives2 = numpy.random.beta(a=a2, b=b2, size=nb_samples2)
+   # ph = plt.hist(negatives, bins=100, alpha=0.3, label="Negatives")
+   # plt.hist(negatives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   positives2 = numpy.random.beta(a=b2, b=a2, size=nb_samples2)
+   # nh = plt.hist(positives, bins=100, alpha=0.3, label="Positives")
+   # plt.hist(positives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   # plt.title("Scores (i.i.d. samples)")
+
+   # We now compute the ROC curve with the confidence interval
+   axes = ("tpr", "fpr")
+   AXES = [k.upper() for k in axes]
+   with bob.measure.plot.tight_roc_layout(axes=AXES):
+       obj1, auc1 = bob.measure.plot.roc_ci(
+           negatives1,
+           positives1,
+           axes=axes,
+       )
+       obj2, auc2 = bob.measure.plot.roc_ci(
+           negatives2,
+           positives2,
+           axes=axes,
+       )
+       plt.legend(
+           (obj1, obj2),
+           (
+               f"System 1 (AUC: {auc1[0]:.2f}"
+               f" - 95% CI: {auc1[1]:.2f}-{auc1[2]:.2f})",
+               f"System 2 (AUC: {auc2[0]:.2f}"
+               f" - 95% CI: {auc2[1]:.2f}-{auc2[2]:.2f})",
+           ),
+           loc="best",
+           fancybox=True,
+           framealpha=0.7,
+       )
+
+   plt.show()
+
+The plotting procedure produces the area under the ROC curve (AUROC) for all
+three curves: the normal ROC, as well as the lower and upper bounds, which
+allows for the estimation of the 95% credible interval of that measure.  In
+this example, it is possible to observe both system performances overlap a bit,
+from the perspective of the AUROC.  A more thorough analysis would require the
+selection of a threshold for each system, and a more detailed CI analysis.
+
+We can also create Precision vs. Recall plots.  Here is the above system from
+that perspective.
+
+.. plot::
+
+   import numpy
+   from matplotlib import pyplot as plt
+   import bob.measure.plot
+
+   # we simulate scores for 2 hypothethical systems.  Scores are beta distributed
+   # for a "perfect" example
+   nb_samples1 = 200  # Sample size, higher makes it more precise (thinner CI)
+   a1 = 6
+   b1 = 10
+   nb_samples2 = 100  # Sample size, higher makes it more precise (thinner CI)
+   a2 = 7
+   b2 = 10
+   numpy.random.seed(42)
+
+   negatives1 = numpy.random.beta(a=a1, b=b1, size=nb_samples1)
+   # ph = plt.hist(negatives, bins=100, alpha=0.3, label="Negatives")
+   # plt.hist(negatives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   positives1 = numpy.random.beta(a=b1, b=a1, size=nb_samples1)
+   # nh = plt.hist(positives, bins=100, alpha=0.3, label="Positives")
+   # plt.hist(positives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   negatives2 = numpy.random.beta(a=a2, b=b2, size=nb_samples2)
+   # ph = plt.hist(negatives, bins=100, alpha=0.3, label="Negatives")
+   # plt.hist(negatives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   positives2 = numpy.random.beta(a=b2, b=a2, size=nb_samples2)
+   # nh = plt.hist(positives, bins=100, alpha=0.3, label="Positives")
+   # plt.hist(positives, bins=100, color=h1[2][0].get_facecolor()[:3], histtype="step")
+
+   # plt.title("Scores (i.i.d. samples)")
+
+   # We now compute the PR curve with the confidence interval
+   with bob.measure.plot.tight_pr_layout():
+       obj1, auc1 = bob.measure.plot.precision_recall_ci(negatives1, positives1)
+       obj2, auc2 = bob.measure.plot.precision_recall_ci(negatives2, positives2)
+       plt.legend(
+           (obj1, obj2),
+           (
+               f"System 1 (AUC: {auc1[0]:.2f}"
+               f" - 95% CI: {auc1[1]:.2f}-{auc1[2]:.2f})",
+               f"System 2 (AUC: {auc2[0]:.2f}"
+               f" - 95% CI: {auc2[1]:.2f}-{auc2[2]:.2f})",
+           ),
+           loc="best",
+           fancybox=True,
+           framealpha=0.7,
+       )
+
+   plt.show()
+
+
+With the precision-recall curves, our stock canvas also includes iso-F1 lines,
+which show equal-valued F1-score segments.  Also on this view, both systems
+present significant overlap in terms of the area under the PR curve (AUPRC).
+
+
 Q&A
 ---
 
@@ -250,24 +571,6 @@ if you considered the sample dependence).
 
    Intuition only.  A reference is missing for this.  If you know of anything,
    please patch this description.
-
-
-How can I calculate the credible interval for an AUC?
-=====================================================
-
-This method will also allow you to create plots with confidence intervals for
-each ROC curve.
-
-1. Estimate the CI in both directions for each threshold evaluated for the ROC
-   curve in question using one of the functions available and the technique
-   explored in :py:func:`bob.measure.credible_region.measures`.
-2. Assume each threshold's CI forms an ellipse and draw it.
-3. Find the inbound and outbound hulls for the ellipses.  These hulls are your
-   ROC curve credible intervals.
-4. To calculate the AUC credible interval, just calculate the AUC for the
-   inbound and outbound curves (hulls).
-
-Currently, this is **not** implemented in this package.
 
 
 Should I consider the expected value or mode of a credible interval?
@@ -310,8 +613,8 @@ expect positive and negative samples to be closely located to the extremes of
 the system output range (e.g. inside the interval :math:`[0, 1]`).  Besides
 being bounded, each of those distributions are likely composed of uni-lateral
 tails.  Hence, differences between outputs of systems may not be approximately
-normal (more likely bi-modal).  Here is summary of available paired tests and
-their assumptions/adequacy:
+normal.  Here is summary of available paired tests and their
+assumptions/adequacy:
 
 * Paired (Student's) t-test (parametric): the difference between system outputs
   should be (*approximately*) normally distributed, whereas it is likely
@@ -324,9 +627,9 @@ their assumptions/adequacy:
   symmetric distribution of the differences around the median.  This test would
   be adequate for ML system comparison, but is less powerful than the two
   precendent ones.
-* Bootstrap: A frequentist approach to credible interval estimation by sampling
-  with replacement (differences of) indicators one would want to compare.  This
-  would also be adequate as means to compare two systems.
+* Bootstrap: A frequentist approach to confidence interval estimation by
+  sampling with replacement (differences of) indicators one would want to
+  compare.  This would also be adequate as means to compare two systems.
 
 
 .. include:: links.rst

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="64.981 89.725 373.878 318.323" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <line style="stroke: rgb(196, 196, 196); stroke-dasharray: 4px;" x1="156.161" y1="273.056" x2="261.183" y2="151.419" transform="matrix(1, 0, 0, 1, -19.321172, -23.11733)"/>
+  <rect x="136.158" y="129.031" width="105.635" height="121.574" style="fill: none; stroke: rgb(132, 132, 132); stroke-dasharray: 4px;"/>
+  <line style="stroke: rgb(196, 196, 196); stroke-dasharray: 5px;" x1="136.158" y1="129.031" x2="241.793" y2="250.605"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 3px;" d="M 65.981 240.341 C 171.549 240.341 265.507 307.274 300 407.048"/>
+  <circle style="fill: rgb(0, 158, 8);" cx="136.36" cy="250.365" r="5.118"/>
+  <circle style="fill: rgb(235, 0, 0);" cx="188.626" cy="188.882" r="5.118"/>
+  <circle style="fill: rgb(0, 22, 224);" cx="241.57" cy="250.263" r="5.118"/>
+  <text style="fill: rgb(84, 108, 196); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, -10.305593, -1.502747)"><tspan x="269.978" y="252.439">upper limit of CI on</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>the horizontal axis</tspan></text>
+  <text style="fill: rgb(73, 107, 207); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, -183.179672, -151.118805)"><tspan x="269.978" y="252.439">upper limit of CI on</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>the vertical axis</tspan></text>
+  <text style="fill: rgb(140, 140, 140); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" x="86.798" y="286.511">Measured point</text>
+  <circle style="fill: rgb(0, 22, 224);" cx="137.276" cy="129.42" r="5.118"/>
+  <path d="M 200 182.264 H 282.165 L 276.165 177.264 L 294.165 183.764 L 276.165 190.264 L 282.165 185.264 H 200 V 182.264 Z" style="fill: rgb(243, 189, 189);" transform="matrix(0.934955, -0.354767, 0.354767, 0.934955, -52.184341, 82.906342)" bx:shape="arrow 200 177.264 94.165 13 3 18 6 1@acfb7fa6"/>
+  <text style="fill: rgb(225, 55, 55); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, 29.3125, -107.305748)"><tspan x="269.978" y="252.439">newly estimated graphical</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>upper bound for the</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>measured point</tspan></text>
+</svg>
