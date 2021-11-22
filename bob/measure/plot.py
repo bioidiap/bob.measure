@@ -183,8 +183,8 @@ def tight_roc_layout(axes, title=None):
     fig, axes1 = pyplot.subplots(1)
 
     # Names and bounds
-    axes1.set_ylabel("Precision")
-    axes1.set_xlabel("Recall")
+    axes1.set_ylabel(axes[0])
+    axes1.set_xlabel(axes[1])
     axes1.set_xlim([0.0, 1.0])
     axes1.set_ylim([0.0, 1.0])
 

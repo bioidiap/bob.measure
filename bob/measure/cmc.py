@@ -182,7 +182,7 @@ def cmc(cmc_scores):
     # compute MC
     match_characteristic = numpy.zeros(
         (max([len(neg) for neg, _ in cmc_scores if neg is not None]) + 1,),
-        numpy.int,
+        dtype=numpy.int64,
     )
 
     for neg, pos in cmc_scores:

@@ -168,7 +168,7 @@ def roc_ci(
     technique="bayesian|flat",
     coverage=0.95,
 ):
-    """Calculates points and error bars of a ROC
+    r"""Calculates points and error bars of a ROC
 
     Calculates the ROC curve (true-positive rate against true-negative rate)
     given a set of negative and positive scores, a desired number of points,
@@ -197,7 +197,7 @@ def roc_ci(
 
     min_fpr : :py:class:`int`, Optional
 
-        Minimum FAR in terms of :math:`10^(\text{min_fpr}`. This value is also
+        Minimum FAR in terms of :math:`10^\text{min_fpr}`. This value is also
         used for ``min_fnr``. Values should be negative.
 
     axes : :py:class:`tuple`, Optional
@@ -450,7 +450,7 @@ def curve_ci(curve, mixed_rates=False):
     """
 
     def _ellipse_intersect(b, a, j, i, quadrant):
-        """Calculates the radius components of an ellipse, given an angle
+        r"""Calculates the radius components of an ellipse, given an angle
 
         .. math::
 
@@ -659,7 +659,7 @@ def precision_recall_ci(
     technique="bayesian|flat",
     coverage=0.95,
 ):
-    """Calculates points and error bars of a Precision-Recall curve
+    r"""Calculates points and error bars of a Precision-Recall curve
 
     Calculates the PR curve (true-positive rate against precision/positive
     predictive value) given a set of negative and positive scores, a desired
@@ -1239,7 +1239,7 @@ def area_under_the_curve(curve):
     curve : numpy.ndarray (2D, float)
 
         A 2D numpy array of floats representing the curve from which to
-        calculate the area.  The columns in the input array represents the y
+        calculate the area.  The rows in the input array represents the y
         and x coordinates of the curve, respectively.
 
 
@@ -1304,7 +1304,7 @@ def roc_auc_score(
         fpr, tpr = fpr[fpr_pos], tpr[fpr_pos]
         fpr = numpy.log10(fpr)
 
-    return area_under_the_curve(numpy.vstack(fpr, tpr).T)
+    return area_under_the_curve(numpy.vstack((tpr, fpr)))
 
 
 def estimated_ci_coverage(f, n=100, expected_coverage=0.95):

@@ -100,10 +100,10 @@ def beta(k, l, lambda_, coverage):
     l : int, numpy.ndarray (int, 1D)
         Number of failures observed on the experiment
 
-    lambda__ : :py:class:`float`, Optional
+    lambda_ : :py:class:`float`, Optional
         The parameterisation of the Beta prior to consider. Use
         :math:`\\lambda=1` for a flat prior.  Use :math:`\\lambda=0.5` for
-        Jeffrey's prior (the default).
+        Jeffrey's prior.  If unsure, use 0.5.
 
     coverage : :py:class:`float`, Optional
         A floating-point number between 0 and 1.0 indicating the
@@ -255,7 +255,7 @@ def compare_beta_posteriors(k1, l1, k2, l2, lambda_, nb_samples):
     lambda_ : float
         The parameterisation of the Beta prior to consider. Use
         :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
-        Jeffrey's prior.
+        Jeffrey's prior.  If unsure, use 0.5.
 
     nb_samples : int
         number of generated beta distribution values
@@ -295,7 +295,7 @@ def f1_posterior(tp, fp, fn, lambda_, nb_samples):
     lambda_ : float
         The parameterisation of the Beta prior to consider. Use
         :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
-        Jeffrey's prior.
+        Jeffrey's prior.  If unsure, use 0.5.
 
     nb_samples : int
         number of generated gamma distribution values
@@ -525,3 +525,72 @@ def measures(tp, fp, tn, fn, lambda_, coverage):
         beta(tp, fp + fn, lambda_, coverage),  # jaccard index
         f1_score(tp, fp, fn, lambda_, coverage, 100000),  # f1-score
     )
+
+
+def compare_systems(n, lambda_, nb_samples):
+    """Compares 2 system (binary) outputs using a Dirichlet posterior
+
+    This function returns the empyrical probability that a system (1) is better
+    another system (2), based on their binary outputs.  The comparison is
+    carried-out as described in [GOUTTE-2005]_, equations 16 and 19, via a
+    Monte-Carlo simulation, since the integral of the probability cannot be
+    resolved analytically.
+
+    To do so, we compute the probability that :math:`P(\\pi_1 > \\pi_2)`, i.e.,
+    the probability that system 1 gives the expected output while system 2 does
+    not, is greater than the probability that system 1 is incorrect while
+    system 2 gives the correct answer.  It assumes, therefore, systems 1 and 2
+    are tuned (thresholded), and provide binary outputs that can be compared to
+    generate 3 numbers:
+
+    * :math:`n_1`: The measured number of times system 1 provides the correct
+      answer, whereas system 2 does not
+    * :math:`n_2`: The measured number of times system 2 provides the correct
+      answer, whereas system 1 does not
+    * :math:`n_3`: The measured number of times system 1 and 2 agree, giving
+      the same answer (wrong or write, it does not matter)
+
+    Notice that :math:`\\pi_1 = \\frac{n_1}{n_1 + n_2 + n_3}`, and so,
+    analogously, you may calculate :math:`\\pi_2` and :math:`\\pi_3`.
+
+    We then plug these numbers to simulate a Dirichlet (generalisation of the
+    Beta distribution for multiple variables) by setting:
+
+    * :math:`\\alpha_1 = n_1 + \\lambda_1`
+    * :math:`\\alpha_2 = n_2 + \\lambda_2`
+    * :math:`\\alpha_3 = n_2 + \\lambda_3`
+
+    Where each :math:`\\lambda_i` correspond to the prior to be imputed to that
+    particular variable.  We typically select :math:`\\lambda_1 = \\lambda_2`,
+
+    Parameters
+    ----------
+
+    n : tuple
+        A triple with 3 integers representing :math:`n_1`, :math:`n_2` and
+        :math:`n_3`.
+
+    lambda_ : tuple
+        A tuple with length 3, containing floating point numbers describing the
+        parameterisation of the Dirichlet priors to consider.  Use
+        :math:`\\lambda_i=0.5` for Jeffrey's prior.
+
+    nb_samples : int
+        number of generated dirichlet distribution values (make this high, for
+        a higher precision on the simulation).
+
+
+    Returns
+    -------
+
+    prob : float
+        A number between 0.0 and 1.0 that describes the probability that the
+        first system is better than the second one
+
+    """
+    assert len(n) == 3
+    assert len(lambda_) == 3
+    samples = numpy.random.dirichlet(
+        numpy.array(n) + numpy.array(lambda_), size=nb_samples
+    )
+    return numpy.count_nonzero(samples[:,0] > samples[:,1]) / nb_samples

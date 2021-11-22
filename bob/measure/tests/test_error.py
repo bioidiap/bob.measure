@@ -505,7 +505,7 @@ def test_open_set_rates():
             for key in fh.keys():
                 which = negative if "neg" in key else positive
                 val = fh[key][:]
-                if val.dtype == numpy.float and len(val) == 1:
+                if val.dtype == numpy.float64 and len(val) == 1:
                     val = val[0]
                 if val.dtype.char == "S" and val[0].decode() == "None":
                     val = None

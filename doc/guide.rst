@@ -3,6 +3,7 @@
 .. testsetup:: *
 
    import numpy
+   numpy.random.seed(42)
    positives = numpy.random.normal(1,1,100)
    negatives = numpy.random.normal(-1,1,100)
    import matplotlib
@@ -247,6 +248,7 @@ town. To plot an ROC curve, in possession of your **negatives** and
 **positives**, just do something along the lines of:
 
 .. doctest::
+   :options: +ELLIPSIS
 
    >>> from matplotlib import pyplot
    >>> # we assume you have your negatives and positives already split
@@ -258,7 +260,7 @@ town. To plot an ROC curve, in possession of your **negatives** and
    >>> pyplot.show() # doctest: +SKIP
    >>> # You can also compute the area under the ROC curve:
    >>> bob.measure.curves.roc_auc_score(negatives, positives)
-   0.8958
+   0.9169...
 
 You should see an image like the following one:
 
