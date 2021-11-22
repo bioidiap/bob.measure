@@ -209,7 +209,7 @@ recall of two systems previously tuned.
 .. plot:: examples/precision-comparison.py
 
 
-From this, we can assert that system's 2 precision is only 64% (empirically)
+From this, we can assert that system's 2 precision is only 65% (empirically)
 likely to be better than system's 1 precision.  A test for a 95% credible
 interval, in this case, would fail.  Of course, we can apply the same reasoning
 for the recall.
@@ -217,7 +217,7 @@ for the recall.
 .. plot:: examples/recall-comparison.py
 
 
-Here, we see that there is only a 32% probability that system's 2 recall is
+Here, we see that there is only a 24% probability that system's 2 recall is
 better than system 1.  Again, a check for a 95% margin would fail.
 
 Comparing F1-Scores

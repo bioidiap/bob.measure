@@ -20,7 +20,7 @@ lambda_ = 0.5  # use 1.0 for a flat prior, or 0.5 for Jeffrey's prior
 
 # now we calculate what is the probability that system 2's recall
 # measurement is better than system 1
-
+numpy.random.seed(42)  # for the monte-carlo simulation
 prob = bob.measure.credible_region.compare_f1_scores(
     TP2, FP2, FN2, TP1, FP1, FN1, lambda_, nb_samples
 )
