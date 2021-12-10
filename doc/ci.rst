@@ -20,7 +20,7 @@ credible interval (i.e.  :math:`\alpha = 0.95`) for a parameter :math:`x` is
 given by :math:`[L, U]` such that
 
 .. math::
-   P(k \in [L,U]) = 95%
+   P(k \in [L,U]) = 95\%
 
 The smaller the test size, the wider the confidence interval will be, and the
 greater :math:`\alpha`, the smaller the confidence interval will be.  The
@@ -65,9 +65,9 @@ marginalized version of :math:`P(k\mid p)`, which will help us later:
               & = \frac{P(k\mid p) P(p)} {\int_{p'} P(k\mid p') P(p') dp'}
 
 In the case of a binomial distribution, :math:`P(k\mid p)` is known (first
-equation).  :math:`P(k)` is normally called the *prior* probability density,
+equation).  :math:`P(p)` is normally called the *prior* probability density,
 and corresponds to a known (or most likely) density distribution for the
-parameter :math:`k`.  The choice of this prior will of course affect the
+parameter :math:`p`.  The choice of this prior will of course affect the
 overall aspect of the posterior distribution :math:`P(p\mid k)` we are trying
 to estimate.
 
@@ -75,7 +75,7 @@ A typical choice for this prior is a `Beta distribution`_.  As it turns out, a
 Beta prior will generate a (conjugate) Beta posterior:
 
 .. math::
-   P(p\mid k) = \frac{1}{B(k+\alpha,n-k+\beta} p^{k+\alpha-1}(1-p)^{n-k+\beta-1}
+   P(p\mid k) = \frac{1}{B(k+\alpha,n-k+\beta)} p^{k+\alpha-1}(1-p)^{n-k+\beta-1}
 
 This formulation provides us with a complete representation for the posterior
 of :math:`p`, allowing the calculation of credible intervals, via integration.
@@ -85,16 +85,16 @@ respectively.  As there is no reason to favour one more than the other, these
 are typically set to matching values :math:`\alpha=\beta=\lambda`.
 
 .. math::
-   P(p\mid k) = \frac{1}{B(k+\lambda,n-k+\lambda} p^{k+\lambda-1}(1-p)^{n-k+\lambda-1}
+   P(p\mid k) = \frac{1}{B(k+\lambda,n-k+\lambda)} p^{k+\lambda-1}(1-p)^{n-k+\lambda-1}
 
 Two classical settings are often used:
 
 * :math:`\lambda = 1` (a.k.a. a "flat" prior)
-* :math:`\lambda = 0.5` (a.k.a. Jeoffrey's prior)
+* :math:`\lambda = 0.5` (a.k.a. Jeffrey's prior)
 
 In practice, changing :math:`\lambda` does not affect much the credible
 interval calculation.  To calculate the credible interval for a binary variable
-using a flat or Jeoffrey's prior, use
+using a flat or Jeffrey's prior, use
 :py:func:`bob.measure.credible_region.beta`, providing :math:`k`,
 :math:`l=(n-k)`, :math:`\lambda` and how much coverage you would like to have
 (typically 0.95 - 95%).
@@ -188,7 +188,7 @@ this package:
 Comparing 2 systems
 -------------------
 
-According to [GOUTTE-2005]_, 2 distincsystems may be compared by considering
+According to [GOUTTE-2005]_, 2 distinct systems may be compared by considering
 either two specific use-cases: if both systems are exposed to the same (paired
 comparison) or different data (unpaired).  As a rule of thumb, paired tests
 carry stronger constraints and therefore have the potential provide more

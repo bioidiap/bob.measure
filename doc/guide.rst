@@ -454,7 +454,7 @@ obtained in the CMC plot above.
 
 
 
-Fine-tunning
+Fine-tuning
 ^^^^^^^^^^^^
 
 The methods inside :py:mod:`bob.measure.plot` are only provided as a
