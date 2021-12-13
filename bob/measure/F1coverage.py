@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 def F1_percentage(nb_samples, nb_trials, coverage, lambda_, truepositivesprob, truenegativesprob):
     percentage_covered = np.empty([truepositivesprob.size, truenegativesprob.size])
-    for index, tpprob in enumerate(truepositivesprob): 
+    for index, tpprob in enumerate(truepositivesprob):
         tpbin = np.random.binomial(nb_trials, tpprob, nb_samples)
         fnbin = nb_trials - tpbin
         tp = int(round(tpprob*nb_trials))
@@ -38,15 +38,40 @@ def F1_percentage(nb_samples, nb_trials, coverage, lambda_, truepositivesprob, t
             percentage_covered[index][index1] = np.count_nonzero((upperCi > sorted_f1scores) & (sorted_f1scores > lowerCi)) / nb_samples
     return percentage_covered
 
-truepositivesprob = np.arange(0.01, 1, 0.01)
-truenegativesprob = np.arange(0.01, 1, 0.01)
+truepositivesprob = np.arange(0.01, 1, 0.01) #x
+truenegativesprob = np.arange(0.01, 1, 0.01) #y
 nb_samples = 100
 nb_trials = 100
 coverage = 0.95
 lambda_ = 0.5
-percentage_covered = F1_percentage(nb_samples, nb_trials, coverage, lambda_, truepositivesprob, truenegativesprob)
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.view_init(10, 45)
-ax.contour3D(truenegativesprob, truepositivesprob, percentage_covered)
+percentage_covered = F1_percentage(nb_samples, nb_trials, coverage, lambda_, truepositivesprob, truenegativesprob) #z
+
+# Plot the surface.
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+
+fig = plt.figure(figsize=plt.figaspect(0.5))
+ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+ax2 = fig.add_subplot(1, 2, 2)
+
+X, Y = np.meshgrid(truepositivesprob, truenegativesprob)
+surf = ax1.plot_surface(X, Y, percentage_covered, cmap=cm.coolwarm, linewidth=0)
+cont = ax2.contourf(X, Y, percentage_covered, cmap=cm.coolwarm)
+
+ax1.set_xlabel("TPR")
+ax1.set_ylabel("TNR")
+ax1.set_zlabel("Coverage")
+ax2.set_xlabel("TPR")
+ax2.set_ylabel("TNR")
+ax2.set_title("Coverage")
+
+# Customize the z axis.
+ax1.set_zlim(0, 1)
+ax1.zaxis.set_major_locator(LinearLocator(10))
+# A StrMethodFormatter is used automatically
+ax1.zaxis.set_major_formatter('{x:.02f}')
+
+# Add a color bar which maps values to colors.
+fig.colorbar(cont, shrink=0.5, aspect=5)
+
 plt.show()
