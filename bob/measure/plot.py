@@ -217,7 +217,7 @@ def roc_ci(
     alpha_multiplier=0.3,
     **kwargs
 ):
-    """Plots the ROC curve with confidence interval bounds
+    r"""Plots the ROC curve with confidence interval bounds
 
     This method will call ``matplotlib`` to plot the ROC curve for a system
     which contains a particular set of negatives and positives scores,
@@ -256,10 +256,12 @@ def roc_ci(
     axes : :py:class:`tuple`, Optional
 
         Which axes to calculate the curve for.  Variables can be chosen from
-        ``tpr``, ``tnr``, ``fnr``, and ``fpr``.  Note not all combinations make
-        sense.  You should not try to plot, for example, ``tpr`` against
-        ``fnr`` as these rates are complementary to 1.0.  The first entry
-        establishes the variable on the y axis, the second, on the x axis.
+        ``tpr``, ``tnr``, ``fnr``, and ``fpr``, ``precision`` (or ``prec``) and
+        ``recall`` (or ``rec``, which is an alias for ``tpr``).  Note not all
+        combinations make sense (no checks are performed).  You should not try
+        to plot, for example, ``tpr`` against ``fnr`` as these rates are
+        complementary to 1.0.  The first entry establishes the variable on the
+        y axis, the second, on the x axis.
 
     technique : :py:class:`str`, Optional
 
@@ -308,7 +310,7 @@ def roc_ci(
     """
 
     from matplotlib import pyplot
-    from .curves import roc_ci, curve_ci, area_under_the_curve
+    from .curves import roc_ci, curve_ci_hull, area_under_the_curve
 
     data = roc_ci(
         negatives,
@@ -320,14 +322,19 @@ def roc_ci(
         coverage=coverage,
     )
 
+    # This establishes if the curve is reasonably symmetric w.r.t. the origin
+    # (y,x) = (0,0), which is the case in homogeneous ROC plots (e.g. TPR vs
+    # TNR), and Precision-Recall curves, or w.r.t. (y,x) = (0,1), which is the
+    # case when the user wants to plot, e.g., TPR vs FPR.  The value of
+    # mixed_rates is False when the curve is symmetric w.r.t. (0,0), and True
+    # otherwise.
+    mixed_rates = False
     if (axes[0].startswith("t") and axes[1].startswith("f")) or (
         axes[1].startswith("t") and axes[0].startswith("f")
     ):
         mixed_rates = True
-    else:
-        mixed_rates = False
 
-    curve, low, high = curve_ci(data, mixed_rates=mixed_rates)
+    curve, low, high = curve_ci_hull(data, mixed_rates=mixed_rates)
     auc_curve = area_under_the_curve(curve)
     auc_low = area_under_the_curve(low)
     auc_high = area_under_the_curve(high)
@@ -388,9 +395,10 @@ def roc_for_far(
       far_values (:py:class:`list`, optional): The values for the FPR, where the
         CPR (CAR) should be plotted; each value should be in range [0,1].
 
-      CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the CPR
-        (CAR) over FPR in using :py:func:`matplotlib.pyplot.semilogx`, otherwise the
-        FPR over FNR linearly using :py:func:`matplotlib.pyplot.plot`.
+      CAR (:py:class:`bool`, optional): If set to ``True``, it will plot the
+        CPR (CAR) over FPR in using :py:func:`matplotlib.pyplot.semilogx`,
+        otherwise the FPR over FNR linearly using
+        :py:func:`matplotlib.pyplot.plot`.
 
       kwargs (:py:class:`dict`, optional): Extra plotting parameters, which are
         passed directly to :py:func:`matplotlib.pyplot.plot`.
@@ -558,7 +566,7 @@ def precision_recall_ci(
     alpha_multiplier=0.3,
     **kwargs
 ):
-    """Plots the Precision-Recall curve with confidence interval bounds
+    r"""Plots the Precision-Recall curve with confidence interval bounds
 
     This method will call ``matplotlib`` to plot the Precision-Recall curve for
     a system which contains a particular set of negatives and positives scores,
@@ -640,42 +648,17 @@ def precision_recall_ci(
 
     """
 
-    from matplotlib import pyplot
-    from .curves import precision_recall_ci, curve_ci, area_under_the_curve
-
-    data = precision_recall_ci(
-        negatives,
-        positives,
-        npoints,
+    return roc_ci(
+        negatives=negatives,
+        positives=positives,
+        npoints=npoints,
         min_fpr=min_fpr,
+        axes=("precision", "recall"),
         technique=technique,
         coverage=coverage,
-    )
-
-    curve, low, high = curve_ci(data, mixed_rates=False)
-    auc_curve = area_under_the_curve(curve)
-    auc_low = area_under_the_curve(low)
-    auc_high = area_under_the_curve(high)
-
-    # now we plot middle, lower and upper and paint in the middle
-    (line,) = pyplot.plot(curve[1], curve[0], **kwargs)
-    color = line.get_color()
-    alpha = (
-        alpha_multiplier
-        if line.get_alpha() is None
-        else alpha_multiplier * line.get_alpha()
-    )
-    (fill,) = pyplot.fill(
-        # we concatenate the points so that the formed polygon
-        # is structurally coherent (vertices are in the right order)
-        numpy.append(high[1], low[1][::-1]),  # x
-        numpy.append(high[0], low[0][::-1]),  # y
-        # we use the color/alpha from user settings
-        color=color,
-        alpha=alpha,
+        alpha_multiplier=alpha_multiplier,
         **kwargs,
     )
-    return [(line, fill), (auc_curve, auc_low, auc_high)]
 
 
 def epc(

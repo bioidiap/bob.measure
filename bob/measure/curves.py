@@ -14,7 +14,7 @@ import sys
 import numpy
 import numpy.linalg
 
-from .brute_force import far_threshold, frr_threshold
+from .brute_force import fpr_threshold, fnr_threshold
 
 
 def _log_values(points, min_power):
@@ -48,7 +48,7 @@ def _log_values(points, min_power):
 def _meaningful_thresholds(negatives, positives, n_points, min_fpr, is_sorted):
     """Returns non-repeatitive thresholds to generate ROC curves
 
-    This function creates a list of FAR (and FRR) values that we are
+    This function creates a list of FPR (and FNR) values that we are
     interesting to see on the curve.  Computes thresholds for those points.
     Sorts the thresholds so we get sorted numbers to plot on the curve and
     returns the thresholds.  Some points will be duplicate but in terms of
@@ -101,14 +101,9 @@ def _meaningful_thresholds(negatives, positives, n_points, min_fpr, is_sorted):
     fpr_list = _log_values(n_points - half_points, min_fpr)
     fnr_list = _log_values(half_points, min_fpr)
 
-    t = numpy.zeros(
-        [
-            n_points,
-        ],
-        dtype=float,
-    )
-    t[:half_points] = [frr_threshold(neg, pos, k, True) for k in fnr_list]
-    t[half_points:] = [far_threshold(neg, pos, k, True) for k in fpr_list]
+    t = numpy.zeros([n_points], dtype=float)
+    t[:half_points] = [fnr_threshold(neg, pos, k, True) for k in fnr_list]
+    t[half_points:] = [fpr_threshold(neg, pos, k, True) for k in fpr_list]
 
     t.sort()
 
@@ -138,7 +133,7 @@ def roc(negatives, positives, n_points, min_fpr=-8):
 
     min_fpr : int
 
-        Minimum FAR in terms of :math:`10^(\text{min_fpr}`. This value is also
+        Minimum FPR in terms of :math:`10^(\text{min_fpr}`. This value is also
         used for ``min_fnr``. Values should be negative.
 
 
@@ -197,15 +192,17 @@ def roc_ci(
 
     min_fpr : :py:class:`int`, Optional
 
-        Minimum FAR in terms of :math:`10^\text{min_fpr}`. This value is also
+        Minimum FPR in terms of :math:`10^\text{min_fpr}`. This value is also
         used for ``min_fnr``. Values should be negative.
 
     axes : :py:class:`tuple`, Optional
 
         Which axes to calculate the curve for.  Variables can be chosen from
-        ``tpr``, ``tnr``, ``fnr``, and ``fpr``.  Note not all combinations make
-        sense.  You should not try to plot, for example, ``tpr`` against
-        ``fnr`` as these rates are complementary to 1.0.
+        ``tpr``, ``tnr``, ``fnr``, and ``fpr``, ``precision`` (or ``prec``) and
+        ``recall`` (or ``rec``, which is an alias for ``tpr``).  Note not all
+        combinations make sense (no checks are performed).  You should not try
+        to plot, for example, ``tpr`` against ``fnr`` as these rates are
+        complementary to 1.0.
 
     technique : :py:class:`str`, Optional
 
@@ -243,20 +240,13 @@ def roc_ci(
 
     """
 
+    # in this first part, we choose the axes for the figure
     from .binary import (
         true_positives,
         true_negatives,
         false_negatives,
         false_positives,
     )
-
-    # auto-detects if this is a curve starting at [0,0] and finishing at [1,1]
-    # or the reverse - this requires special treatment when considering upper
-    # and lower bounds
-    assert len(axes) == 2, "`axes' should have 2 entries"
-
-    assert axes[0] in ("tpr", "tnr", "fpr", "fnr")
-    assert axes[1] in ("tpr", "tnr", "fpr", "fnr")
 
     def _tpr(_, pos, thres):
         tp = true_positives(pos, thres).sum()
@@ -278,32 +268,30 @@ def roc_ci(
         tn = len(neg) - fp
         return fp, tn  # k,l
 
-    if axes[0] == "tpr":
-        func1 = _tpr
-    elif axes[0] == "tnr":
-        func1 = _tnr
-    elif axes[0] == "fnr":
-        func1 = _fnr
-    elif axes[0] == "fpr":
-        func1 = _fpr
-    else:
-        raise RuntimeError(
-            f"type for axes[0] `{axes[0]}' is unknown - read function documentation for valid values"
-        )
+    def _precision(neg, pos, thres):
+        tp = true_positives(pos, thres).sum()
+        fp = false_positives(neg, thres).sum()
+        return tp, fp  # k,l
 
-    if axes[1] == "tpr":
-        func2 = _tpr
-    elif axes[1] == "tnr":
-        func2 = _tnr
-    elif axes[1] == "fnr":
-        func2 = _fnr
-    elif axes[1] == "fpr":
-        func2 = _fpr
-    else:
-        raise RuntimeError(
-            f"type for axes[1] `{axes[1]}' is unknown - read function documentation for valid values"
-        )
+    mappings = dict(
+        tpr=_tpr,
+        tnr=_tnr,
+        fnr=_fnr,
+        fpr=_fpr,
+        recall=_tpr,
+        rec=_tpr,
+        precision=_precision,
+        prec=_precision,
+    )
 
+    try:
+        func1 = mappings[axes[0]]
+        func2 = mappings[axes[1]]
+    except KeyError:
+        raise RuntimeError(f"{axes} are invalid axes - read documentation")
+
+    # from this point on, we are choosing the method to compute the
+    # confidence/credible interval
     def _bayesian(neg, pos, thres, lambda_):
         from .credible_region import beta
 
@@ -349,22 +337,26 @@ def roc_ci(
 
         return _freq(neg, pos, thres, wilson)
 
-    if technique == "bayesian|flat":
-        method = _bayesian_flat
-    elif technique == "bayesian|jeffreys":
-        method = _bayesian_jeffreys
-    elif technique == "clopper_pearson":
-        method = _clopper_pearson
-    elif technique == "agresti_coull":
-        method = _agresti_coull
-    elif technique == "wilson":
-        method = _wilson
-    else:
+    tech_mappings = {
+            "bayesian|flat": _bayesian_flat,
+            "bayesian|jeffreys": _bayesian_jeffreys,
+            "clopper_pearson": _clopper_pearson,
+            "agresti_coull": _agresti_coull,
+            "wilson": _wilson,
+            }
+
+    try:
+        method = tech_mappings[technique]
+    except KeyError:
         raise RuntimeError(
-            f"technique `{technique}' is unknown - read function documentation for valid values"
+            f"technique `{technique}' is unknown - read documentation"
         )
 
+    # finally, we do the computing of the curve
     t = _meaningful_thresholds(negatives, positives, n_points, min_fpr, False)
+
+    # then, we calculate the CI for each point, using the combination of axes
+    # and methods picked by the user
     retval = numpy.array([method(negatives, positives, k) for k in t]).T
 
     # ensure we have no lower that is higher than the modes and vice-versa
@@ -376,7 +368,7 @@ def roc_ci(
     return retval
 
 
-def curve_ci(curve, mixed_rates=False):
+def curve_ci_hull(curve, mixed_rates=False):
     """Calculates lower and upper confidence intervals of a curve
 
     This function calculates the hulls for 2 curves that are formed from points
@@ -508,11 +500,11 @@ def curve_ci(curve, mixed_rates=False):
         if quadrant == "tr":  # add on both directions
             return numpy.vstack((j + y, i + x))
         elif quadrant == "tl":  # add on y direction, subtract on x
-            return numpy.vstack((j + y, (1-i) - x))
+            return numpy.vstack((j + y, (1 - i) - x))
         elif quadrant == "bl":  # subtract on both directions
             return numpy.vstack((j - y, i - x))
         elif quadrant == "br":  # subtract on y direction, add on x
-            return numpy.vstack((j - y, (1-i) + x))
+            return numpy.vstack((j - y, (1 - i) + x))
         else:
             raise RuntimeError("quadrant must be tl, tr, bl or br")
 
@@ -590,7 +582,7 @@ def det(negatives, positives, n_points, min_fpr=-8):
 
     min_fpr : :class:`int`, Optional
 
-        Minimum FAR in terms of :math:`10^\text{min_fpr}`. This value is also
+        Minimum FPR in terms of :math:`10^\text{min_fpr}`. This value is also
         used for ``min_fnr``. Values should be negative.
 
 
@@ -683,7 +675,7 @@ def precision_recall_ci(
 
     min_fpr : :py:class:`int`, Optional
 
-        Minimum FAR in terms of :math:`10^(\text{min_fpr}`. This value is also
+        Minimum FPR in terms of :math:`10^(\text{min_fpr}`. This value is also
         used for ``min_fnr``. Values should be negative.
 
     technique : :py:class:`str`, Optional
@@ -723,72 +715,16 @@ def precision_recall_ci(
         second dimension.
 
     """
-    from .binary import true_positives, false_positives
 
-    def _bayesian(neg, pos, thres, lambda_):
-        from .credible_region import beta
-
-        tp = true_positives(pos, thres).sum()
-        fn = len(pos) - tp
-        fp = false_positives(neg, thres).sum()
-
-        _, precision, prec_low, prec_high = beta(tp, fp, lambda_, coverage)
-        _, recall, recall_low, recall_high = beta(tp, fn, lambda_, coverage)
-
-        return precision, recall, prec_low, prec_high, recall_low, recall_high
-
-    def _bayesian_flat(neg, pos, thres):
-        return _bayesian(neg, pos, thres, 1.0)
-
-    def _bayesian_jeffreys(neg, pos, thres):
-        return _bayesian(neg, pos, thres, 0.5)
-
-    def _freq(neg, pos, thres, f):
-
-        tp = true_positives(pos, thres).sum()
-        fn = len(pos) - tp
-        fp = false_positives(neg, thres).sum()
-
-        precision = tp / (tp + fp)
-        prec_low, prec_high = f(tp, fp, coverage)
-
-        recall = tp / len(pos)
-        recall_low, recall_high = f(tp, fn, coverage)
-
-        return precision, recall, prec_low, prec_high, recall_low, recall_high
-
-    def _clopper_pearson(neg, pos, thres):
-        from .confidence_interval import clopper_pearson
-
-        return _freq(neg, pos, thres, clopper_pearson)
-
-    def _agresti_coull(neg, pos, thres):
-        from .confidence_interval import agresti_coull
-
-        return _freq(neg, pos, thres, agresti_coull)
-
-    def _wilson(neg, pos, thres):
-        from .confidence_interval import wilson
-
-        return _freq(neg, pos, thres, wilson)
-
-    if technique == "bayesian|flat":
-        method = _bayesian_flat
-    elif technique == "bayesian|jeffreys":
-        method = _bayesian_jeffreys
-    elif technique == "clopper_pearson":
-        method = _clopper_pearson
-    elif technique == "agresti_coull":
-        method = _agresti_coull
-    elif technique == "wilson":
-        method = _wilson
-    else:
-        raise RuntimeError(
-            f"technique `{technique}' is unknown - read function documentation for valid values"
-        )
-
-    t = _meaningful_thresholds(negatives, positives, n_points, min_fpr, False)
-    return numpy.array([method(negatives, positives, k) for k in t]).T
+    return roc_ci(
+        negatives=negatives,
+        positives=positives,
+        n_points=n_points,
+        min_fpr=min_fpr,
+        axes=("precision", "recall"),
+        technique=technique,
+        coverage=coverage,
+    )
 
 
 def roc_for_far(negatives, positives, fpr_list, is_sorted=False):
@@ -843,7 +779,7 @@ def roc_for_far(negatives, positives, fpr_list, is_sorted=False):
     # Get the threshold for the requested far values and calculate fpr and fnr
     # values based on the threshold.
     return numpy.array(
-        [fprfnr(neg, pos, far_threshold(neg, pos, k, True)) for k in fpr_list]
+        [fprfnr(neg, pos, fpr_threshold(neg, pos, k, True)) for k in fpr_list]
     ).T
 
 
@@ -1200,7 +1136,7 @@ def rocch(negatives, positives):
 
     # Allocates output
     nbins = len(width)
-    retval = numpy.zeros((2, nbins + 1), dtype=float)  # FAR, FRR
+    retval = numpy.zeros((2, nbins + 1), dtype=float)  # FPR, FNR
 
     # Fills in output
     left = 0
