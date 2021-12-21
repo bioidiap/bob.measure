@@ -300,7 +300,7 @@ distribution), with the following parameters:
    correct or incorrect hypotheses.
 
 Notice :math:`N = \sum_i N_i` corresponds to the total number of samples
-available for the comparison.  By consequence, :math:`pi_i = N_i / N`
+available for the comparison.  By consequence, :math:`\pi_i = N_i / N`
 corresponds to the multinomial probability one of the above outcomes take
 place.  The implemented posterior has the following form:
 

@@ -1354,7 +1354,6 @@ def estimated_ci_coverage(f, n=100, expected_coverage=0.95):
 
     for p in r:
         k = numpy.random.binomial(n=n, p=p, size=size)
-        covered = numpy.zeros((n,), dtype=bool)
         regions = f(k, n - k, expected_coverage)
         covered = numpy.asarray(
             (regions[0] < p) & (p < regions[1]), dtype=float
