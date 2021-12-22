@@ -744,7 +744,7 @@ def accuracy(*args):
     """
     if isinstance(args[0], numbers.Integral):
         # (tn+tp)/(ttn+ttp)
-        return tricky_division(args[0] + args[2], args[1] + args[3])
+        return _tricky_division(args[0] + args[2], args[1] + args[3])
     return accuracy(
         true_negatives(args[0], args[2]).sum(),  # tn
         len(args[0]),  # ttn
@@ -795,6 +795,10 @@ def balanced_accuracy(*args):
 
     """
     if isinstance(args[0], numbers.Integral):
+        tn = args[0]
+        ttn = args[1]
+        tp = args[2]
+        ttp = args[3]
         return (true_negative_rate(tn, ttn) + true_positive_rate(tp, ttp)) / 2.0
     return balanced_accuracy(
         true_negatives(args[0], args[2]).sum(),  # tn
@@ -912,7 +916,7 @@ def jaccard_index(*args):
     """
     if isinstance(args[0], numbers.Integral):
         # tp/(fp+ttp)
-        return tricky_division(args[1], args[0] + args[2])
+        return _tricky_division(args[1], args[0] + args[2])
     return jaccard_index(
         false_positives(args[0], args[2]).sum(),  # fp
         true_positives(args[1], args[2]).sum(),  # tp
@@ -974,15 +978,15 @@ def matthews_correlation_coefficient(*args):
         fp = args[1] - args[0]
         tp = args[2]
         fn = args[3] - args[2]
-        return tricky_division(
+        return _tricky_division(
             (tp * tn) - (fp * fn),
             ((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)) ** 0.5,
         )
     return matthews_correlation_coefficient(
         true_negatives(args[0], args[2]).sum(),  # tn
-        len(negatives),  # ttn
+        len(args[0]),  # ttn
         true_positives(args[1], args[2]).sum(),  # tp
-        len(positives),  # ttp
+        len(args[1]),  # ttp
     )
 
 
