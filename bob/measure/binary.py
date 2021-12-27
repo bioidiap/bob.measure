@@ -410,7 +410,7 @@ def precision(*args):
 
     .. math::
 
-       \\mathrm{ppv} = \\frac{tp}{tp + fp}
+       \mathrm{ppv} = \frac{tp}{tp + fp}
 
     Notice that, in the case ``tp+fp == 0``, this function returns 0.0,
     exceptionally.  TP and FP may be calculated from both ``negative`` and
@@ -925,7 +925,7 @@ def jaccard_index(*args):
 
 
 jaccard = jaccard_index
-similarly_index = jaccard_index
+similarity_index = jaccard_index
 
 
 def matthews_correlation_coefficient(*args):
