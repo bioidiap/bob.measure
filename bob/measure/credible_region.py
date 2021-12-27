@@ -86,9 +86,17 @@ def beta(k, l, lambda_, coverage):
     * Precision or Positive-Predictive Value (PPV): p = TP/(TP+FP), so k=TP, l=FP
     * Recall, Sensitivity, or True Positive Rate: r = TP/(TP+FN), so k=TP, l=FN
     * Specificity or True Negative Rage: s = TN/(TN+FP), so k=TN, l=FP
-    * F1-score: f1 = 2TP/(2TP+FP+FN), so k=2TP, l=FP+FN
     * Accuracy: acc = TP+TN/(TP+TN+FP+FN), so k=TP+TN, l=FP+FN
     * Jaccard: j = TP/(TP+FP+FN), so k=TP, l=FP+FN
+
+    .. note:: **Important**
+
+       To calculate the limits given the required coverage, we use the
+       incomplete **inverse** (regularized, or normalized) beta function,
+       :py:func:`scipy.special.betaincinv` instead of
+       :py:func:`scipy.special.betainc`.  The latter requires we provide the
+       bounds and returns the coverage, whereas here we are interested in the
+       *inverse* behaviour.
 
 
     Parameters
