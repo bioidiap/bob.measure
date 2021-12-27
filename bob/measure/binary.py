@@ -800,6 +800,7 @@ def balanced_accuracy(*args):
         tp = args[2]
         ttp = args[3]
         return (true_negative_rate(tn, ttn) + true_positive_rate(tp, ttp)) / 2.0
+
     return balanced_accuracy(
         true_negatives(args[0], args[2]).sum(),  # tn
         len(args[0]),  # ttn
@@ -1040,6 +1041,9 @@ def measures(*args):
 
     accuracy : float
         See :py:func:`accuracy`
+
+    balanced_accuracy : float
+        See :py:func:`balanced_accuracy`
 
     half_total_error_rate : float
         See :py:func:`half_total_error_rate`
