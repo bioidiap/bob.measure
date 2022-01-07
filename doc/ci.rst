@@ -382,7 +382,7 @@ using the built-in function
    System 1 accuracy: 88.00%
    System 2 accuracy: 82.00%
    N1: 8; N2: 5; N3: 37
-   Prob(System1 > System2) = 79.67%
+   Prob(System1 > System2) = 80.12%
 
 
 Q&A
