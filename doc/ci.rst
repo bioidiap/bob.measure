@@ -371,7 +371,7 @@ using the built-in function
    )
    n3 = nb_samples - n1 - n2
    print(f"N1: {n1}; N2: {n2}; N3: {n3}")
-   prob = compare_systems([n1, n2, n3], [0.5, 0.5, 0.5], 1000000)
+   prob = compare_systems([n1, n2, n3], [0.25, 0.25, 0.25], 1000000)
    print(f"Prob(System1 > System2) = {100*prob:.2f}%")
 
 .. testoutput:: paired-comparison
