@@ -1,43 +1,134 @@
-from credible_region import beta
-import numpy as np
-import matplotlib.pyplot as plt
-import random
+import numpy
+import scipy
+from scipy import stats
+import random 
 
-def folding_monte_carlo(TP1, FP1, TP2, FP2, nb_samples):
-    lower_scores = np.empty(nb_samples)
-    upper_scores = np.empty(nb_samples)
-    numTrials1 = (TP1 + FP1)
-    tp1prob = TP1 / numTrials1
-    tp1bin = np.random.binomial(numTrials1, tp1prob, nb_samples)
-    fp1bin = numTrials1 - tp1bin
-    numTrials2 = (TP2 + FP2)
-    tp2prob = TP2 / numTrials2
-    tp2bin = np.random.binomial(numTrials2, tp2prob, nb_samples)
-    fp2bin = numTrials2 - tp2bin
-    for i in range(nb_samples):
-        _,_, lowerCiset1, upperCiset1 = beta(tp1bin[i], fp1bin[i], 0.5, 0.95)
-        _,_, lowerCiset2, upperCiset2 = beta(tp2bin[i], fp2bin[i], 0.5, 0.95)
-        lowerCi_mean = (lowerCiset1 + lowerCiset2) / 2
-        lower_scores[i] = lowerCi_mean
-        upperCi_mean = (upperCiset1 + upperCiset2) / 2
-        upper_scores[i] = upperCi_mean
-    return np.mean(lower_scores), np.mean(upper_scores)
+def average_beta_posterior(k, l, lambda_, nb_samples):
+    """Simulates the average beta posterior of a system with the provided markings
 
-def cross_folding(TP, FP, nb_samples, nb_cross_folding):
-    lower_cross_folding_scores = np.empty(nb_cross_folding)
-    upper_cross_folding_scores = np.empty(nb_cross_folding)
-    for i in range(nb_cross_folding):
-        numTrials = TP + FP
-        pool = np.append(np.zeros(FP), np.ones(TP))
-        np.random.shuffle(pool)
-        set1, set2 = np.array_split(pool, 2)
-        tp1 = np.count_nonzero(set1)
-        fp1 = set1.size - tp1
-        tp2 = np.count_nonzero(set2)
-        fp2 = set2.size - tp2
-        lower_cross_folding_scores[i], upper_cross_folding_scores[i] = folding_monte_carlo(tp1, fp1, tp2, fp2, nb_samples)
-    return np.mean(lower_cross_folding_scores), np.mean(upper_cross_folding_scores)
+    This implementation is based on [GOUTTE-2005]_, equation 7.
 
-low, upp = cross_folding(100, 100, 100, 20)
-print(low)
-print(upp)
+    Figures of merit that are supported by this procedure are those which have
+    the form :math:`v = k / (k + l)`:
+
+    * Precision or Positive-Predictive Value (PPV): :math:`p = TP/(TP+FP)`, so
+      :math:`k=TP`, :math:`l=FP`
+    * Recall, Sensitivity, or True Positive Rate: :math:`r = TP/(TP+FN)`, so
+      :math:`k=TP`, :math:`l=FN`
+    * Specificity or True Negative Rate: :math:`s = TN/(TN+FP)`, so :math:`k=TN`,
+      :math:`l=FP`
+    * Accuracy: :math:`acc = TP+TN/(TP+TN+FP+FN)`, so :math:`k=TP+TN`,
+      :math:`l=FP+FN`
+    * Jaccard Index: :math:`j = TP/(TP+FP+FN)`, so :math:`k=TP`, :math:`l=FP+FN`
+
+    Parameters
+    ----------
+
+    k : 1D int vector
+        Depends on the figure of merit being considered (see above)
+
+    l : 1D int vector
+        Depends on the figure of merit being considered (see above)
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    nb_samples : int
+        number of generated gamma distribution values
+
+
+    Returns
+    -------
+
+    variates : numpy.ndarray
+        An array with size ``nb_samples`` containing a realization of equation 7.
+
+    """
+    variates = numpy.zeros(nb_samples)
+    for i in range(k.size) :
+        variates += numpy.random.beta(a=(k[i] + lambda_), b=(l[i] + lambda_), size=nb_samples)
+    return variates / k.size
+
+def average_beta(k, l, lambda_, coverage, nb_samples):
+    scores = average_beta_posterior(k, l, lambda_, nb_samples)
+
+    left_half = (1 - coverage) / 2  # size of excluded (half) area
+    sorted_scores = numpy.sort(scores)
+
+    # n.b.: we return the equally tailed range
+
+    # calculates position of score which would exclude the left_half (left)
+    lower_index = int(round(nb_samples * left_half))
+
+    # calculates position of score which would exclude the right_half (right)
+    upper_index = int(round(nb_samples * (1 - left_half)))
+
+    lower = sorted_scores[lower_index - 1]
+    upper = sorted_scores[upper_index - 1]
+
+    return numpy.mean(scores), scipy.stats.mode(scores)[0][0], lower, upper
+
+def average_f1_posterior(tp, fp, fn, lambda_, nb_samples):
+    variates = numpy.zeros(nb_samples)
+    for i in range(tp.size) :
+        u = numpy.random.gamma(shape=(tp[i] + lambda_), scale=2.0, size=nb_samples)
+        v = numpy.random.gamma(
+            shape=(fp[i] + fn[i] + (2 * lambda_)), scale=1.0, size=nb_samples)
+        variates += u / (u + v)
+    return variates / tp.size
+
+
+def average_f1_score(tp, fp, fn, lambda_, coverage, nb_samples):
+
+    scores = average_f1_posterior(tp, fp, fn, lambda_, nb_samples)
+
+    left_half = (1 - coverage) / 2  # size of excluded (half) area
+    sorted_scores = numpy.sort(scores)
+
+    # n.b.: we return the equally tailed range
+
+    # calculates position of score which would exclude the left_half (left)
+    lower_index = int(round(nb_samples * left_half))
+
+    # calculates position of score which would exclude the left_half (right)
+    upper_index = int(round(nb_samples * (1 - left_half)))
+
+    lower = sorted_scores[lower_index - 1]
+    upper = sorted_scores[upper_index - 1]
+
+    return numpy.mean(scores), scipy.stats.mode(scores)[0][0], lower, upper
+
+
+def split_number(number, num_splits) : 
+    # create an array with the same number num_splits times 
+    result = numpy.repeat(int(number/num_splits), num_splits)
+    # add the remaining to the last number
+    result[result.size - 1] += number - (num_splits * result[0])
+    # randomly add a value and remove it
+    for i in range(int(result.size / 2)) : 
+        rand = random.randint(0, result[2*i])
+        result[2*i] = result[2*i] - rand
+        result[2*i + 1] = result[2*i + 1] + rand
+    return result
+
+def average_measures(tp, fp, tn, fn, lambda_, coverage, nb_samples, num_cross_folding):
+    tpcross = split_number(tp, num_cross_folding)
+    fpcross = split_number(fp, num_cross_folding)
+    tncross = split_number(tn, num_cross_folding)
+    fncross = split_number(fn, num_cross_folding)
+    return (
+        average_beta(tpcross, fpcross, lambda_, coverage, nb_samples), # precision
+        average_beta(tpcross, fncross, lambda_, coverage, nb_samples), # recall
+        average_beta(tncross, fpcross, lambda_, coverage, nb_samples), # specificity
+        average_beta(tpcross + tncross, fpcross + fncross, lambda_, coverage, nb_samples), # accuracy
+        average_beta(tpcross, fpcross + fncross, lambda_, coverage, nb_samples), # jaccard index
+        average_f1_score(tpcross, fpcross, fncross, lambda_, coverage, nb_samples),  # f1-score
+    )
+
+
+
+
+print(average_measures(20, 25, 25, 30, 0.5, 0.95, 20, 4))
+
