@@ -205,10 +205,12 @@ def beta_posterior(k, l, lambda_, nb_samples):
     ----------
 
     k : int
-        Depends on the figure of merit being considered (see above)
+        The number of successes of the figure of merit being considered (see
+        above).
 
     l : int
-        Depends on the figure of merit being considered (see above)
+        The number of failures of the figure of merit being considered (see
+        above).
 
     lambda_ : float
         The parameterisation of the Beta prior to consider. Use
@@ -228,6 +230,142 @@ def beta_posterior(k, l, lambda_, nb_samples):
     """
 
     return numpy.random.beta(a=(k + lambda_), b=(l + lambda_), size=nb_samples)
+
+
+def average_beta_posterior(k, l, lambda_, nb_samples):
+    """Simulates the average beta posterior of many systems
+
+    This implementation is based on [GOUTTE-2005]_, equation 7.
+
+    Figures of merit that are supported by this procedure are those which have
+    the form :math:`v = k / (k + l)`:
+
+    * Precision or Positive-Predictive Value (PPV): :math:`p = TP/(TP+FP)`, so
+      :math:`k=TP`, :math:`l=FP`
+    * Recall, Sensitivity, or True Positive Rate: :math:`r = TP/(TP+FN)`, so
+      :math:`k=TP`, :math:`l=FN`
+    * Specificity or True Negative Rate: :math:`s = TN/(TN+FP)`, so :math:`k=TN`,
+      :math:`l=FP`
+    * Accuracy: :math:`acc = TP+TN/(TP+TN+FP+FN)`, so :math:`k=TP+TN`,
+      :math:`l=FP+FN`
+    * Jaccard Index: :math:`j = TP/(TP+FP+FN)`, so :math:`k=TP`, :math:`l=FP+FN`
+
+
+    Parameters
+    ----------
+
+    k : numpy.ndarray
+        A 1-D integer array with the number of successes of the figure of
+        merit being considered (see above).
+
+    l : 1D int vector
+        A 1-D integer array with the number of failures of the figure of
+        merit being considered (see above).
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    nb_samples : int
+        number of generated gamma distribution values
+
+
+    Returns
+    -------
+
+    variates : numpy.ndarray
+        An array with size ``nb_samples`` containing a realization of equation
+        7, considering the averaging of all input systems.
+
+    """
+
+    assert len(k) == len(l), (
+        f"The total number of successes and failures "
+        f"must match, but k({k}) != l({l})"
+    )
+
+    return numpy.mean(
+        [beta_posterior(kk, ll, lambda_, nb_samples) for kk, ll in zip(k, l)],
+        axis=0,
+    )
+
+
+def _evaluate_statistics(variates, coverage):
+    """Evaluates the left and right margins for a given M-C distribution
+
+
+    Parameters
+    ----------
+
+    variates : numpy.ndarray
+        A 1-D array containing the simulated variates
+
+    coverage : float
+        A number, between 0 and 1 to indicate the desired coverage.  Typically,
+        this number is set to 0.95 (95% coverage).
+
+
+    Returns
+    -------
+
+    stats : (float, float, float, float)
+        mean, mode and credible intervals for the input simulation
+
+    """
+
+    left_half = (1 - coverage) / 2  # size of excluded (half) area
+    sorted_variates = numpy.sort(variates)
+
+    # n.b.: we return the equally tailed range
+
+    # calculates position of score which would exclude the left_half (left)
+    lower_index = int(round(len(variates) * left_half))
+
+    # calculates position of score which would exclude the right_half (right)
+    upper_index = int(round(len(variates) * (1 - left_half)))
+
+    lower = sorted_variates[lower_index - 1]
+    upper = sorted_variates[upper_index - 1]
+
+    return numpy.mean(variates), scipy.stats.mode(variates)[0][0], lower, upper
+
+
+def average_beta(k, l, lambda_, coverage, nb_samples):
+    """The mean, mode, upper and lower bounds of the credible region of an
+    average of measures with beta posteriors.
+
+    This implementation is based on [GOUTTE-2005]_.
+
+
+    Parameters
+    ----------
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    coverage : float
+        A floating-point number between 0 and 1.0 indicating the coverage
+        you're expecting.  A value of 0.95 will ensure 95% of the area under
+        the probability density of the posterior is covered by the returned
+        equal-tailed interval.
+
+    nb_samples : int
+        number of generated variates for the M-C simulation
+
+
+    Returns
+    -------
+
+    statistics : (float, float, float, float)
+        mean, mode and credible intervals (95% CI)
+
+    """
+
+    variates = average_beta_posterior(k, l, lambda_, nb_samples)
+    return _evaluate_statistics(variates, coverage)
 
 
 def compare_beta_posteriors(k1, l1, k2, l2, lambda_, nb_samples):
@@ -325,6 +463,59 @@ def f1_posterior(tp, fp, fn, lambda_, nb_samples):
     return u / (u + v)
 
 
+def average_f1_posterior(tp, fp, fn, lambda_, nb_samples):
+    """Simulates the F1-score posterior of an average system with the provided
+    markings
+
+    This implementation is based on [GOUTTE-2005]_, equation 11.
+
+    Parameters
+    ----------
+
+    tp : numpy.ndarray
+        Arrays containing true positive counts, AKA "hit", for all systems to
+        be considered on the average
+
+    fp : numpy.ndarray
+        Arrays containing false positive counts, AKA "false alarm", or "Type I
+        error" for all systems to be considered on the average
+
+    fn : numpy.ndarray
+        Arrays containing false Negative counts, AKA "miss", or "Type II
+        error" for all systems to be considered on the average
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.  If unsure, use 0.5.
+
+    nb_samples : int
+        number of generated gamma distribution values
+
+
+    Returns
+    -------
+
+    variates : numpy.ndarray
+        An array with size ``nb_samples`` containing a realization of equation
+        11.
+
+    """
+
+    assert (len(tp) == len(fp)) and (len(fp) == len(fn)), (
+        f"The total number of true and false positives, and false negatives "
+        f"must match, but tp({len(tp)}) / fp({len(fp)}) / fn({len(fn)})"
+    )
+
+    return numpy.mean(
+        [
+            f1_posterior(tp_, fp_, fn_, lambda_, nb_samples)
+            for tp_, fp_, fn_ in zip(tp, fp, fn)
+        ],
+        axis=0,
+    )
+
+
 def compare_f1_scores(tp1, fp1, fn1, tp2, fp2, fn2, lambda_, nb_samples):
     """
     Returns the probability that the F1-score from 1 system is bigger than the
@@ -418,23 +609,55 @@ def f1_score(tp, fp, fn, lambda_, coverage, nb_samples):
 
     """
 
-    scores = f1_posterior(tp, fp, fn, lambda_, nb_samples)
+    variates = f1_posterior(tp, fp, fn, lambda_, nb_samples)
+    return _evaluate_statistics(variates, coverage)
 
-    left_half = (1 - coverage) / 2  # size of excluded (half) area
-    sorted_scores = numpy.sort(scores)
 
-    # n.b.: we return the equally tailed range
+def average_f1_score(tp, fp, fn, lambda_, coverage, nb_samples):
+    """
+    Returns the mean, mode, upper and lower bounds of the credible
+    region of an average of F1 scores.
 
-    # calculates position of score which would exclude the left_half (left)
-    lower_index = int(round(nb_samples * left_half))
+    This implementation is based on [GOUTTE-2005]_.
 
-    # calculates position of score which would exclude the left_half (right)
-    upper_index = int(round(nb_samples * (1 - left_half)))
 
-    lower = sorted_scores[lower_index - 1]
-    upper = sorted_scores[upper_index - 1]
+    Parameters
+    ----------
 
-    return numpy.mean(scores), scipy.stats.mode(scores)[0][0], lower, upper
+    tp : numpy.ndarray
+        Array with true positive counts, AKA "hit"
+
+    fp : numpy.ndarray
+        Array with false positive count, AKA "false alarm", or "Type I error"
+
+    fn : numpy.ndarray
+        Array with false Negative count, AKA "miss", or "Type II error"
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    coverage : float
+        A floating-point number between 0 and 1.0 indicating the coverage
+        you're expecting.  A value of 0.95 will ensure 95% of the area under
+        the probability density of the posterior is covered by the returned
+        equal-tailed interval.
+
+    nb_samples : int
+        number of generated variates for the M-C simulation
+
+
+    Returns
+    -------
+
+    statistics : (float, float, float, float)
+        mean, mode and credible intervals (95% CI)
+
+    """
+
+    variates = average_f1_posterior(tp, fp, fn, lambda_, nb_samples)
+    return _evaluate_statistics(variates, coverage)
 
 
 def measures(tp, fp, tn, fn, lambda_, coverage):
@@ -601,4 +824,103 @@ def compare_systems(n, lambda_, nb_samples):
     samples = numpy.random.dirichlet(
         numpy.array(n) + numpy.array(lambda_), size=nb_samples
     )
-    return numpy.count_nonzero(samples[:,0] > samples[:,1]) / nb_samples
+    return numpy.count_nonzero(samples[:, 0] > samples[:, 1]) / nb_samples
+
+
+def average_measures(tp, fp, tn, fn, lambda_, coverage, nb_samples):
+    """Calculates mean and mode from true/false positive and negative counts
+    with credible regions, for system averages (e.g. cross-folding)
+
+    This function can return bayesian estimates of standard machine learning
+    measures from true and false positive counts of positives and negatives.
+    For a thorough look into these and alternate names for the returned values,
+    please check Wikipedia's entry on `Precision and Recall
+    <https://en.wikipedia.org/wiki/Precision_and_recall>`_.  See
+    :py:func:`beta_credible_region` for details on the calculation of returned
+    values.
+
+
+    Parameters
+    ----------
+
+    tp : numpy.ndarray
+        1-D Array with true positive counts, AKA "hit"
+
+    fp : numpy.ndarray
+        1-D Array with false positive counts, AKA "false alarm", or "Type I
+        error"
+
+    tn : numpy.nadarray
+        1-D Array with true negative counts, AKA "correct rejection"
+
+    fn : numpy.ndarray
+        1-D Array with false Negative counts, AKA "miss", or "Type II error"
+
+    lambda_ : float
+        The parameterisation of the Beta prior to consider. Use
+        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for
+        Jeffrey's prior.
+
+    coverage : float
+        A floating-point number between 0 and 1.0 indicating the coverage
+        you're expecting.  A value of 0.95 will ensure 95% of the area under
+        the probability density of the posterior is covered by the returned
+        equal-tailed interval.
+
+
+
+    Returns
+    -------
+
+    precision : (float, float, float, float)
+        P, AKA positive predictive value (PPV), mean, mode and credible
+        intervals (95% CI).  It corresponds arithmetically to ``tp/(tp+fp)``.
+
+    recall : (float, float, float, float)
+        R, AKA sensitivity, hit rate, or true positive rate (TPR), mean, mode
+        and credible intervals (95% CI).  It corresponds arithmetically to
+        ``tp/(tp+fn)``.
+
+    specificity : (float, float, float, float)
+        S, AKA selectivity or true negative rate (TNR), mean, mode and credible
+        intervals (95% CI).  It corresponds arithmetically to ``tn/(tn+fp)``.
+
+    accuracy : (float, float, float, float)
+        A, mean, mode and credible intervals (95% CI).  See `Accuracy
+        <https://en.wikipedia.org/wiki/Evaluation_of_binary_classifiers>`_. is
+        the proportion of correct predictions (both true positives and true
+        negatives) among the total number of pixels examined.  It corresponds
+        arithmetically to ``(tp+tn)/(tp+tn+fp+fn)``.  This measure includes
+        both true-negatives and positives in the numerator, what makes it
+        sensitive to data or regions without annotations.
+
+    jaccard : (float, float, float, float)
+        J, mean, mode and credible intervals (95% CI).  See `Jaccard Index or
+        Similarity <https://en.wikipedia.org/wiki/Jaccard_index>`_.  It
+        corresponds arithmetically to ``tp/(tp+fp+fn)``.  The Jaccard index
+        depends on a TP-only numerator, similarly to the F1 score.  For regions
+        where there are no annotations, the Jaccard index will always be zero,
+        irrespective of the model output.  Accuracy may be a better proxy if
+        one needs to consider the true abscence of annotations in a region as
+        part of the measure.
+
+    f1_score : (float, float, float, float)
+        F1, mean, mode and credible intervals (95% CI). See `F1-score
+        <https://en.wikipedia.org/wiki/F1_score>`_.  It corresponds
+        arithmetically to ``2*P*R/(P+R)`` or ``2*tp/(2*tp+fp+fn)``.  The F1 or
+        Dice score depends on a TP-only numerator, similarly to the Jaccard
+        index.  For regions where there are no annotations, the F1-score will
+        always be zero, irrespective of the model output.  Accuracy may be a
+        better proxy if one needs to consider the true abscence of annotations
+        in a region as part of the measure.
+
+    """
+
+    return (
+        average_beta(tp, fp, lambda_, coverage, nb_samples), # precision
+        average_beta(tp, fn, lambda_, coverage, nb_samples), # recall
+        average_beta(tn, fp, lambda_, coverage, nb_samples), # specificity
+        average_beta(tp + tn, fp + fn, lambda_, coverage, nb_samples), # accuracy
+        average_beta(tp, fp+fn, lambda_, coverage, nb_samples), # jaccard index
+        average_f1_score(tp, fp, fn, lambda_, coverage, nb_samples), # f1-score
+    )

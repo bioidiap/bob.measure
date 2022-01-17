@@ -13,3 +13,4 @@
 .. _confidence-interval: https://en.wikipedia.org/wiki/Confidence_interval
 .. _beta distribution: https://en.wikipedia.org/wiki/Beta_distribution
 .. _monte carlo simulation: https://en.wikipedia.org/wiki/Monte_Carlo_method
+.. _cross-validation: https://en.wikipedia.org/wiki/Cross-validation_(statistics)

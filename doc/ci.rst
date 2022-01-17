@@ -385,6 +385,41 @@ using the built-in function
    Prob(System1 > System2) = 80.12%
 
 
+Credible Regions in k-Fold Cross-Validation
+-------------------------------------------
+
+In k-Fold cross-validation_, typical measures from every individual system are
+averaged to report a single value for the whole method, together with the
+standard deviation or error.  This approach, however, ignores the individual
+credible regions at each fold, and may generate out-of-bounds credible regions.
+There are no guarantees averages of beta (or F1-score) posteriors are normally
+distributed.  This is likely to be difficult to very in practice however, has
+*k*, the number of folds is typically small and normality tests are less
+powerful in these cases.
+
+Instead, we propose to use a `Monte Carlo simulation`_ (MC) to a) simulate the
+posteriors of the measures of interest and every fold, and b) evaluate averages
+of standard Machine Learning measures.  MC simulation is effective in
+overcoming analytical complications in formulating the posterior of averages,
+and can be applied to all measures explored so far.
+
+To do so, use :py:func:`bob.measure.credible_region.average_measures` to
+evaluate the posterior of typical Machine Learning measures, including TPR,
+TNR, Precision and the F1-score.  Use
+:py:func:`bob.measure.credible_region.average_beta` to estimate the posterior
+of averages for measures that have a beta (conjugate) posterior.  Use
+:py:func:`bob.measure.credible_region.average_f1_score` to estimate the
+posterior of averages for the F1-score.
+
+.. note::
+
+   It is currently not possible to estimate the ROC and its credible region for
+   system averages.  To do so, we could establish a set of common thresholds
+   for all folds, and then evaluate the ROC (or Precision-Recall) points taking
+   into consideration individual fold TP, TN, FP and FN counts.  This is yet to
+   be implemented.
+
+
 Q&A
 ---
 
