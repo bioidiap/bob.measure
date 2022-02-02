@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="16.45 -0.556 433.433 478.708" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <line style="fill: none; stroke: rgb(235, 0, 0); stroke-dasharray: 5px;" x1="24.842" y1="470.522" x2="202.902" y2="52.528"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none;" d="M 156.158 39.031 C 212.123 39.031 258.413 92.305 261.793 160.605"/>
+  <rect x="156.158" y="39.031" width="105.635" height="121.574" style="fill: none; stroke: rgb(132, 132, 132); stroke-dasharray: 4px;"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 3px;" d="M 85.981 150.341 C 191.549 150.341 285.507 217.274 320 317.048"/>
+  <circle style="fill: rgb(0, 158, 8);" cx="156.36" cy="160.365" r="5.118"/>
+  <circle style="fill: rgb(235, 0, 0);" cx="202.993" cy="51.898" r="5.118"/>
+  <circle style="fill: rgb(0, 22, 224);" cx="261.57" cy="160.263" r="5.118"/>
+  <text style="fill: rgb(84, 108, 196); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, -8.175751, -67.921875)"><tspan x="269.978" y="252.439">upper limit of CI on</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>the horizontal axis</tspan></text>
+  <text style="fill: rgb(73, 107, 207); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, -163.179672, -241.118805)"><tspan x="269.978" y="252.439">upper limit of CI on</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>the vertical axis</tspan></text>
+  <text style="fill: rgba(33, 125, 39, 0.62); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" x="57.324" y="135.967">measured point</text>
+  <circle style="fill: rgb(0, 22, 224);" cx="157.276" cy="39.42" r="5.118"/>
+  <path d="M 201.705 182.264 H 273.808 L 267.808 177.264 L 285.808 183.764 L 267.808 190.264 L 273.808 185.264 H 201.705 V 182.264 Z" style="fill: rgb(243, 189, 189);" transform="matrix(1, -0.000002, 0.000002, 1, 14.191308, -131.235535)" bx:shape="arrow 201.705 177.264 84.103 13 3 18 6 1@807f1bb2"/>
+  <text style="fill: rgb(225, 55, 55); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, 40.351688, -207.260498)"><tspan x="269.978" y="252.439">newly estimated graphical</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>upper bound for the</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>measured point</tspan></text>
+  <path d="M 23.951 474.65 H 397.498 L 391.498 469.65 L 409.498 476.15 L 391.498 482.65 L 397.498 477.65 H 23.951 V 474.65 Z" style="fill: rgb(153, 153, 153);" transform="matrix(0, -1, 1, 0, -452.199951, 500.102753)" bx:shape="arrow 23.951 469.65 385.547 13 3 18 6 1@016a6578"/>
+  <path d="M 17.45 469.152 H 390.997 L 384.997 464.152 L 402.997 470.652 L 384.997 477.152 L 390.997 472.152 H 17.45 V 469.152 Z" style="fill: rgb(153, 153, 153);" bx:shape="arrow 17.45 464.152 385.547 13 3 18 6 1@bab9a0d0"/>
+  <text style="fill: rgba(0, 0, 0, 0.58); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, 5.647339, -128.46875)"><tspan x="269.978" y="252.439">quarter of ellypse with</tspan><tspan x="269.978" dy="1em">​</tspan><tspan>radii defined by CI limits</tspan></text>
+  <text style="fill: rgba(0, 0, 0, 0.58); font-family: Arial, sans-serif; font-size: 12px; font-style: italic; white-space: pre;" transform="matrix(1, 0, 0, 1, -3.280754, 89.692505)" x="269.9779968261719" y="252.43899536132812">estimated performance<tspan x="269.9779968261719" dy="1em">​</tspan>curve</text>
+</svg>

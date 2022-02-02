@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.confidence_interval &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bob.measure.credible_region" href="bob.measure.credible_region.html" />
+    <link rel="prev" title="bob.measure.regression" href="bob.measure.regression.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> bob.measure
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.binary.html">bob.measure.binary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.regression.html">bob.measure.regression</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bob.measure.confidence_interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.credible_region.html">bob.measure.credible_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.brute_force.html">bob.measure.brute_force</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.curves.html">bob.measure.curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.cmc.html">bob.measure.cmc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.sensitivity.html">bob.measure.sensitivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.load.html">bob.measure.load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.calibration.html">bob.measure.calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.utils.html">bob.measure.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../api.html">Python API</a> &raquo;</li>
+      <li>bob.measure.confidence_interval</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/bob.measure.confidence_interval.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-bob.measure.confidence_interval">
+<span id="bob-measure-confidence-interval"></span><h1>bob.measure.confidence_interval<a class="headerlink" href="#module-bob.measure.confidence_interval" title="Permalink to this headline">¶</a></h1>
+<p>Frequentist confidence interval estimation</p>
+<p>(Frequentist) confidence interval interpretation, with 95% coverage: <strong>If we
+are to take several independent random samples from the population and
+construct confidence intervals from each of the sample data, then 95 out of 100
+confidence intervals will contain the true mean (true proportion, in this
+context of proportion)</strong>.</p>
+<p>See a discussion in <a class="reference external" href="https://towardsdatascience.com/five-confidence-intervals-for-proportions-that-you-should-know-about-7ff5484c024f">Five Confidence Intervals for Proportions That You
+Should Know About</a>.</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.confidence_interval.agresti_coull" title="bob.measure.confidence_interval.agresti_coull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agresti_coull</span></code></a>(k, l[, coverage])</p></td>
+<td><p>Calculates the confidence interval for proportion estimates</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.confidence_interval.clopper_pearson" title="bob.measure.confidence_interval.clopper_pearson"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clopper_pearson</span></code></a>(k, l[, coverage])</p></td>
+<td><p>Calculates the &quot;exact&quot; confidence interval for proportion estimates</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.confidence_interval.compare" title="bob.measure.confidence_interval.compare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare</span></code></a>(tp1, fp1, tn1, fn1, tp2, fp2, tn2, ...)</p></td>
+<td><p>Compare the credible regions of 2 systems for different performance measures 'precision', 'recall', 'specificity', 'accuracy', 'Jaccard index' and 'F1 score'.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.confidence_interval.compareToString" title="bob.measure.confidence_interval.compareToString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compareToString</span></code></a>(dictionary)</p></td>
+<td><p>Outputs a string describing the comparison between the two confidence interval This function should be used with the dictionary output of the compare function if it's not the case the output is undefined.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.confidence_interval.wilson" title="bob.measure.confidence_interval.wilson"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wilson</span></code></a>(k, l[, coverage])</p></td>
+<td><p>Calculates the confidence interval for proportion estimates</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.confidence_interval.clopper_pearson">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">clopper_pearson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/confidence_interval.html#clopper_pearson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.confidence_interval.clopper_pearson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the “exact” confidence interval for proportion estimates</p>
+<p>The Clopper-Pearson interval method is used for estimating the confidence
+intervals.  This implementation is based on <a class="reference internal" href="../references.html#clopper-1934" id="id1"><span>[CLOPPER-1934]</span></a>.  This
+technique is <strong>very</strong> conservative - in most of the cases, coverage is
+greater than the required value, which may imply in too large confidence
+intervals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of successes observed on the experiment</p></li>
+<li><p><strong>l</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of failures observed on the experiment</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A floating-point number between 0 and 1.0 indicating the
+coverage you’re expecting.  A value of 0.95 will ensure 95% coverage.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lower, upper</strong> – The lower and upper bounds of the credible region</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, 1D)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.confidence_interval.agresti_coull">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">agresti_coull</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/confidence_interval.html#agresti_coull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.confidence_interval.agresti_coull" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the confidence interval for proportion estimates</p>
+<p>The Agresti-Coull interval method is used for estimating the confidence
+intervals.  This implementation is based on <a class="reference internal" href="../references.html#agresti-1998" id="id2"><span>[AGRESTI-1998]</span></a>.  This
+technique is conservative - in most of the cases, coverage is greater
+than the required value, which may imply a larger confidence interval that
+required.</p>
+<p>This function is considered a good choice for the frequentist approach, if
+you cannot use <a class="reference internal" href="#bob.measure.confidence_interval.clopper_pearson" title="bob.measure.confidence_interval.clopper_pearson"><code class="xref py py-func docutils literal notranslate"><span class="pre">clopper_pearson()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of successes observed on the experiment</p></li>
+<li><p><strong>l</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of failures observed on the experiment</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A floating-point number between 0 and 1.0 indicating the
+coverage you’re expecting.  A value of 0.95 will ensure 95% coverage.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lower, upper</strong> – The lower and upper bounds of the credible region</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, 1D)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.confidence_interval.wilson">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">wilson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/confidence_interval.html#wilson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.confidence_interval.wilson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the confidence interval for proportion estimates</p>
+<p>The Wilson interval method is used for estimating the confidence intervals.
+This implementation is based on <a class="reference internal" href="../references.html#wilson-1927" id="id3"><span>[WILSON-1927]</span></a>.  This implementation does
+<strong>not</strong> contain the continuity correction.  It is as conservative in the
+extremes of the domain as the bayesian approach and can be a good default,
+if <a class="reference internal" href="#bob.measure.confidence_interval.clopper_pearson" title="bob.measure.confidence_interval.clopper_pearson"><code class="xref py py-func docutils literal notranslate"><span class="pre">clopper_pearson()</span></code></a> cannot be used.</p>
+<p>This function is considered the best “default” for the frequentist
+approach as it is not too conservative and assumes a resonable value
+through out the range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of successes observed on the experiment</p></li>
+<li><p><strong>l</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><em>1D</em><em>)</em>) – Number of failures observed on the experiment</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A floating-point number between 0 and 1.0 indicating the
+coverage you’re expecting.  A value of 0.95 will ensure 95% coverage.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lower, upper</strong> – The lower and upper bounds of the credible region</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>, 1D)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.confidence_interval.compare">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tp1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tn1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tn2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/confidence_interval.html#compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.confidence_interval.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the credible regions of 2 systems for different performance measures
+‘precision’, ‘recall’, ‘specificity’, ‘accuracy’, ‘Jaccard index’ and ‘F1 score’.
+The method used to compare them is described in this two articles
+<a class="reference external" href="https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm">https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm</a> and
+<a class="reference external" href="https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means">https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tp1/2</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – True positive count for 1st/2nd system, AKA “hit”</p></li>
+<li><p><strong>fp1/2</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – False positive count for 1st/2nd system, AKA “false alarm”, or “Type I error”</p></li>
+<li><p><strong>tn1/2</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – True negative count for 1st/2nd system, AKA “correct rejection”</p></li>
+<li><p><strong>fn1/2</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – False Negative count for 1st/2nd system, AKA “miss”, or “Type II error”</p></li>
+<li><p><strong>lambda</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The parameterisation of the Beta prior to consider. Use
+<span class="math notranslate nohighlight">\(\lambda=1\)</span> for a flat prior.  Use <span class="math notranslate nohighlight">\(\lambda=0.5\)</span> for
+Jeffrey’s prior.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>dictionary</strong> (<em>a dictionary indicating which confidence interval is better for each measure.</em>)</p></li>
+<li><p><em>It returns a tuple that indicates the direction “&gt;”, “&lt;”, and the CI (0.95, 0.85).</em></p></li>
+<li><p><em>retval[“F1-score”] = (“&gt;”, 0.85) means that system 1 is better than system 2 with a 5% uncertainty considering a 0.85 CI.</em></p></li>
+<li><p><em>retval[“precision”] = (“=”, None) means that system 1 and system 2 are comparable according to that metric.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.confidence_interval.compareToString">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">compareToString</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/confidence_interval.html#compareToString"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.confidence_interval.compareToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs a string describing the comparison between the two confidence interval
+This function should be used with the dictionary output of the compare function
+if it’s not the case the output is undefined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dictionary</strong> (<em>dictionary</em>) – The dictionary that describes the comparison of the confidence intervals of the different metrics
+example : dictionary[“precision”] = (“=”, None)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>result</strong> (<em>a string explaining which confidence interval is better for each measure.</em>)</p></li>
+<li><p><em>It translates the tuple given from the compare function.</em></p></li>
+<li><p><em>dictionary[“F1-score”] = (“&gt;”, 0.85) means that system 1 is better than system 2 with “significance” at the 5% level for</em></p></li>
+<li><p><em>the F1-score</em></p></li>
+<li><p><em>dictionary[“accuracy”] = (“&lt;”, 0.95) means that System 2 is better than system 1 with convincing evidence for the accuracy</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bob.measure.regression.html" class="btn btn-neutral float-left" title="bob.measure.regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bob.measure.credible_region.html" class="btn btn-neutral float-right" title="bob.measure.credible_region" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

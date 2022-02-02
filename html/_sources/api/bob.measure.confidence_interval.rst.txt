@@ -1,0 +1,33 @@
+﻿bob.measure.confidence\_interval
+================================
+
+.. automodule:: bob.measure.confidence_interval
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      agresti_coull
+      clopper_pearson
+      compare
+      compareToString
+      wilson
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

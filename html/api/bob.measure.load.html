@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.load &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bob.measure.calibration" href="bob.measure.calibration.html" />
+    <link rel="prev" title="bob.measure.plot" href="bob.measure.plot.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> bob.measure
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.binary.html">bob.measure.binary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.regression.html">bob.measure.regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.confidence_interval.html">bob.measure.confidence_interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.credible_region.html">bob.measure.credible_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.brute_force.html">bob.measure.brute_force</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.curves.html">bob.measure.curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.cmc.html">bob.measure.cmc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.sensitivity.html">bob.measure.sensitivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bob.measure.load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.calibration.html">bob.measure.calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.utils.html">bob.measure.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../api.html">Python API</a> &raquo;</li>
+      <li>bob.measure.load</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/bob.measure.load.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-bob.measure.load">
+<span id="bob-measure-load"></span><h1>bob.measure.load<a class="headerlink" href="#module-bob.measure.load" title="Permalink to this headline">¶</a></h1>
+<p>A set of utilities to load score files with different formats.</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.load.split" title="bob.measure.load.split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split</span></code></a>(filename)</p></td>
+<td><p>Loads the scores from the given file and splits them into positive and negative arrays.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.load.split_files" title="bob.measure.load.split_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_files</span></code></a>(filenames)</p></td>
+<td><p>Parse a list of files using <a class="reference internal" href="#bob.measure.load.split" title="bob.measure.load.split"><code class="xref py py-func docutils literal notranslate"><span class="pre">split()</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.load.split">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.load.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">negatives</span><span class="p"><span class="pre">,</span> </span><span class="pre">positives</span></span></span><a class="reference internal" href="../_modules/bob/measure/load.html#split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.load.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the scores from the given file and splits them into positive
+and negative arrays. The file must be a two columns file where the first
+column contains -1 or 1 (for negative or positive respectively) and the
+second the corresponding scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>:) – The name of the file containing the scores.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>negatives</strong> (1D <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of type float) – This array contains the list of negative scores</p></li>
+<li><p><strong>positives</strong> (1D <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of type float) – This array contains the list of positive scores</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.load.split_files">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.load.</span></span><span class="sig-name descname"><span class="pre">split_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/load.html#split_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.load.split_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a list of files using <a class="reference internal" href="#bob.measure.load.split" title="bob.measure.load.split"><code class="xref py py-func docutils literal notranslate"><span class="pre">split()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filenames</strong> – <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a>: A list of file paths</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>:any:`list`</strong> (<em>A list of tuples, where each tuple contains the</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">negative</span></code> and <code class="docutils literal notranslate"><span class="pre">positive</span></code> scores for one probe of the database. Both</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">negatives</span></code> and <code class="docutils literal notranslate"><span class="pre">positives</span></code> can be either an 1D</p></li>
+<li><p><a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of type <code class="docutils literal notranslate"><span class="pre">float</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bob.measure.plot.html" class="btn btn-neutral float-left" title="bob.measure.plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bob.measure.calibration.html" class="btn btn-neutral float-right" title="bob.measure.calibration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

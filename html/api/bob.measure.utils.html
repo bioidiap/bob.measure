@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.utils &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command-Line Interface" href="../cli.html" />
+    <link rel="prev" title="bob.measure.calibration" href="bob.measure.calibration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> bob.measure
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.binary.html">bob.measure.binary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.regression.html">bob.measure.regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.confidence_interval.html">bob.measure.confidence_interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.credible_region.html">bob.measure.credible_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.brute_force.html">bob.measure.brute_force</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.curves.html">bob.measure.curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.cmc.html">bob.measure.cmc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.sensitivity.html">bob.measure.sensitivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.load.html">bob.measure.load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.calibration.html">bob.measure.calibration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bob.measure.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.plot.html">bob.measure.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../api.html">Python API</a> &raquo;</li>
+      <li>bob.measure.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/bob.measure.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-bob.measure.utils">
+<span id="bob-measure-utils"></span><h1>bob.measure.utils<a class="headerlink" href="#module-bob.measure.utils" title="Permalink to this headline">¶</a></h1>
+<p>utility functions for bob.measure</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.utils.get_colors" title="bob.measure.utils.get_colors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_colors</span></code></a>(n)</p></td>
+<td><p>Get a list of matplotlib colors</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.utils.get_fta" title="bob.measure.utils.get_fta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fta</span></code></a>(scores)</p></td>
+<td><p>calculates the Failure To Acquire (FtA) rate, i.e. proportion of NaN(s)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.utils.get_fta_list" title="bob.measure.utils.get_fta_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fta_list</span></code></a>(scores)</p></td>
+<td><p>Get FTAs for a list of scores</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.utils.get_linestyles" title="bob.measure.utils.get_linestyles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_linestyles</span></code></a>(n[, on])</p></td>
+<td><p>Get a list of matplotlib linestyles</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.utils.get_thres" title="bob.measure.utils.get_thres"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_thres</span></code></a>(criter, neg, pos[, far])</p></td>
+<td><p>Get threshold for the given positive/negatives scores and criterion</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.utils.remove_nan" title="bob.measure.utils.remove_nan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nan</span></code></a>(scores)</p></td>
+<td><p>Remove NaN(s) in the given array</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.remove_nan">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">remove_nan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#remove_nan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.remove_nan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove NaN(s) in the given array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scores</strong> – <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> : array</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>:py:class:`numpy.ndarray`</strong> (<em>array without NaN(s)</em>)</p></li>
+<li><p><strong>:py:class:`int`</strong> (<em>number of NaN(s) in the input array</em>)</p></li>
+<li><p><strong>:py:class:`int`</strong> (<em>length of the input array</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.get_fta">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">get_fta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#get_fta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.get_fta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>calculates the Failure To Acquire (FtA) rate, i.e. proportion of NaN(s)</dt><dd><p>in the input scores</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scores</strong> – Tuple of (<code class="docutils literal notranslate"><span class="pre">positive</span></code>, <code class="docutils literal notranslate"><span class="pre">negative</span></code>) <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>(:py:class:`numpy.ndarray`, :py:class:`numpy.ndarray`)</strong> (<em>scores without</em>)</p></li>
+<li><p><em>NaN(s)</em></p></li>
+<li><p><strong>:py:class:`float`</strong> (<em>failure to acquire rate</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.get_fta_list">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">get_fta_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#get_fta_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.get_fta_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get FTAs for a list of scores</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scores</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a>) – list of scores</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>neg_list</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a>) – list of negatives</p></li>
+<li><p><strong>pos_list</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a>) – list of positives</p></li>
+<li><p><strong>fta_list</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a>) – list of FTAs</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.get_thres">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">get_thres</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">far</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#get_thres"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.get_thres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get threshold for the given positive/negatives scores and criterion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>criter</strong> – Criterion (<cite>eer</cite> or <cite>hter</cite> or <cite>far</cite>)</p></li>
+<li><p><strong>neg</strong> (<a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>:) – array of negative scores
+pos : <a class="reference external" href="https://numpy.org/doc/1.20/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>::
+array of positive scores</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>threshold</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.get_colors">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">get_colors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#get_colors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.get_colors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of matplotlib colors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of colors to output</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of colors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.utils.get_linestyles">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.utils.</span></span><span class="sig-name descname"><span class="pre">get_linestyles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/utils.html#get_linestyles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.utils.get_linestyles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of matplotlib linestyles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of linestyles to output</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of linestyles</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bob.measure.calibration.html" class="btn btn-neutral float-left" title="bob.measure.calibration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../cli.html" class="btn btn-neutral float-right" title="Command-Line Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

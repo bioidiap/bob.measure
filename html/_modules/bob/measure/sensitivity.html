@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.sensitivity &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> bob.measure
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>bob.measure.sensitivity</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bob.measure.sensitivity</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># coding=utf-8</span>
+
+<span class="sd">&quot;&quot;&quot;Methods for global sensitivity analysis&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">.regression</span> <span class="kn">import</span> <span class="n">mse</span>
+
+
+<div class="viewcode-block" id="relevance"><a class="viewcode-back" href="../../../api/bob.measure.sensitivity.html#bob.measure.sensitivity.relevance">[docs]</a><span class="k">def</span> <span class="nf">relevance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the relevance of every input feature to the estimation process</span>
+
+<span class="sd">    Uses the formula:</span>
+
+<span class="sd">      Neural Triggering System Operating on High Resolution Calorimetry</span>
+<span class="sd">      Information, Anjos et al, April 2006, Nuclear Instruments and Methods in</span>
+<span class="sd">      Physics Research, volume 559, pages 134-138</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">      R(x_{i}) = |E[(o(x) - o(x|x_{i}=E[x_{i}]))^2]|</span>
+
+<span class="sd">    In other words, the relevance of a certain input feature **i** is the</span>
+<span class="sd">    change on the machine output value when such feature is replaced by its</span>
+<span class="sd">    mean for all input vectors. For this to work, the `input` parameter has to</span>
+<span class="sd">    be a 2D array with features arranged column-wise while different examples</span>
+<span class="sd">    are arranged row-wise.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+
+<span class="sd">    data : numpy.ndarray (float, 2D)</span>
+
+<span class="sd">        A 2D float array that contains the input data to be analyzed by the</span>
+<span class="sd">        method of interest.  Data should be arranged such that the first</span>
+<span class="sd">        dimension (rows) corresponds to the samples and the second dimension</span>
+<span class="sd">        (columns) to the features available.  So, if you have 20 samples and 5</span>
+<span class="sd">        features for each input data sample, then your array should have a</span>
+<span class="sd">        shape equal to ``(20, 5)``.</span>
+
+<span class="sd">    f : object</span>
+
+<span class="sd">        A callable, that inputs data, and outputs a :py:class:`numpy.ndarray`.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+
+<span class="sd">    relevance : numpy.ndarray (float, 1D)</span>
+
+<span class="sd">      A 1D float array as large as the number of columns (second dimension) of</span>
+<span class="sd">      your input array, estimating the &quot;relevance&quot; of each input column (or</span>
+<span class="sd">      feature) to the output provided by the function ``f``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">o</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">retval</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="n">d2</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">data</span>  <span class="c1"># reset</span>
+        <span class="n">d2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span>
+        <span class="n">retval</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">mse</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">d2</span><span class="p">),</span> <span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">retval</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

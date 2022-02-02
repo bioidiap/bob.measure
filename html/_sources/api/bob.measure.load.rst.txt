@@ -1,0 +1,30 @@
+﻿bob.measure.load
+================
+
+.. automodule:: bob.measure.load
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      split
+      split_files
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,66 @@
+﻿bob.measure.binary
+==================
+
+.. automodule:: bob.measure.binary
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      accuracy
+      balanced_accuracy
+      correctly_classified_negatives
+      correctly_classified_positives
+      eer
+      f1_score
+      fall_out
+      false_acceptance_rate
+      false_negative_rate
+      false_negatives
+      false_positive_rate
+      false_positives
+      false_rejection_rate
+      farfrr
+      fprfnr
+      half_total_error_rate
+      hit_rate
+      jaccard
+      jaccard_index
+      matthews_correlation_coefficient
+      measures
+      miss_rate
+      negative_predictive_value
+      phi_coefficient
+      positive_predictive_value
+      precision
+      precision_recall
+      recall
+      selectivity
+      sensitivity
+      similarly_index
+      specificity
+      true_acceptance_rate
+      true_negative_rate
+      true_negatives
+      true_positive_rate
+      true_positives
+      true_rejection_rate
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

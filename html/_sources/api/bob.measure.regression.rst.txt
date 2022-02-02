@@ -1,0 +1,30 @@
+﻿bob.measure.regression
+======================
+
+.. automodule:: bob.measure.regression
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      mse
+      rmse
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

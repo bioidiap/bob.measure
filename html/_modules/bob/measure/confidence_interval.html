@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.confidence_interval &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> bob.measure
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>bob.measure.confidence_interval</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bob.measure.confidence_interval</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># coding=utf-8</span>
+
+<span class="sd">&quot;&quot;&quot;Frequentist confidence interval estimation</span>
+
+<span class="sd">(Frequentist) confidence interval interpretation, with 95% coverage: **If we</span>
+<span class="sd">are to take several independent random samples from the population and</span>
+<span class="sd">construct confidence intervals from each of the sample data, then 95 out of 100</span>
+<span class="sd">confidence intervals will contain the true mean (true proportion, in this</span>
+<span class="sd">context of proportion)**.</span>
+
+<span class="sd">See a discussion in `Five Confidence Intervals for Proportions That You</span>
+<span class="sd">Should Know About &lt;ci-evaluation_&gt;`_.</span>
+
+<span class="sd">.. include:: ../links.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">from</span> <span class="nn">.credible_region</span> <span class="kn">import</span> <span class="n">measures</span>
+
+
+<div class="viewcode-block" id="clopper_pearson"><a class="viewcode-back" href="../../../api/bob.measure.confidence_interval.html#bob.measure.confidence_interval.clopper_pearson">[docs]</a><span class="k">def</span> <span class="nf">clopper_pearson</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the &quot;exact&quot; confidence interval for proportion estimates</span>
+
+<span class="sd">    The Clopper-Pearson interval method is used for estimating the confidence</span>
+<span class="sd">    intervals.  This implementation is based on [CLOPPER-1934]_.  This</span>
+<span class="sd">    technique is **very** conservative - in most of the cases, coverage is</span>
+<span class="sd">    greater than the required value, which may imply in too large confidence</span>
+<span class="sd">    intervals.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+
+<span class="sd">    k : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of successes observed on the experiment</span>
+
+<span class="sd">    l : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of failures observed on the experiment</span>
+
+<span class="sd">    coverage : :py:class:`float`, Optional</span>
+<span class="sd">        A floating-point number between 0 and 1.0 indicating the</span>
+<span class="sd">        coverage you&#39;re expecting.  A value of 0.95 will ensure 95% coverage.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    lower, upper: float, numpy.ndarray (float, 1D)</span>
+<span class="sd">        The lower and upper bounds of the credible region</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_scalar</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="c1"># make it an array</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+
+    <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">coverage</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># half-width in each side</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">right</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+
+    <span class="n">lower</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lower</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">upper</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">upper</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span></div>
+
+
+<div class="viewcode-block" id="agresti_coull"><a class="viewcode-back" href="../../../api/bob.measure.confidence_interval.html#bob.measure.confidence_interval.agresti_coull">[docs]</a><span class="k">def</span> <span class="nf">agresti_coull</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the confidence interval for proportion estimates</span>
+
+<span class="sd">    The Agresti-Coull interval method is used for estimating the confidence</span>
+<span class="sd">    intervals.  This implementation is based on [AGRESTI-1998]_.  This</span>
+<span class="sd">    technique is conservative - in most of the cases, coverage is greater</span>
+<span class="sd">    than the required value, which may imply a larger confidence interval that</span>
+<span class="sd">    required.</span>
+
+<span class="sd">    This function is considered a good choice for the frequentist approach, if</span>
+<span class="sd">    you cannot use :py:func:`clopper_pearson`.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+
+<span class="sd">    k : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of successes observed on the experiment</span>
+
+<span class="sd">    l : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of failures observed on the experiment</span>
+
+<span class="sd">    coverage : :py:class:`float`, Optional</span>
+<span class="sd">        A floating-point number between 0 and 1.0 indicating the</span>
+<span class="sd">        coverage you&#39;re expecting.  A value of 0.95 will ensure 95% coverage.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    lower, upper: float, numpy.ndarray (float, 1D)</span>
+<span class="sd">        The lower and upper bounds of the credible region</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_scalar</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="c1"># make it an array</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+
+    <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">coverage</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># half-width in each side</span>
+    <span class="n">crit</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+    <span class="n">kl_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="n">l</span><span class="p">)</span> <span class="o">+</span> <span class="n">crit</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">q_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="n">crit</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">kl_c</span>
+    <span class="n">std_c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">q_c</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">q_c</span><span class="p">)</span> <span class="o">/</span> <span class="n">kl_c</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">crit</span> <span class="o">*</span> <span class="n">std_c</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">q_c</span> <span class="o">-</span> <span class="n">dist</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">q_c</span> <span class="o">+</span> <span class="n">dist</span>
+
+    <span class="n">lower</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lower</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">upper</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">upper</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span></div>
+
+
+<div class="viewcode-block" id="wilson"><a class="viewcode-back" href="../../../api/bob.measure.confidence_interval.html#bob.measure.confidence_interval.wilson">[docs]</a><span class="k">def</span> <span class="nf">wilson</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the confidence interval for proportion estimates</span>
+
+<span class="sd">    The Wilson interval method is used for estimating the confidence intervals.</span>
+<span class="sd">    This implementation is based on [WILSON-1927]_.  This implementation does</span>
+<span class="sd">    **not** contain the continuity correction.  It is as conservative in the</span>
+<span class="sd">    extremes of the domain as the bayesian approach and can be a good default,</span>
+<span class="sd">    if :py:func:`clopper_pearson` cannot be used.</span>
+
+<span class="sd">    This function is considered the best &quot;default&quot; for the frequentist</span>
+<span class="sd">    approach as it is not too conservative and assumes a resonable value</span>
+<span class="sd">    through out the range.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+
+<span class="sd">    k : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of successes observed on the experiment</span>
+
+<span class="sd">    l : int, numpy.ndarray (int, 1D)</span>
+<span class="sd">        Number of failures observed on the experiment</span>
+
+<span class="sd">    coverage : :py:class:`float`, Optional</span>
+<span class="sd">        A floating-point number between 0 and 1.0 indicating the</span>
+<span class="sd">        coverage you&#39;re expecting.  A value of 0.95 will ensure 95% coverage.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    lower, upper: float, numpy.ndarray (float, 1D)</span>
+<span class="sd">        The lower and upper bounds of the credible region</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_scalar</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="c1"># make it an array</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+
+    <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">coverage</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># half-width in each side</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">k</span> <span class="o">+</span> <span class="n">l</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">k</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">crit</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+    <span class="n">crit2</span> <span class="o">=</span> <span class="n">crit</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">crit2</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">crit2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">))</span> <span class="o">/</span> <span class="n">denom</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">crit</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="o">+</span> <span class="n">crit2</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">n</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">dist</span> <span class="o">/=</span> <span class="n">denom</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">dist</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">dist</span>
+
+    <span class="n">lower</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lower</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">upper</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">upper</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">is_scalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span></div>
+
+<div class="viewcode-block" id="compare"><a class="viewcode-back" href="../../../api/bob.measure.confidence_interval.html#bob.measure.confidence_interval.compare">[docs]</a><span class="k">def</span> <span class="nf">compare</span><span class="p">(</span><span class="n">tp1</span><span class="p">,</span> <span class="n">fp1</span><span class="p">,</span> <span class="n">tn1</span><span class="p">,</span> <span class="n">fn1</span><span class="p">,</span> <span class="n">tp2</span><span class="p">,</span> <span class="n">fp2</span><span class="p">,</span> <span class="n">tn2</span><span class="p">,</span> <span class="n">fn2</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare the credible regions of 2 systems for different performance measures</span>
+<span class="sd">    &#39;precision&#39;, &#39;recall&#39;, &#39;specificity&#39;, &#39;accuracy&#39;, &#39;Jaccard index&#39; and &#39;F1 score&#39;.</span>
+<span class="sd">    The method used to compare them is described in this two articles</span>
+<span class="sd">    https://mmeredith.net/blog/2013/1303_Comparison_of_confidence_intervals.htm and</span>
+<span class="sd">    https://statisticsbyjim.com/hypothesis-testing/confidence-intervals-compare-means</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    tp1/2 : int</span>
+<span class="sd">        True positive count for 1st/2nd system, AKA &quot;hit&quot;</span>
+
+<span class="sd">    fp1/2 : int</span>
+<span class="sd">        False positive count for 1st/2nd system, AKA &quot;false alarm&quot;, or &quot;Type I error&quot;</span>
+
+<span class="sd">    tn1/2 : int</span>
+<span class="sd">        True negative count for 1st/2nd system, AKA &quot;correct rejection&quot;</span>
+
+<span class="sd">    fn1/2 : int</span>
+<span class="sd">        False Negative count for 1st/2nd system, AKA &quot;miss&quot;, or &quot;Type II error&quot;</span>
+
+<span class="sd">    lambda_ : float</span>
+<span class="sd">        The parameterisation of the Beta prior to consider. Use</span>
+<span class="sd">        :math:`\lambda=1` for a flat prior.  Use :math:`\lambda=0.5` for</span>
+<span class="sd">        Jeffrey&#39;s prior.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    dictionary : a dictionary indicating which confidence interval is better for each measure.</span>
+<span class="sd">    It returns a tuple that indicates the direction &quot;&gt;&quot;, &quot;&lt;&quot;, and the CI (0.95, 0.85).</span>
+<span class="sd">    retval[&quot;F1-score&quot;] = (&quot;&gt;&quot;, 0.85) means that system 1 is better than system 2 with a 5% uncertainty considering a 0.85 CI.</span>
+<span class="sd">    retval[&quot;precision&quot;] = (&quot;=&quot;, None) means that system 1 and system 2 are comparable according to that metric.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">coverage</span> <span class="o">=</span> <span class="mf">0.95</span>
+    <span class="n">system1</span> <span class="o">=</span> <span class="n">measures</span><span class="p">(</span><span class="n">tp1</span><span class="p">,</span> <span class="n">fp1</span><span class="p">,</span> <span class="n">tn1</span><span class="p">,</span> <span class="n">fn1</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">coverage</span><span class="p">)</span>
+    <span class="n">system2</span> <span class="o">=</span> <span class="n">measures</span><span class="p">(</span><span class="n">tp2</span><span class="p">,</span> <span class="n">fp2</span><span class="p">,</span> <span class="n">tn2</span><span class="p">,</span> <span class="n">fn2</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">coverage</span><span class="p">)</span>
+    <span class="n">measure</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;precision&#39;</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">,</span> <span class="s1">&#39;specificity&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <span class="s1">&#39;Jaccard index&#39;</span><span class="p">,</span> <span class="s1">&#39;F1 score&#39;</span><span class="p">]</span>
+    <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measure</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">system1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">system2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="c1"># lower bound from system 1 is greater than the upper bound from system 2</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">measure</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+        <span class="k">elif</span>  <span class="n">system2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">system1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="c1"># lower bound from system 2 is greater than the upper bound from system 1</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">measure</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="c1"># the confidence intervals overlap so we compute the 85% confidence intervals to compare them</span>
+            <span class="n">coverage</span> <span class="o">=</span> <span class="mf">0.85</span>
+            <span class="n">system1</span> <span class="o">=</span> <span class="n">measures</span><span class="p">(</span><span class="n">tp1</span><span class="p">,</span> <span class="n">fp1</span><span class="p">,</span> <span class="n">tn1</span><span class="p">,</span> <span class="n">fn1</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">coverage</span><span class="p">)</span>
+            <span class="n">system2</span> <span class="o">=</span> <span class="n">measures</span><span class="p">(</span><span class="n">tp2</span><span class="p">,</span> <span class="n">fp2</span><span class="p">,</span> <span class="n">tn2</span><span class="p">,</span> <span class="n">fn2</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">,</span> <span class="n">coverage</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">system1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">system2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]:</span>
+                <span class="c1"># lower bound from system 1 is greater than the upper bound from system 2</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="n">measure</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">)</span>
+            <span class="k">elif</span>  <span class="n">system2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">system1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]:</span>
+                <span class="c1"># lower bound from system 2 is greater than the upper bound from system 1</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="n">measure</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="n">measure</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dictionary</span></div>
+
+<div class="viewcode-block" id="compareToString"><a class="viewcode-back" href="../../../api/bob.measure.confidence_interval.html#bob.measure.confidence_interval.compareToString">[docs]</a><span class="k">def</span> <span class="nf">compareToString</span><span class="p">(</span><span class="n">dictionary</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Outputs a string describing the comparison between the two confidence interval</span>
+<span class="sd">    This function should be used with the dictionary output of the compare function</span>
+<span class="sd">    if it&#39;s not the case the output is undefined.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    dictionary : dictionary</span>
+<span class="sd">        The dictionary that describes the comparison of the confidence intervals of the different metrics</span>
+<span class="sd">        example : dictionary[&quot;precision&quot;] = (&quot;=&quot;, None)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    result : a string explaining which confidence interval is better for each measure.</span>
+<span class="sd">    It translates the tuple given from the compare function.</span>
+<span class="sd">    dictionary[&quot;F1-score&quot;] = (&quot;&gt;&quot;, 0.85) means that system 1 is better than system 2 with \&quot;significance\&quot; at the 5% level for</span>
+<span class="sd">    the F1-score</span>
+<span class="sd">    dictionary[&quot;accuracy&quot;] = (&quot;&lt;&quot;, 0.95) means that System 2 is better than system 1 with convincing evidence for the accuracy</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;For the </span><span class="si">%s</span><span class="s2"> we can say that : </span><span class="se">\n</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&gt;&#39;</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.95</span> <span class="p">:</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;System 1 is better than system 2 with convincing evidence </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;System 1 is better than system 2 with </span><span class="se">\&quot;</span><span class="s2">significance</span><span class="se">\&quot;</span><span class="s2"> at the 5</span><span class="si">% le</span><span class="s2">vel. </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;&#39;</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.95</span> <span class="p">:</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;System 2 is better than system 1 with convincing evidence </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;System 2 is better than system 1 with </span><span class="se">\&quot;</span><span class="s2">significance</span><span class="se">\&quot;</span><span class="s2"> at the 5</span><span class="si">% le</span><span class="s2">vel. </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;There is no statistical difference between the 2 CIs </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

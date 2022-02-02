@@ -1,0 +1,41 @@
+﻿bob.measure.plot
+================
+
+.. automodule:: bob.measure.plot
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      cmc
+      det
+      det_axis
+      detection_identification_curve
+      epc
+      log_values
+      precision_recall_ci
+      precision_recall_curve
+      roc
+      roc_ci
+      roc_for_far
+      tight_pr_layout
+      tight_roc_layout
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

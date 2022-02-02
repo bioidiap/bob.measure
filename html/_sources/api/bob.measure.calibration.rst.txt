@@ -1,0 +1,30 @@
+﻿bob.measure.calibration
+=======================
+
+.. automodule:: bob.measure.calibration
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      cllr
+      min_cllr
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

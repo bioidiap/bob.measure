@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.cmc &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> bob.measure
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>bob.measure.cmc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bob.measure.cmc</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># coding=utf-8</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<div class="viewcode-block" id="recognition_rate"><a class="viewcode-back" href="../../../api/bob.measure.cmc.html#bob.measure.cmc.recognition_rate">[docs]</a><span class="k">def</span> <span class="nf">recognition_rate</span><span class="p">(</span><span class="n">cmc_scores</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the recognition rate from the given input</span>
+
+<span class="sd">    It is identical to the CMC value for the given ``rank``.</span>
+
+<span class="sd">    The input has a specific format, which is a list of two-element tuples.  Each</span>
+<span class="sd">    of the tuples contains the negative :math:`\\{S_p^-\\}` and the positive</span>
+<span class="sd">    :math:`\\{S_p^+\\}` scores for one probe item :math:`p`, or ``None`` in case</span>
+<span class="sd">    of open set recognition.</span>
+
+<span class="sd">    If ``threshold`` is set to ``None``, the rank 1 recognition rate is defined</span>
+<span class="sd">    as the number of test items, for which the highest positive</span>
+<span class="sd">    :math:`\\max\\{S_p^+\\}` score is greater than or equal to all negative</span>
+<span class="sd">    scores, divided by the number of all probe items :math:`P`:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">      \\mathrm{RR} = \\frac{1}{P} \\sum_{p=1}^{P} \\begin{cases} 1 &amp; \\mathrm{if } \\max\\{S_p^+\\} &gt;= \\max\\{S_p^-\\}\\\\ 0 &amp; \\mathrm{otherwise} \\end{cases}</span>
+
+<span class="sd">    For a given rank :math:`r&gt;1`, up to :math:`r` negative scores that are</span>
+<span class="sd">    higher than the highest positive score are allowed to still count as</span>
+<span class="sd">    correctly classified in the top :math:`r` rank.</span>
+
+<span class="sd">    If ``threshold`` :math:`\\theta` is given, **all** scores below threshold</span>
+<span class="sd">    will be filtered out.  Hence, if all positive scores are below threshold</span>
+<span class="sd">    :math:`\\max\\{S_p^+\\} &lt; \\theta`, the probe will be misclassified **at</span>
+<span class="sd">    any rank**.</span>
+
+<span class="sd">    For open set recognition, i.e., when there exist a tuple including negative</span>
+<span class="sd">    scores without corresponding positive scores (``None``), and **all**</span>
+<span class="sd">    negative scores are below ``threshold`` :math:`\\max\\{S_p^+\\} &lt; \\theta`,</span>
+<span class="sd">    the probe item is correctly rejected, **and it does not count into the</span>
+<span class="sd">    denominator** :math:`P`.  When no ``threshold`` is provided, the open set</span>
+<span class="sd">    probes will **always** count as misclassified, regardless of the ``rank``.</span>
+
+<span class="sd">    .. warn:</span>
+<span class="sd">       For open set tests, this rate does not correspond to a standard rate.</span>
+<span class="sd">       Please use :py:func:`detection_identification_rate` and</span>
+<span class="sd">       :py:func:`false_alarm_rate` instead.</span>
+
+
+<span class="sd">    Parameters:</span>
+
+<span class="sd">      cmc_scores (:py:class:`list`): A list in the format ``[(negatives,</span>
+<span class="sd">        positives), ...]`` containing the CMC scores (i.e. :py:class:`list`:</span>
+<span class="sd">        A list of tuples, where each tuple contains the</span>
+<span class="sd">        ``negative`` and ``positive`` scores for one probe of the database).</span>
+
+<span class="sd">        Each pair contains the ``negative`` and the ``positive`` scores for **one</span>
+<span class="sd">        probe item**.  Each pair can contain up to one empty array (or ``None``),</span>
+<span class="sd">        i.e., in case of open set recognition.</span>
+
+<span class="sd">      threshold (:obj:`float`, optional): Decision threshold. If not ``None``, **all**</span>
+<span class="sd">        scores will be filtered by the threshold. In an open set recognition</span>
+<span class="sd">        problem, all open set scores (negatives with no corresponding positive)</span>
+<span class="sd">        for which all scores are below threshold, will be counted as correctly</span>
+<span class="sd">        rejected and **removed** from the probe list (i.e., the denominator).</span>
+
+<span class="sd">      rank (:obj:`int`, optional):</span>
+<span class="sd">        The rank for which the recognition rate should be computed, 1 by default.</span>
+
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">      float: The (open set) recognition rate for the given rank, a value between</span>
+<span class="sd">      0 and 1.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If no scores are given, the recognition rate is exactly 0.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cmc_scores</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">neg</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">cmc_scores</span><span class="p">:</span>
+        <span class="c1"># set all values that are empty before to None</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">neg</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">neg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;One pair of the CMC scores has neither positive nor negative values&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># filter out any negative or positive scores below threshold; scores with exactly the threshold are also filtered out</span>
+        <span class="c1"># now, None and an empty array have different meanings.</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">neg</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neg</span><span class="p">)[</span><span class="n">neg</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)[</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># no positives, so we definitely do not have a match;</span>
+            <span class="c1"># check if we have negatives above threshold</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">neg</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="c1"># we have no negative scores over the threshold, so we have correctly rejected the probe</span>
+                <span class="c1"># don&#39;t increase any of the two counters...</span>
+                <span class="k">continue</span>
+            <span class="c1"># we have negatives over threshold, so we have incorrect classifications; independent on the actual rank</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we have a positive, so we need to count the probe</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="c1"># all positive scores have been filtered out by the threshold, we definitely have a mis-match</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># get the maximum positive score for the current probe item</span>
+            <span class="c1"># (usually, there is only one positive score, but just in case...)</span>
+            <span class="n">max_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="c1"># if we had no negatives, or all negatives were below threshold, we have a match at rank 1</span>
+                <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># count the number of negative scores that are higher than the best positive score</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">neg</span> <span class="o">&gt;=</span> <span class="n">max_pos</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">rank</span><span class="p">:</span>
+                    <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmc"><a class="viewcode-back" href="../../../api/bob.measure.cmc.html#bob.measure.cmc.cmc">[docs]</a><span class="k">def</span> <span class="nf">cmc</span><span class="p">(</span><span class="n">cmc_scores</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the cumulative match characteristic (CMC) from the given input.</span>
+
+<span class="sd">    The input has a specific format, which is a list of two-element tuples.</span>
+<span class="sd">    Each of the tuples contains the negative and the positive scores for one</span>
+<span class="sd">    probe item.</span>
+
+<span class="sd">    For each probe item the probability that the rank :math:`r` of the positive</span>
+<span class="sd">    score is calculated.  The rank is computed as the number of negative scores</span>
+<span class="sd">    that are higher than the positive score.  If several positive scores for</span>
+<span class="sd">    one test item exist, the **highest** positive score is taken. The CMC</span>
+<span class="sd">    finally computes how many test items have rank r or higher, divided by the</span>
+<span class="sd">    total number of test values.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">       The CMC is not available for open set classification. Please use the</span>
+<span class="sd">       :py:func:`detection_identification_rate` and :py:func:`false_alarm_rate`</span>
+<span class="sd">       instead.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    cmc_scores : :py:class:`list`</span>
+<span class="sd">      A list in the format ``[(negatives, positives), ...]`` containing the CMC</span>
+<span class="sd">      scores.</span>
+
+<span class="sd">      Each pair contains the ``negative`` and the ``positive`` scores for **one</span>
+<span class="sd">      probe item**.  Each pair can contain up to one empty array (or ``None``),</span>
+<span class="sd">      i.e., in case of open set recognition.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    1D :py:class:`numpy.ndarray` of `float`</span>
+<span class="sd">      A 1D float array representing the CMC curve.  The rank 1 recognition rate</span>
+<span class="sd">      can be found in ``array[0]``, rank 2 rate in ``array[1]``, and so on. The</span>
+<span class="sd">      number of ranks (``array.shape[0]``) is the number of gallery items.</span>
+<span class="sd">      Values are in range ``[0,1]``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If no scores are given, we cannot plot anything</span>
+    <span class="n">probe_count</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cmc_scores</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">probe_count</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The given set of scores is empty&quot;</span><span class="p">)</span>
+
+    <span class="c1"># compute MC</span>
+    <span class="n">match_characteristic</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="k">for</span> <span class="n">neg</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">cmc_scores</span> <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,),</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">neg</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">cmc_scores</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;For the CMC computation at least one positive score per pair is necessary.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">neg</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># get the maximum positive score for the current probe item</span>
+        <span class="c1"># (usually, there is only one positive score, but just in case...)</span>
+        <span class="n">max_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="c1"># count the number of negative scores that are higher than the best positive score</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">neg</span> <span class="o">&gt;=</span> <span class="n">max_pos</span><span class="p">)</span>
+        <span class="n">match_characteristic</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># cumulate</span>
+    <span class="n">cumulative_match_characteristic</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span>
+        <span class="n">match_characteristic</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cumulative_match_characteristic</span> <span class="o">/</span> <span class="n">probe_count</span></div>
+
+
+<div class="viewcode-block" id="detection_identification_rate"><a class="viewcode-back" href="../../../api/bob.measure.cmc.html#bob.measure.cmc.detection_identification_rate">[docs]</a><span class="k">def</span> <span class="nf">detection_identification_rate</span><span class="p">(</span><span class="n">cmc_scores</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the `detection and identification rate` for the given threshold.</span>
+
+<span class="sd">    This value is designed to be used in an open set identification protocol, and</span>
+<span class="sd">    defined in Chapter 14.1 of [LiJain2005]_.</span>
+
+<span class="sd">    Although the detection and identification rate is designed to be computed on</span>
+<span class="sd">    an open set protocol, it uses only the probe elements, for which a</span>
+<span class="sd">    corresponding gallery element exists.  For closed set identification</span>
+<span class="sd">    protocols, this function is identical to :py:func:`recognition_rate`.  The</span>
+<span class="sd">    only difference is that for this function, a ``threshold`` for the scores</span>
+<span class="sd">    need to be defined, while for :py:func:`recognition_rate` it is optional.</span>
+
+
+<span class="sd">    Parameters:</span>
+
+<span class="sd">      cmc_scores (:py:class:`list`): A list in the format ``[(negatives,</span>
+<span class="sd">        positives), ...]`` containing the CMC.</span>
+
+<span class="sd">        Each pair contains the ``negative`` and the ``positive`` scores for **one</span>
+<span class="sd">        probe item**.  Each pair can contain up to one empty array (or ``None``),</span>
+<span class="sd">        i.e., in case of open set recognition.</span>
+
+<span class="sd">      threshold (float): The decision threshold :math:`\\tau``.</span>
+
+<span class="sd">      rank (:obj:`int`, optional): The rank for which the curve should be plotted</span>
+
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">      float: The detection and identification rate for the given threshold.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># count the correctly classifier probes</span>
+    <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">neg</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">cmc_scores</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="c1"># we only consider probes with corresponding gallery items</span>
+            <span class="k">continue</span>
+        <span class="c1"># we have an in-gallery probe</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># check, if it is correctly classified</span>
+        <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">neg</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># get the maximum positive score for the current probe item</span>
+        <span class="c1"># (usually, there is only one positive score, but just in case...)</span>
+        <span class="n">max_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">neg</span> <span class="o">&gt;=</span> <span class="n">max_pos</span>
+        <span class="p">)</span>  <span class="c1"># compute the rank (in fact, rank - 1)</span>
+        <span class="k">if</span> <span class="n">max_pos</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">rank</span><span class="p">:</span>
+            <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">counter</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No in-gallery probe was found&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="false_alarm_rate"><a class="viewcode-back" href="../../../api/bob.measure.cmc.html#bob.measure.cmc.false_alarm_rate">[docs]</a><span class="k">def</span> <span class="nf">false_alarm_rate</span><span class="p">(</span><span class="n">cmc_scores</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the `false alarm rate` for the given threshold,.</span>
+
+<span class="sd">    This value is designed to be used in an open set identification protocol, and</span>
+<span class="sd">    defined in Chapter 14.1 of [LiJain2005]_.</span>
+
+<span class="sd">    The false alarm rate is designed to be computed on an open set protocol, it</span>
+<span class="sd">    uses only the probe elements, for which **no** corresponding gallery element</span>
+<span class="sd">    exists.</span>
+
+
+<span class="sd">    Parameters:</span>
+
+<span class="sd">      cmc_scores (:py:class:`list`): A list in the format ``[(negatives,</span>
+<span class="sd">        positives), ...]`` containing the CMC scores (i.e. :py:class:`list`:</span>
+<span class="sd">        A list of tuples, where each tuple contains the</span>
+<span class="sd">        ``negative`` and ``positive`` scores for one probe of the database).</span>
+
+<span class="sd">        Each pair contains the ``negative`` and the ``positive`` scores for **one</span>
+<span class="sd">        probe item**.  Each pair can contain up to one empty array (or ``None``),</span>
+<span class="sd">        i.e., in case of open set recognition.</span>
+
+<span class="sd">      threshold (float): The decision threshold :math:`\\tau``.</span>
+
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">      float: The false alarm rate.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">incorrect</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">neg</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">cmc_scores</span><span class="p">:</span>
+        <span class="c1"># we only consider the out-of-gallery probes, i.e., with no positive scores</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># check if the probe is above threshold</span>
+            <span class="k">if</span> <span class="n">neg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;One pair of the CMC scores has neither positive nor negative values&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">incorrect</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">counter</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No out-of-gallery probe was found&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">incorrect</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+﻿bob.measure.utils
+=================
+
+.. automodule:: bob.measure.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_colors
+      get_fta
+      get_fta_list
+      get_linestyles
+      get_thres
+      remove_nan
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

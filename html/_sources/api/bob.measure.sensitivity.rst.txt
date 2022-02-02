@@ -1,0 +1,29 @@
+﻿bob.measure.sensitivity
+=======================
+
+.. automodule:: bob.measure.sensitivity
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      relevance
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

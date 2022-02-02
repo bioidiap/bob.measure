@@ -1,0 +1,36 @@
+﻿bob.measure.brute\_force
+========================
+
+.. automodule:: bob.measure.brute_force
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      array_jit
+      eer_threshold
+      far_threshold
+      fnr_threshold
+      fpr_threshold
+      frr_threshold
+      min_hter_threshold
+      min_weighted_error_rate_threshold
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

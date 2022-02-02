@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bob.measure.plot &mdash; bob.measure 4.2.4b0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bob.measure.load" href="bob.measure.load.html" />
+    <link rel="prev" title="bob.measure.sensitivity" href="bob.measure.sensitivity.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> bob.measure
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.2.4b0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ci.html">Credible and Confidence Intervals</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.binary.html">bob.measure.binary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.regression.html">bob.measure.regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.confidence_interval.html">bob.measure.confidence_interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.credible_region.html">bob.measure.credible_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.brute_force.html">bob.measure.brute_force</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.curves.html">bob.measure.curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.cmc.html">bob.measure.cmc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.sensitivity.html">bob.measure.sensitivity</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bob.measure.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.load.html">bob.measure.load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.calibration.html">bob.measure.calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bob.measure.utils.html">bob.measure.utils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bob.measure.plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">bob.measure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../api.html">Python API</a> &raquo;</li>
+      <li>bob.measure.plot</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/bob.measure.plot.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-bob.measure.plot">
+<span id="bob-measure-plot"></span><h1>bob.measure.plot<a class="headerlink" href="#module-bob.measure.plot" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.cmc" title="bob.measure.plot.cmc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmc</span></code></a>(cmc_scores[, logx])</p></td>
+<td><p>Plots the (cumulative) match characteristics and returns the maximum rank.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.det" title="bob.measure.plot.det"><code class="xref py py-obj docutils literal notranslate"><span class="pre">det</span></code></a>(negatives, positives[, npoints, min_fpr])</p></td>
+<td><p>Plots Detection Error Trade-off (DET) curve as defined in the paper:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.det_axis" title="bob.measure.plot.det_axis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">det_axis</span></code></a>(v, **kwargs)</p></td>
+<td><p>Sets the axis in a DET plot.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.detection_identification_curve" title="bob.measure.plot.detection_identification_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detection_identification_curve</span></code></a>(cmc_scores[, ...])</p></td>
+<td><p>Plots the Detection &amp; Identification curve over the FPR</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.epc" title="bob.measure.plot.epc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epc</span></code></a>(dev_negatives, dev_positives, ...[, npoints])</p></td>
+<td><p>Plots Expected Performance Curve (EPC) as defined in the paper:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.log_values" title="bob.measure.plot.log_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_values</span></code></a>([min_step, counts_per_step])</p></td>
+<td><p>Computes log-scaled values between <span class="math notranslate nohighlight">\(10^{M}\)</span> and 1</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.precision_recall_ci" title="bob.measure.plot.precision_recall_ci"><code class="xref py py-obj docutils literal notranslate"><span class="pre">precision_recall_ci</span></code></a>(negatives, positives[, ...])</p></td>
+<td><p>Plots the Precision-Recall curve with confidence interval bounds</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.precision_recall_curve" title="bob.measure.plot.precision_recall_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">precision_recall_curve</span></code></a>(negatives, positives)</p></td>
+<td><p>Plots a Precision-Recall curve.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.roc" title="bob.measure.plot.roc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roc</span></code></a>(negatives, positives[, npoints, CAR, ...])</p></td>
+<td><p>Plots Receiver Operating Characteristic (ROC) curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.roc_ci" title="bob.measure.plot.roc_ci"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roc_ci</span></code></a>(negatives, positives[, npoints, ...])</p></td>
+<td><p>Plots the ROC curve with confidence interval bounds</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.roc_for_far" title="bob.measure.plot.roc_for_far"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roc_for_far</span></code></a>(negatives, positives[, ...])</p></td>
+<td><p>Plots the ROC curve for the given list of False Positive Rates (FAR).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bob.measure.plot.tight_pr_layout" title="bob.measure.plot.tight_pr_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tight_pr_layout</span></code></a>([title])</p></td>
+<td><p>Generates a somewhat fancy canvas to draw Precision-Recall curves</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bob.measure.plot.tight_roc_layout" title="bob.measure.plot.tight_roc_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tight_roc_layout</span></code></a>(axes[, title])</p></td>
+<td><p>Generates a somewhat fancy canvas to draw ROC curves</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.log_values">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">log_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counts_per_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#log_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.log_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes log-scaled values between <span class="math notranslate nohighlight">\(10^{M}\)</span> and 1</p>
+<p>This function computes log-scaled values between <span class="math notranslate nohighlight">\(10^{M}\)</span> and 1
+(including), where <span class="math notranslate nohighlight">\(M\)</span> is the <code class="docutils literal notranslate"><span class="pre">min_ste</span></code> argument, which needs to be a
+negative integer.  The integral <code class="docutils literal notranslate"><span class="pre">counts_per_step</span></code> value defines how many
+values between two adjacent powers of 10 will be created.  The total number
+of values will be <code class="docutils literal notranslate"><span class="pre">-min_step</span> <span class="pre">*</span> <span class="pre">counts_per_step</span> <span class="pre">+</span> <span class="pre">1</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_step</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The power of 10 that will be the
+minimum value.  E.g., the default <code class="docutils literal notranslate"><span class="pre">-4</span></code> will result in the first number
+to be <span class="math notranslate nohighlight">\(10^{-4}\)</span> = <code class="docutils literal notranslate"><span class="pre">0.00001</span></code> or <code class="docutils literal notranslate"><span class="pre">0.01%</span></code></p></li>
+<li><p><strong>counts_per_step</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of values that will
+be put between two adjacent powers of 10.  With the default value <code class="docutils literal notranslate"><span class="pre">4</span></code>
+(and default values of <code class="docutils literal notranslate"><span class="pre">min_step</span></code>), we will get <code class="docutils literal notranslate"><span class="pre">log_list[0]</span> <span class="pre">==</span>
+<span class="pre">1e-4</span></code>, <code class="docutils literal notranslate"><span class="pre">log_list[4]</span> <span class="pre">==</span> <span class="pre">1e-3</span></code>, …, <code class="docutils literal notranslate"><span class="pre">log_list[16]</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of logarithmically scaled values between
+<span class="math notranslate nohighlight">\(10^{M}\)</span> and 1.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.roc">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">roc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CAR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_fpr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tpr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semilogx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#roc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.roc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots Receiver Operating Characteristic (ROC) curve.</p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the ROC curve for a system which
+contains a particular set of negatives (impostors) and positives (clients)
+scores. We use the standard <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a> command. All
+parameters passed with exception of the three first parameters of this method
+will be directly passed to the plot command.</p>
+<p>The plot will represent the false-alarm on the horizontal axis and the
+false-rejection on the vertical axis.  The values for the axis will be
+computed using <a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting command. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>min_fpr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><em>optional</em>) – The minimum value of FPR and FNR that is used for ROC computations.</p></li>
+<li><p><strong>tpr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, will plot TPR (TPR = 1 - FNR) on the y-axis instead of FNR.</p></li>
+<li><p><strong>semilogx</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, will use pyplot.semilogx to plot the ROC curve.</p></li>
+<li><p><strong>CAR</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – This option is deprecated. Please use <code class="docutils literal notranslate"><span class="pre">TPR</span></code> and <code class="docutils literal notranslate"><span class="pre">semilogx</span></code> options instead.
+If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, it will plot the CPR
+(CAR) over FPR in using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a>, otherwise the
+FPR over FNR linearly using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+<li><p><strong>**kwargs</strong> – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>list</cite> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a>: The lines that
+were added as defined by the return value of
+:py:func`matplotlib.pyplot.plot`.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.tight_roc_layout">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">tight_roc_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#tight_roc_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.tight_roc_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a somewhat fancy canvas to draw ROC curves</p>
+<p>Works like a context manager, yielding a figure and an axes set in which
+the ROC curves should be added to.  Once the context is finished,
+<code class="docutils literal notranslate"><span class="pre">fig.tight_layout()</span></code> is called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>, Optional) – Labels for the y and x axes, in this order.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, Optional) – Optional title to add to this plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>figure</strong> (<em>matplotlib.figure.Figure</em>) – The figure that should be finally returned to the user</p></li>
+<li><p><strong>axes</strong> (<em>matplotlib.figure.Axes</em>) – An axis set where to precision-recall plots should be added to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.roc_ci">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">roc_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_fpr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('tpr',</span> <span class="pre">'tnr')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bayesian|flat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_multiplier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#roc_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.roc_ci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the ROC curve with confidence interval bounds</p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the ROC curve for a system
+which contains a particular set of negatives and positives scores,
+including its credible/confidence interval bounds. We use the standard
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a> command. All parameters passed with
+exception of the three first parameters of this method will be directly
+passed to the plot command.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting command. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>min_fpr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><em>optional</em>) – The minimum value of FPR and FNR that is used for ROC computations.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>, Optional) – Which axes to calculate the curve for.  Variables can be chosen from
+<code class="docutils literal notranslate"><span class="pre">tpr</span></code>, <code class="docutils literal notranslate"><span class="pre">tnr</span></code>, <code class="docutils literal notranslate"><span class="pre">fnr</span></code>, and <code class="docutils literal notranslate"><span class="pre">fpr</span></code>.  Note not all combinations make
+sense.  You should not try to plot, for example, <code class="docutils literal notranslate"><span class="pre">tpr</span></code> against
+<code class="docutils literal notranslate"><span class="pre">fnr</span></code> as these rates are complementary to 1.0.  The first entry
+establishes the variable on the y axis, the second, on the x axis.</p></li>
+<li><p><strong>technique</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, Optional) – <p>The technique to be used for calculating the confidence/credible
+regions leading to the error bars for each TPR/TNR point.  Available
+implementations are:</p>
+<ul>
+<li><p><cite>bayesian|flat</cite>: uses <a class="reference internal" href="bob.measure.credible_region.html#bob.measure.credible_region.beta" title="bob.measure.credible_region.beta"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.credible_region.beta()</span></code></a>
+with a flat prior (<span class="math notranslate nohighlight">\(\lambda=1\)</span>)</p></li>
+<li><p><cite>bayesian|jeffreys</cite>: uses <a class="reference internal" href="bob.measure.credible_region.html#bob.measure.credible_region.beta" title="bob.measure.credible_region.beta"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.credible_region.beta()</span></code></a>
+with Jeffrey’s prior (<span class="math notranslate nohighlight">\(\lambda=0.5\)</span>)</p></li>
+<li><p><cite>clopper_pearson</cite>: uses
+<a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.clopper_pearson" title="bob.measure.confidence_interval.clopper_pearson"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.clopper_pearson()</span></code></a></p></li>
+<li><p><cite>agresti_coull</cite>: uses
+<a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.agresti_coull" title="bob.measure.confidence_interval.agresti_coull"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.agresti_coull()</span></code></a></p></li>
+<li><p><cite>wilson</cite>: uses <a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.wilson" title="bob.measure.confidence_interval.wilson"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.wilson()</span></code></a></p></li>
+</ul>
+</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A floating-point number between 0 and 1.0 indicating the
+coverage you’re expecting.  A value of 0.95 will ensure 95%
+of the area under the probability density of the posterior
+is covered by the returned equal-tailed interval.</p></li>
+<li><p><strong>alpha_multiplier</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A value between 0.0 and 1.0 to express the amount of transparence to be
+applied to the confidence/credible margins.  This will be used to
+multiply the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> channel of the line itself.  If the default is
+unchanged, then this is the value of the alpha channel on the margins.</p></li>
+<li><p><strong>**kwargs</strong> – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>object</em> – <code class="docutils literal notranslate"><span class="pre">list</span></code> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a>: The lines that
+were added as defined by the return value of
+:py:func`matplotlib.pyplot.plot`.</p></li>
+<li><p><em>auc</em> – <cite>list</cite> of floats expressing the area under the main curve, lower and
+upper bounds respective.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.roc_for_far">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">roc_for_far</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">far_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0001,</span> <span class="pre">0.00017782794100389227,</span> <span class="pre">0.00031622776601683794,</span> <span class="pre">0.0005623413251903491,</span> <span class="pre">0.001,</span> <span class="pre">0.0017782794100389228,</span> <span class="pre">0.0031622776601683794,</span> <span class="pre">0.005623413251903491,</span> <span class="pre">0.01,</span> <span class="pre">0.01778279410038923,</span> <span class="pre">0.03162277660168379,</span> <span class="pre">0.05623413251903491,</span> <span class="pre">0.1,</span> <span class="pre">0.1778279410038923,</span> <span class="pre">0.31622776601683794,</span> <span class="pre">0.5623413251903491,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CAR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#roc_for_far"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.roc_for_far" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the ROC curve for the given list of False Positive Rates (FAR).</p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the ROC curve for a system which
+contains a particular set of negatives (impostors) and positives (clients)
+scores. We use the standard <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a> command.
+All parameters passed with exception of the three first parameters of this
+method will be directly passed to the plot command.</p>
+<p>The plot will represent the False Positive Rate (FPR) on the horizontal
+axis and the Correct Positive Rate (CPR) on the vertical axis.  The values
+for the axis will be computed using <a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc_for_far" title="bob.measure.curves.roc_for_far"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc_for_far()</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting command. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>far_values</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – The values for the FPR, where the
+CPR (CAR) should be plotted; each value should be in range [0,1].</p></li>
+<li><p><strong>CAR</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, it will plot the CPR
+(CAR) over FPR in using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a>, otherwise the
+FPR over FNR linearly using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The lines that
+were added as defined by the return value of
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.precision_recall_curve">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">precision_recall_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#precision_recall_curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.precision_recall_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a Precision-Recall curve.</p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the precision-recall curve for a
+system which contains a particular set of <code class="docutils literal notranslate"><span class="pre">negatives</span></code> (impostors) and
+<code class="docutils literal notranslate"><span class="pre">positives</span></code> (clients) scores. We use the standard
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a> command. All parameters passed with
+exception of the three first parameters of this method will be directly
+passed to the plot command.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting command. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.precision_recall" title="bob.measure.curves.precision_recall"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.precision_recall()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.precision_recall" title="bob.measure.curves.precision_recall"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.precision_recall()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.precision_recall" title="bob.measure.curves.precision_recall"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.precision_recall()</span></code></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The lines that
+were added as defined by the return value of
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.tight_pr_layout">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">tight_pr_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#tight_pr_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.tight_pr_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a somewhat fancy canvas to draw Precision-Recall curves</p>
+<p>Works like a context manager, yielding a figure and an axes set in which
+the PR curves should be added to.  Once the context is finished,
+<code class="docutils literal notranslate"><span class="pre">fig.tight_layout()</span></code> is called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, Optional) – Optional title to add to this plot</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>figure</strong> (<em>matplotlib.figure.Figure</em>) – The figure that should be finally returned to the user</p></li>
+<li><p><strong>axes</strong> (<em>matplotlib.figure.Axes</em>) – An axis set where to precision-recall plots should be added to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.precision_recall_ci">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">precision_recall_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_fpr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bayesian|flat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_multiplier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#precision_recall_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.precision_recall_ci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the Precision-Recall curve with confidence interval bounds</p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the Precision-Recall curve for
+a system which contains a particular set of negatives and positives scores,
+including its credible/confidence interval bounds. We use the standard
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a> command. All parameters passed with
+exception of the three first parameters of this method will be directly
+passed to the plot command.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting command. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.roc" title="bob.measure.curves.roc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.roc()</span></code></a>)</p></li>
+<li><p><strong>min_fpr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><em>optional</em>) – The minimum value of FPR and FNR that is used for ROC computations.</p></li>
+<li><p><strong>technique</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, Optional) – <p>The technique to be used for calculating the confidence/credible
+regions leading to the error bars for each TPR/TNR point.  Available
+implementations are:</p>
+<ul>
+<li><p><cite>bayesian|flat</cite>: uses <a class="reference internal" href="bob.measure.credible_region.html#bob.measure.credible_region.beta" title="bob.measure.credible_region.beta"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.credible_region.beta()</span></code></a>
+with a flat prior (<span class="math notranslate nohighlight">\(\lambda=1\)</span>)</p></li>
+<li><p><cite>bayesian|jeffreys</cite>: uses <a class="reference internal" href="bob.measure.credible_region.html#bob.measure.credible_region.beta" title="bob.measure.credible_region.beta"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.credible_region.beta()</span></code></a>
+with Jeffrey’s prior (<span class="math notranslate nohighlight">\(\lambda=0.5\)</span>)</p></li>
+<li><p><cite>clopper_pearson</cite>: uses
+<a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.clopper_pearson" title="bob.measure.confidence_interval.clopper_pearson"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.clopper_pearson()</span></code></a></p></li>
+<li><p><cite>agresti_coull</cite>: uses
+<a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.agresti_coull" title="bob.measure.confidence_interval.agresti_coull"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.agresti_coull()</span></code></a></p></li>
+<li><p><cite>wilson</cite>: uses <a class="reference internal" href="bob.measure.confidence_interval.html#bob.measure.confidence_interval.wilson" title="bob.measure.confidence_interval.wilson"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.confidence_interval.wilson()</span></code></a></p></li>
+</ul>
+</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A floating-point number between 0 and 1.0 indicating the
+coverage you’re expecting.  A value of 0.95 will ensure 95%
+of the area under the probability density of the posterior
+is covered by the returned equal-tailed interval.</p></li>
+<li><p><strong>alpha_multiplier</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, Optional) – A value between 0.0 and 1.0 to express the amount of transparence to be
+applied to the confidence/credible margins.  This will be used to
+multiply the <code class="docutils literal notranslate"><span class="pre">alpha</span></code> channel of the line itself.  If the default is
+unchanged, then this is the value of the alpha channel on the margins.</p></li>
+<li><p><strong>**kwargs</strong> – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>object</em> – <code class="docutils literal notranslate"><span class="pre">list</span></code> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a>: The lines that
+were added as defined by the return value of
+:py:func`matplotlib.pyplot.plot`.</p></li>
+<li><p><em>auc</em> – <cite>list</cite> of floats expressing the area under the main curve, lower and
+upper bounds respective.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.epc">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">epc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dev_negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dev_positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#epc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.epc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots Expected Performance Curve (EPC) as defined in the paper:</p>
+<p>Bengio, S., Keller, M., Mariéthoz, J. (2004). The Expected Performance Curve.
+International Conference on Machine Learning ICML Workshop on ROC Analysis in
+Machine Learning, 136(1), 1963–1966. IDIAP RR. Available:
+<a class="reference external" href="http://eprints.pascal-network.org/archive/00000670/">http://eprints.pascal-network.org/archive/00000670/</a></p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the EPC curve for a system which
+contains a particular set of negatives (impostors) and positives (clients)
+for both the development and test sets. We use the standard
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a> command. All parameters passed with
+exception of the five first parameters of this method will be directly passed
+to the plot command.</p>
+<p>The plot will represent the minimum HTER on the vertical axis and the cost on
+the horizontal axis.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting commands. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev_negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier, from the
+development set. See (<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.epc" title="bob.measure.curves.epc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.epc()</span></code></a>)</p></li>
+<li><p><strong>dev_positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier, from the
+development set. See (<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.epc" title="bob.measure.curves.epc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.epc()</span></code></a>)</p></li>
+<li><p><strong>test_negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier, from the test
+set. See (<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.epc" title="bob.measure.curves.epc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.epc()</span></code></a>)</p></li>
+<li><p><strong>test_positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier, from the test set.
+See (<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.epc" title="bob.measure.curves.epc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.epc()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.epc" title="bob.measure.curves.epc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.epc()</span></code></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The lines that
+were added as defined by the return value of
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.det">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">negatives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_fpr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots Detection Error Trade-off (DET) curve as defined in the paper:</p>
+<p>Martin, A., Doddington, G., Kamm, T., Ordowski, M., &amp; Przybocki, M. (1997).
+The DET curve in assessment of detection task performance. Fifth European
+Conference on Speech Communication and Technology (pp. 1895-1898). Available:
+<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.117.4489&amp;rep=rep1&amp;type=pdf</a></p>
+<p>This method will call <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to plot the DET curve(s) for a system
+which contains a particular set of negatives (impostors) and positives
+(clients) scores. We use the standard <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>
+command. All parameters passed with exception of the three first parameters
+of this method will be directly passed to the plot command.</p>
+<p>The plot will represent the false-alarm on the horizontal axis and the
+false-rejection on the vertical axis.</p>
+<p>This method is strongly inspired by the NIST implementation for Matlab,
+called DETware, version 2.1 and available for download at the NIST website:</p>
+<p><a class="reference external" href="http://www.itl.nist.gov/iad/mig/tools/">http://www.itl.nist.gov/iad/mig/tools/</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function does not initiate and save the figure instance, it only
+issues the plotting commands. You are the responsible for setting up and
+saving the figure as you see fit.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you wish to reset axis zooming, you must use the Gaussian scale rather
+than the visual marks showed at the plot, which are just there for
+displaying purposes. The real axis scale is based on
+<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.ppndf" title="bob.measure.curves.ppndf"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.ppndf()</span></code></a>.  For example, if you wish to set the x
+and y axis to display data between 1% and 40% here is the recipe:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bob.measure</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span>
+<span class="n">bob</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c1">#call this as many times as you need</span>
+<span class="c1">#AFTER you plot the DET curve, just set the axis in this way:</span>
+<span class="n">pyplot</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="n">bob</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">curves</span><span class="o">.</span><span class="n">ppndf</span><span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="mf">100.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">40</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>We provide a convenient way for you to do the above in this module. So,
+optionally, you may use the <a class="reference internal" href="#bob.measure.plot.det_axis" title="bob.measure.plot.det_axis"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.plot.det_axis()</span></code></a> method
+like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bob.measure</span>
+<span class="n">bob</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># please note we convert percentage values in det_axis()</span>
+<span class="n">bob</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">det_axis</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">40</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>negatives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“negative” (noise, non-class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.det" title="bob.measure.curves.det"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.det()</span></code></a>)</p></li>
+<li><p><strong>positives</strong> (<em>array</em>) – 1D float array that contains the scores of the
+“positive” (signal, class) samples of your classifier. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.det" title="bob.measure.curves.det"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.det()</span></code></a>)</p></li>
+<li><p><strong>npoints</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The number of points for the plot. See
+(<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.det" title="bob.measure.curves.det"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.det()</span></code></a>)</p></li>
+<li><p><strong>axisfontsize</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – The size to be used by
+x/y-tick-labels to set the font size on the axis</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The lines that
+were added as defined by the return value of
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.det_axis">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">det_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#det_axis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.det_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the axis in a DET plot.</p>
+<p>This method wraps the <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.axis.html#matplotlib.pyplot.axis" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.axis()</span></code></a> by calling
+<a class="reference internal" href="bob.measure.curves.html#bob.measure.curves.ppndf" title="bob.measure.curves.ppndf"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.curves.ppndf()</span></code></a> on the values passed by the user so they
+are meaningful in a DET plot as performed by <a class="reference internal" href="#bob.measure.plot.det" title="bob.measure.plot.det"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.plot.det()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> (<code class="docutils literal notranslate"><span class="pre">sequence</span></code>) – A sequence (list, tuple, array or the like) containing
+the X and Y limits in the order <code class="docutils literal notranslate"><span class="pre">(xmin,</span> <span class="pre">xmax,</span> <span class="pre">ymin,</span> <span class="pre">ymax)</span></code>. Expected
+values should be in percentage (between 0 and 100%).  If <code class="docutils literal notranslate"><span class="pre">v</span></code> is not a
+list or tuple that contains 4 numbers it is passed without further
+inspection to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.axis.html#matplotlib.pyplot.axis" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.axis()</span></code></a>.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.axis.html#matplotlib.pyplot.axis" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.axis()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whatever is returned by <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.axis.html#matplotlib.pyplot.axis" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.axis()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.cmc">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">cmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmc_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#cmc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.cmc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the (cumulative) match characteristics and returns the maximum rank.</p>
+<dl class="simple">
+<dt>This function plots a CMC curve using the given CMC scores (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>:</dt><dd><p>A list of tuples, where each tuple contains the
+<code class="docutils literal notranslate"><span class="pre">negative</span></code> and <code class="docutils literal notranslate"><span class="pre">positive</span></code> scores for one probe of the database).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cmc_scores</strong> (<em>array</em>) – 1D float array containing the CMC values (See
+<a class="reference internal" href="bob.measure.cmc.html#bob.measure.cmc.cmc" title="bob.measure.cmc.cmc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.cmc.cmc()</span></code></a>)</p></li>
+<li><p><strong>logx</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – If set (the default), plots the rank
+axis in logarithmic scale using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a> or
+in linear scale using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a></p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of classes (clients) in the given scores.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bob.measure.plot.detection_identification_curve">
+<span class="sig-prename descclassname"><span class="pre">bob.measure.plot.</span></span><span class="sig-name descname"><span class="pre">detection_identification_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmc_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">far_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0001,</span> <span class="pre">0.00017782794100389227,</span> <span class="pre">0.00031622776601683794,</span> <span class="pre">0.0005623413251903491,</span> <span class="pre">0.001,</span> <span class="pre">0.0017782794100389228,</span> <span class="pre">0.0031622776601683794,</span> <span class="pre">0.005623413251903491,</span> <span class="pre">0.01,</span> <span class="pre">0.01778279410038923,</span> <span class="pre">0.03162277660168379,</span> <span class="pre">0.05623413251903491,</span> <span class="pre">0.1,</span> <span class="pre">0.1778279410038923,</span> <span class="pre">0.31622776601683794,</span> <span class="pre">0.5623413251903491,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bob/measure/plot.html#detection_identification_curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bob.measure.plot.detection_identification_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the Detection &amp; Identification curve over the FPR</p>
+<p>This curve is designed to be used in an open set identification protocol, and
+defined in Chapter 14.1 of <a class="reference internal" href="#lijain2005" id="id1"><span>[LiJain2005]</span></a>.  It requires to have at least one
+open set probe item, i.e., with no corresponding gallery, such that the
+positives for that pair are <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>The detection and identification curve first computes FPR thresholds based on
+the out-of-set probe scores (negative scores).  For each probe item, the
+<strong>maximum</strong> negative score is used.  Then, it plots the detection and
+identification rates for those thresholds, which are based on the in-set
+probe scores only. See <a class="reference internal" href="#lijain2005" id="id2"><span>[LiJain2005]</span></a> for more details.</p>
+<dl class="citation">
+<dt class="label" id="lijain2005"><span class="brackets">LiJain2005</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>)</span></dt>
+<dd><p><strong>Stan Li and Anil K. Jain</strong>, <em>Handbook of Face Recognition</em>, Springer, 2005</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cmc_scores</strong> (<em>array</em>) – 1D float array containing the CMC values (See
+<a class="reference internal" href="bob.measure.cmc.html#bob.measure.cmc.cmc" title="bob.measure.cmc.cmc"><code class="xref py py-func docutils literal notranslate"><span class="pre">bob.measure.cmc.cmc()</span></code></a>)</p></li>
+<li><p><strong>rank</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – The rank for which the curve should be
+plotted</p></li>
+<li><p><strong>far_values</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – The values for the FPR (FAR), where the
+CPR (CAR) should be plotted; each value should be in range [0,1].</p></li>
+<li><p><strong>logx</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, optional) – If set (the default), plots the rank
+axis in logarithmic scale using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.semilogx.html#matplotlib.pyplot.semilogx" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.semilogx()</span></code></a> or
+in linear scale using <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a></p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, optional) – Extra plotting parameters, which are
+passed directly to <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The lines that
+were added as defined by the return value of
+<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.5.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.pyplot.plot()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a> of <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.lines.Line2D</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bob.measure.sensitivity.html" class="btn btn-neutral float-left" title="bob.measure.sensitivity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bob.measure.load.html" class="btn btn-neutral float-right" title="bob.measure.load" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Idiap Research Institute.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
