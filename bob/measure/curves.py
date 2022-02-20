@@ -1286,7 +1286,7 @@ def estimated_ci_coverage(f, n=100, expected_coverage=0.95):
 
     coverage = []
     size = 10000  # how many experiments to do at each try
-    r = numpy.arange(0.001, 1.0, step=0.01)
+    r = numpy.arange(1/n, 1.0, step=1/n)
 
     for p in r:
         k = numpy.random.binomial(n=n, p=p, size=size)
