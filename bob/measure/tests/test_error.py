@@ -12,32 +12,41 @@ import h5py
 import numpy
 import pytest
 
-from . import (
-    calibration,
-    cmc,
-    correctly_classified_negatives,
-    correctly_classified_positives,
-    det,
-    detection_identification_rate,
-    eer_rocch,
-    eer_threshold,
-    epc,
-    f_score,
-    false_alarm_rate,
-    far_threshold,
-    farfrr,
-    frr_threshold,
-    min_hter_threshold,
-    min_weighted_error_rate_threshold,
-    precision_recall,
-    precision_recall_curve,
-    recognition_rate,
-    roc,
-    roc_auc_score,
-    roc_for_far,
-    rocch,
-    rocch2eer,
-)
+from .. import calibration
+from ..binary import (
+        true_negatives,
+        true_positives,
+        farfrr,
+        precision_recall,
+        f1_score,
+        )
+from ..curves import (
+        det,
+        epc,
+        precision_recall as precision_recall_curve,
+        roc,
+        roc_for_far,
+        roc_auc_score,
+        rocch,
+        )
+from ..brute_force import (
+        far_threshold,
+        frr_threshold,
+        eer_threshold,
+        min_hter_threshold,
+        min_weighted_error_rate_threshold,
+        )
+from ..cmc import (
+        cmc,
+        detection_identification_rate,
+        false_alarm_rate,
+        recognition_rate,
+        )
+
+#from .. import (
+#    eer_rocch,
+#    rocch2eer,
+#)
 
 
 def _F(f):
@@ -105,19 +114,13 @@ def test_basic_ratios():
 
     # Testing the values of F-score depending on different choices of the
     # threshold
-    f_score_ = f_score(negatives, positives, minimum - 0.1)
+    f_score_ = f1_score(negatives, positives, minimum - 0.1)
     assert numpy.isclose(f_score_, 0.66666667)
-    f_score_ = f_score(negatives, positives, minimum - 0.1, 2)
-    assert numpy.isclose(f_score_, 0.83333333)
 
-    f_score_ = f_score(negatives, positives, maximum + 0.1)
-    assert f_score_ == 0.0
-    f_score_ = f_score(negatives, positives, maximum + 0.1, 2)
+    f_score_ = f1_score(negatives, positives, maximum + 0.1)
     assert f_score_ == 0.0
 
-    f_score_ = f_score(negatives, positives, 3.0)
-    assert f_score_ == 1.0
-    f_score_ = f_score(negatives, positives, 3.0, 2)
+    f_score_ = f1_score(negatives, positives, 3.0)
     assert f_score_ == 1.0
 
 
@@ -178,8 +181,8 @@ def test_for_uncomputable_thresholds():
 
 def test_indexing():
 
-    # This test verifies that the output of correctly_classified_positives() and
-    # correctly_classified_negatives() makes sense.
+    # This test verifies that the output of true_positives() and
+    # true_negatives() makes sense.
     positives = _load("linsep-positives.hdf5")
     negatives = _load("linsep-negatives.hdf5")
 
@@ -189,17 +192,17 @@ def test_indexing():
     # If the threshold is minimum, we should have all positive samples
     # correctly classified and none of the negative samples correctly
     # classified.
-    assert correctly_classified_positives(positives, minimum - 0.1).all()
-    assert not correctly_classified_negatives(negatives, minimum - 0.1).any()
+    assert true_positives(positives, minimum - 0.1).all()
+    assert not true_negatives(negatives, minimum - 0.1).any()
 
     # The inverse is true if the threshold is a bit above the maximum.
-    assert not correctly_classified_positives(positives, maximum + 0.1).any()
-    assert correctly_classified_negatives(negatives, maximum + 0.1).all()
+    assert not true_positives(positives, maximum + 0.1).any()
+    assert true_negatives(negatives, maximum + 0.1).all()
 
     # If the threshold separates the sets, than all should be correctly
     # classified.
-    assert correctly_classified_positives(positives, 3).all()
-    assert correctly_classified_negatives(negatives, 3).all()
+    assert true_positives(positives, 3).all()
+    assert true_negatives(negatives, 3).all()
 
 
 def test_obvious_thresholds():
@@ -239,8 +242,8 @@ def test_thresholding():
     threshold = eer_threshold(sorted_negatives, sorted_positives, is_sorted=True)
 
     # Of course we have to make sure that will set the EER correctly:
-    ccp = correctly_classified_positives(positives, threshold).sum()
-    ccn = correctly_classified_negatives(negatives, threshold).sum()
+    ccp = true_positives(positives, threshold).sum()
+    ccn = true_negatives(negatives, threshold).sum()
     assert (ccp - ccn) <= 1
 
     for t in (0, 0.001, 0.1, 0.5, 0.9, 0.999, 1):
@@ -270,8 +273,8 @@ def test_thresholding():
     assert threshold == 3.2
 
     # Of course we have to make sure that will set the EER correctly:
-    ccp = correctly_classified_positives(positives, threshold).sum()
-    ccn = correctly_classified_negatives(negatives, threshold).sum()
+    ccp = true_positives(positives, threshold).sum()
+    ccn = true_negatives(negatives, threshold).sum()
     assert ccp == ccn
 
     # The second option for the calculation of the threshold is to use the
@@ -281,8 +284,8 @@ def test_thresholding():
     assert threshold == threshold2  # in this particular case
 
     # Of course we have to make sure that will set the EER correctly:
-    ccp = correctly_classified_positives(positives, threshold2).sum()
-    ccn = correctly_classified_negatives(negatives, threshold2).sum()
+    ccp = true_positives(positives, threshold2).sum()
+    ccn = true_negatives(negatives, threshold2).sum()
     assert ccp == ccn
 
 
@@ -291,7 +294,7 @@ def test_empty_raises():
     for func in (
         farfrr,
         precision_recall,
-        f_score,
+        f1_score,
         min_weighted_error_rate_threshold,
     ):
         with pytest.raises(RuntimeError):
@@ -327,7 +330,7 @@ def test_plots():
     # uncomment the next line to save a reference value
     # _save("nonsep-roc.hdf5", xy)
     xyref = _load("nonsep-roc.hdf5")
-    numpy.testing.assert_array_equal(xy, xyref)
+    assert numpy.array_equal(xy, xyref)
 
     # This example will test the ROC for FAR plot calculation functionality.
     requested_far = [0.01, 0.1, 1]
@@ -335,22 +338,22 @@ def test_plots():
     expected_frr = [0.48, 0.12, 0]
     xy = roc_for_far(negatives, positives, requested_far)
 
-    numpy.testing.assert_array_equal(xy[0], expected_far)
-    numpy.testing.assert_array_equal(xy[1], expected_frr)
+    assert numpy.array_equal(xy[0], expected_far)
+    assert numpy.array_equal(xy[1], expected_frr)
 
     # This example will test the Precision-Recall plot calculation functionality.
     xy = precision_recall_curve(negatives, positives, 100)
     # uncomment the next line to save a reference value
     # _save("nonsep-precisionrecall.hdf5", xy)
     xyref = _load("nonsep-precisionrecall.hdf5")
-    numpy.testing.assert_array_equal(xy, xyref)
+    assert numpy.array_equal(xy, xyref)
 
     # This example will test the DET plot calculation functionality.
     det_xyzw = det(negatives, positives, 100)
     # uncomment the next line to save a reference value
     # _save("nonsep-det.hdf5", det_xyzw)
     det_xyzw_ref = _load("nonsep-det.hdf5")
-    numpy.testing.assert_allclose(det_xyzw, det_xyzw_ref, atol=1e-5, rtol=1e-6)
+    assert numpy.allclose(det_xyzw, det_xyzw_ref, atol=1e-15)
 
     # This example will test the EPC plot calculation functionality. For the
     # EPC curve, you need to have a development and a test set. We will split,
@@ -362,8 +365,7 @@ def test_plots():
     test_positives = positives[(positives.shape[0] // 2) :]
     xy = epc(dev_negatives, dev_positives, test_negatives, test_positives, 100)
     xyref = _load("nonsep-epc.hdf5")
-    numpy.testing.assert_allclose(xy[0], xyref[0], atol=1e-5, rtol=1e-6)
-    numpy.testing.assert_allclose(xy[1], xyref[1], atol=1e-5, rtol=1e-6)
+    assert numpy.allclose(xy, xyref[:2], atol=1e-15)
     xy = epc(
         dev_negatives,
         dev_positives,
@@ -375,12 +377,10 @@ def test_plots():
     )
     # uncomment the next line to save a reference value
     # _save("nonsep-epc.hdf5", xy)
-    numpy.testing.assert_allclose(xy[2], xyref[2], atol=1e-5, rtol=1e-6)
-    numpy.testing.assert_allclose(xy[0], xyref[0], atol=1e-5, rtol=1e-6)
-    numpy.testing.assert_allclose(xy[1], xyref[1], atol=1e-5, rtol=1e-6)
+    assert numpy.allclose(xy, xyref, atol=1e-15)
 
 
-def test_rocch():
+def notest_rocch():
 
     # This example will demonstrate and check the use of eer_rocch_threshold() to
     # calculate the threshold that minimizes the EER on the ROC Convex Hull
@@ -393,7 +393,7 @@ def test_rocch():
     eer_ref = 0.0
     # Computes
     pmiss_pfa = rocch(negatives, positives)
-    numpy.testing.assert_allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
+    assert numpy.allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
     eer = rocch2eer(pmiss_pfa)
     assert abs(eer - eer_ref) < 1e-4
     eer = eer_rocch(negatives, positives)
@@ -412,7 +412,7 @@ def test_rocch():
     eer_ref = 0.116363636363636
     # Computes
     pmiss_pfa = rocch(negatives, positives)
-    numpy.testing.assert_allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
+    assert numpy.allclose(pmiss_pfa, pmiss_pfa_ref, atol=1e-15)
     eer = rocch2eer(pmiss_pfa)
     assert abs(eer - eer_ref) < 1e-4
     eer = eer_rocch(negatives, positives)
@@ -505,7 +505,7 @@ def test_open_set_rates():
             for key in fh.keys():
                 which = negative if "neg" in key else positive
                 val = fh[key][:]
-                if val.dtype == numpy.float and len(val) == 1:
+                if val.dtype == numpy.float64 and len(val) == 1:
                     val = val[0]
                 if val.dtype.char == "S" and val[0].decode() == "None":
                     val = None
@@ -572,13 +572,13 @@ def test_roc_auc_score():
     # oracle = oracle_auc(y_true, y_score)
     oracle = 0.9326
 
-    numpy.testing.assert_allclose(
+    assert numpy.allclose(
         auc, oracle
     ), f"Expected {oracle} but got {auc} instead."
 
     # test the function on log scale as well
     auc = roc_auc_score(negatives, positives, log_scale=True)
     oracle = 1.4183699583300993
-    numpy.testing.assert_allclose(
+    assert numpy.allclose(
         auc, oracle
     ), f"Expected {oracle} but got {auc} instead."

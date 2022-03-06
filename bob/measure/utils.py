@@ -107,16 +107,16 @@ def get_thres(criter, neg, pos, far=None):
         threshold
     """
     if criter == 'eer':
-        from . import eer_threshold
+        from .brute_force import eer_threshold
         return eer_threshold(neg, pos)
     elif criter == 'min-hter':
-        from . import min_hter_threshold
+        from .brute_force import min_hter_threshold
         return min_hter_threshold(neg, pos)
     elif criter == 'far':
         if far is None:
             raise ValueError("FAR value must be provided through "
                              "``--far-value`` or ``--fpr-value`` option.")
-        from . import far_threshold
+        from .brute_force import far_threshold
         return far_threshold(neg, pos, far)
     else:
         raise ValueError("Incorrect plotting criterion: ``%s``" % criter)
@@ -178,33 +178,3 @@ def get_linestyles(n, on=True):
     while n > len(list_linestyles):
         list_linestyles += list_linestyles
     return list_linestyles
-
-
-def confidence_for_indicator_variable(x, n, alpha=0.05):
-    '''Calculates the confidence interval for proportion estimates
-    The Clopper-Pearson interval method is used for estimating the confidence
-    intervals.
-
-    Parameters
-    ----------
-    x : int
-        The number of successes.
-    n : int
-        The number of trials.
-        alpha : :obj:`float`, optional
-        The 1-confidence value that you want. For example, alpha should be 0.05
-        to obtain 95% confidence intervals.
-
-    Returns
-    -------
-    (:obj:`float`, :obj:`float`)
-        a tuple of (lower_bound, upper_bound) which
-        shows the limit of your success rate: lower_bound < x/n < upper_bound
-    '''
-    lower_bound = scipy.stats.beta.ppf(alpha / 2.0, x, n - x + 1)
-    upper_bound = scipy.stats.beta.ppf(1 - alpha / 2.0, x + 1, n - x)
-    if numpy.isnan(lower_bound):
-        lower_bound = 0
-    if numpy.isnan(upper_bound):
-        upper_bound = 1
-    return (lower_bound, upper_bound)
