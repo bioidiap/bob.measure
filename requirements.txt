@@ -1,5 +1,4 @@
 bob.extension
-bob.math > 2
 numpy
 scipy
 h5py

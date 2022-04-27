@@ -22,7 +22,6 @@ requirements:
     - setuptools {{ setuptools }}
     - pip {{ pip }}
     - bob.extension
-    - bob.math >2
     - numpy {{ numpy }}
     - scipy {{ scipy }}
     - h5py {{ h5py }}
