@@ -258,6 +258,147 @@ def det(negatives, positives, n_points, min_far=-8):
     return ppndf(roc(negatives, positives, n_points, min_far))
 
 
+def pavx_1(y, ghat, index, len):
+    """Calculates the pavx_1 function
+
+    Calculates the pavx_1 function given a set of negative and positive scores
+    and a desired number of points. Returns a two-dimensional array of doubles
+    that express on its rows:
+
+    You can plot the results using your preferred tool to first create a plot
+    using rows 0 and 1 from the returned value and then replace the X/Y axis
+    annotation using a pre-determined set of tickmarks as recommended by NIST.
+    The derivative scales are computed with the :py:func:`ppndf` function.
+
+
+    Parameters
+    ==========
+
+    y : numpy.ndarray (1D, float)
+
+        The list of negative and positive scores to compute the DET for
+
+    ghat : numpy.ndarray (1D, float)
+
+        The list of mean values calculated in the pavx_1 function
+
+    index : numpy.ndarray (1D, size_t)
+
+        The list of indices calculated in the pavx_1 function
+
+    len : numpy.ndarray (1D, size_t)
+
+        The list of lengths calculated in the pavx_1 function
+
+
+    Returns
+    =======
+
+    ci : size_t
+
+        The index of the interval currently considered
+
+    """
+    # Sets output and working arrays to 0
+    index = 0
+    len = 0
+    ghat = 0.0
+    # ci is the index of the interval currently considered
+    # ghat(ci) is the mean of y-values within this interval
+    ci = 0
+    index[0] = 0
+    len[0] = 1
+    ghat[0] = y[0]
+    for j in range(1, y.shape[0]):
+        # a new index interval "j" is created:
+        ci += 1
+        index[ci] = j
+        len[ci] = 1
+        ghat[ci] = y[j]
+        while ci >= 1 and ghat[np.max(ci - 1, 0)] >= ghat[ci]:
+            # "pool adjacent violators"
+            nw = len[ci - 1] + len[ci]
+            ghat[ci - 1] += (len[ci] / nw) * (ghat[ci] - ghat[ci - 1])
+            len[ci - 1] = nw
+            ci -= 1
+    return ci
+
+
+def pavx_2(ghat, index, ci):
+    """Calculates the pavx_2 function
+
+    Calculates the pavx_2 function given the pavx_1 function.
+
+    Parameters
+    ==========
+
+    ghat : numpy.ndarray (1D, float)
+
+        The list of mean values calculated in the pavx_1 function
+
+    index : numpy.ndarray (1D, size_t)
+
+        The list of indices calculated in the pavx_1 function
+
+    ci : size_t
+
+        The index of the interval currently considered
+
+    """
+    # define ghat for all indices
+    n = index[ci]
+    while n >= 1:
+        r = numpy.array(range(index[ci], n))
+        ghat[r] = ghat[ci]
+        n = index[ci]
+        ci -= 1
+    return ghat
+
+
+def pavxWidth(input, output):
+    """Applies the Pool-Adjacent-Violators Algorithm and returns the width.
+
+    This is a simplified C++ port of the isotonic regression code made available at the University of Bern website.
+
+    Parameters
+    ==========
+
+    input : array_like (float, 1D)
+
+        The input matrix for the PAV algorithm.
+
+    output : array_like (float, 1D)
+
+        The output matrix, must be of the same size as input
+
+    Returns
+    =======
+
+    width : array_like (uint64, 1D)
+
+        The width matrix will be created in the same size as input
+    """
+    input = numpy.array(input)
+    output = numpy.array(output)
+
+    # Define working arrays: An interval of indices is represented by its left
+    # endpoint "index" and its length "len"
+    N = input.shape[0]
+    index = numpy.zeros(N, dtype=numpy.uint64)
+    len = numpy.zeros(N, dtype=numpy.uint64)
+
+    # First step
+    ci = pavx_1(input, output, index, len)
+
+    # Get the width vector
+    width = len[: ci + 1]
+
+    # Second step
+    pavx_2(output, index, ci)
+
+    return width
+
+
 def rocch(negatives, positives):
     """Calculates the ROC Convex Hull (ROCCH) curve given a set of positive and negative scores
 
@@ -280,8 +421,6 @@ def rocch(negatives, positives):
 
     """
 
-    from bob.math import pavxWidth
-
     # Number of positive and negative scores
     Nt = len(positives)
     Nn = len(negatives)
@@ -300,6 +439,9 @@ def rocch(negatives, positives):
 
     # Applies the PAVA algorithm
     Popt = numpy.ndarray((N,))
+    raise NotImplementedError(
+        "An auto generated implementation of pavxWidth is available but no test has been done."
+    )
     width = pavxWidth(Pideal, Popt)
 
     # Allocates output
@@ -798,7 +940,7 @@ def f_score(negatives, positives, threshold, weight=1.0):
 
     """
     weight = weight if weight > 0 else 1
-    w2 = weight ** 2
+    w2 = weight**2
     p, r = precision_recall(negatives, positives, threshold)
     if p == 0.0 and r == 0.0:
         return 0.0
