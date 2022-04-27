@@ -59,8 +59,6 @@ def min_cllr(negatives, positives):
 
   """
 
-  from bob.math import pavx
-
   # first, sort both scores
   neg = sorted(negatives)
   pos = sorted(positives)
@@ -84,6 +82,7 @@ def min_cllr(negatives, positives):
 
   # compute the pool adjacent violaters method on the ideal LLR scores
   ghat = numpy.ndarray(ideal.shape, dtype=numpy.float)
+  raise NotImplementedError("No pavx implementation")
   pavx(ideal, ghat)
 
   # disable runtime warnings for a short time since log(0) will raise a warning
