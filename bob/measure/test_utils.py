@@ -2,11 +2,11 @@
 # vim: set fileencoding=utf-8 :
 
 import numpy
+
 from .utils import confidence_for_indicator_variable
 
 
 def test_confidence_interval():
-
     def assert_confidence(x, n, expected_lower, expected_upper):
         lower, upper = confidence_for_indicator_variable(x, n)
         assert numpy.allclose(lower, expected_lower)

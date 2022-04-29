@@ -20,8 +20,8 @@ iris_columns = {
 def loaddata(filename, column):
     """Loads the Iris dataset, returns a list with the values"""
     retval = {"setosa": [], "versicolor": [], "virginica": []}
-    for l in open(filename, "rt"):
-        s = [k.strip() for k in l.split(",")]
+    for line in open(filename, "rt"):
+        s = [k.strip() for k in line.split(",")]
         if s[iris_columns["class"]] == "Iris-setosa":
             retval["setosa"].append(float(s[iris_columns[column]]))
         elif s[iris_columns["class"]] == "Iris-versicolor":
@@ -29,7 +29,7 @@ def loaddata(filename, column):
         elif s[iris_columns["class"]] == "Iris-virginica":
             retval["virginica"].append(float(s[iris_columns[column]]))
         else:
-            raise RuntimeError("Unknown data class: %s" % l)
+            raise RuntimeError("Unknown data class: %s" % line)
     return retval
 
 

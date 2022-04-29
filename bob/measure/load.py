@@ -6,9 +6,10 @@
 """
 
 import logging
+
 import numpy
 
-LOGGER = logging.getLogger('bob.measure')
+LOGGER = logging.getLogger("bob.measure")
 
 
 def split(filename):
@@ -38,10 +39,14 @@ def split(filename):
         neg_pos = columns[:, 0]
         scores = columns[:, 1]
     except Exception:
-        LOGGER.error('''Cannot read {}. This file must be a two columns file with
+        LOGGER.error(
+            """Cannot read {}. This file must be a two columns file with
                    the first column containing -1 or 1 (i.e. negative or
                    positive) and the second the scores
-                     (float).'''.format(filename))
+                     (float).""".format(
+                filename
+            )
+        )
         raise
     positives = neg_pos == 1
     return (scores[~positives], scores[positives])
@@ -71,6 +76,6 @@ def split_files(filenames):
     for file_path in filenames:
         try:
             res.append(split(file_path))
-        except:
+        except Exception:
             raise
     return res

@@ -4,6 +4,7 @@
 """Tests the IO functionality of bob.measure."""
 
 import os
+
 import h5py
 import numpy
 import pkg_resources

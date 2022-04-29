@@ -1,10 +1,12 @@
 """Tests for bob.measure scripts"""
 
 import os
+
 import click
 import pkg_resources
 
 from click.testing import CliRunner
+
 from bob.extension.scripts.click_helper import assert_click_runner_result
 
 from .script import commands
@@ -22,7 +24,6 @@ def test_metrics():
     with runner.isolated_filesystem():
         with open("tmp", "w") as f:
             f.write(result.output)
-        test_ref = _F("test_m1.txt")
         assert_click_runner_result(result)
 
     dev2 = _F("dev-2.txt")
@@ -34,7 +35,6 @@ def test_metrics():
         )
         with open("tmp", "w") as f:
             f.write(result.output)
-        test_ref = _F("test_m2.txt")
         assert_click_runner_result(result)
     with runner.isolated_filesystem():
         result = runner.invoke(

@@ -1,8 +1,9 @@
-''' utility functions for bob.measure '''
+""" utility functions for bob.measure """
+
+import logging
 
 import numpy
 import scipy.stats
-import logging
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ def remove_nan(scores):
     sum_nans = sum(nans)
     total = len(scores)
     if sum_nans > 0:
-        LOGGER.warning('Found {} NaNs in {} scores'.format(sum_nans, total))
+        LOGGER.warning("Found {} NaNs in {} scores".format(sum_nans, total))
     return scores[~nans], sum_nans, total
 
 
@@ -58,7 +59,7 @@ def get_fta(scores):
 
 
 def get_fta_list(scores):
-    """ Get FTAs for a list of scores
+    """Get FTAs for a list of scores
 
     Parameters
     ----------
@@ -106,17 +107,22 @@ def get_thres(criter, neg, pos, far=None):
     :py:obj:`float`
         threshold
     """
-    if criter == 'eer':
+    if criter == "eer":
         from . import eer_threshold
+
         return eer_threshold(neg, pos)
-    elif criter == 'min-hter':
+    elif criter == "min-hter":
         from . import min_hter_threshold
+
         return min_hter_threshold(neg, pos)
-    elif criter == 'far':
+    elif criter == "far":
         if far is None:
-            raise ValueError("FAR value must be provided through "
-                             "``--far-value`` or ``--fpr-value`` option.")
+            raise ValueError(
+                "FAR value must be provided through "
+                "``--far-value`` or ``--fpr-value`` option."
+            )
         from . import far_threshold
+
         return far_threshold(neg, pos, far)
     else:
         raise ValueError("Incorrect plotting criterion: ``%s``" % criter)
@@ -138,10 +144,11 @@ def get_colors(n):
     """
     if n > 10:
         from matplotlib import pyplot
-        cmap = pyplot.cm.get_cmap(name='magma')
+
+        cmap = pyplot.cm.get_cmap(name="magma")
         return [cmap(i) for i in numpy.linspace(0, 1.0, n + 1)]
 
-    return ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
+    return ["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
 
 
 def get_linestyles(n, on=True):
@@ -173,7 +180,7 @@ def get_linestyles(n, on=True):
         (0, (3, 5, 1, 5)),  # dashdotted
         (0, (5, 10)),  # loosely dashed
         (0, (3, 10, 1, 10)),  # loosely dashdotted
-        (0, (1, 10))  # loosely dotted
+        (0, (1, 10)),  # loosely dotted
     ]
     while n > len(list_linestyles):
         list_linestyles += list_linestyles
@@ -181,7 +188,7 @@ def get_linestyles(n, on=True):
 
 
 def confidence_for_indicator_variable(x, n, alpha=0.05):
-    '''Calculates the confidence interval for proportion estimates
+    """Calculates the confidence interval for proportion estimates
     The Clopper-Pearson interval method is used for estimating the confidence
     intervals.
 
@@ -200,7 +207,7 @@ def confidence_for_indicator_variable(x, n, alpha=0.05):
     (:obj:`float`, :obj:`float`)
         a tuple of (lower_bound, upper_bound) which
         shows the limit of your success rate: lower_bound < x/n < upper_bound
-    '''
+    """
     lower_bound = scipy.stats.beta.ppf(alpha / 2.0, x, n - x + 1)
     upper_bound = scipy.stats.beta.ppf(1 - alpha / 2.0, x + 1, n - x)
     if numpy.isnan(lower_bound):

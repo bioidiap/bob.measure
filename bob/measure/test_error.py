@@ -4,12 +4,12 @@
 """Basic tests for the error measuring functions
 """
 
-import os
 import math
-import pkg_resources
+import os
 
 import h5py
 import numpy
+import pkg_resources
 import pytest
 
 from . import (
@@ -236,7 +236,9 @@ def test_thresholding():
 
     sorted_negatives = numpy.sort(negatives)
     sorted_positives = numpy.sort(positives)
-    threshold = eer_threshold(sorted_negatives, sorted_positives, is_sorted=True)
+    threshold = eer_threshold(
+        sorted_negatives, sorted_positives, is_sorted=True
+    )
 
     # Of course we have to make sure that will set the EER correctly:
     ccp = correctly_classified_positives(positives, threshold).sum()
@@ -320,7 +322,7 @@ def test_plots():
     # This test set is not separable.
     positives = _load("nonsep-positives.hdf5")
     negatives = _load("nonsep-negatives.hdf5")
-    threshold = eer_threshold(negatives, positives)
+    eer_threshold(negatives, positives)
 
     # This example will test the ROC plot calculation functionality.
     xy = roc(negatives, positives, 100)
@@ -497,7 +499,6 @@ def no_test_calibration():
 
 
 def test_open_set_rates():
-
     def _load_cmc_scores(fname):
         with h5py.File(_F(fname), "r") as fh:
             negative = []

@@ -2,16 +2,19 @@
 
 import functools
 import logging
+
 import click
-from click.types import INT, FLOAT
 import matplotlib.pyplot as plt
 import tabulate
+
+from click.types import FLOAT, INT
 from matplotlib.backends.backend_pdf import PdfPages
+
 from bob.extension.scripts.click_helper import (
     bool_option,
     list_float_option,
-    verbosity_option,
     open_file_mode_option,
+    verbosity_option,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +41,9 @@ def scores_argument(min_arg=1, force_eval=False, **kwargs):
             min_a = min_arg or 1
             mutli = 1
             error = ""
-            if ("evaluation" in ctx.meta and ctx.meta["evaluation"]) or force_eval:
+            if (
+                "evaluation" in ctx.meta and ctx.meta["evaluation"]
+            ) or force_eval:
                 mutli += 1
                 error += "- %d evaluation file(s) \n" % min_a
             if "train" in ctx.meta and ctx.meta["train"]:
@@ -52,7 +57,8 @@ def scores_argument(min_arg=1, force_eval=False, **kwargs):
                 raise click.BadParameter(
                     "The number of provided scores must be > 0 and a multiple of %d "
                     "because the following files are required:\n"
-                    "- %d development file(s)\n" % (min_a, min_arg or 1) + error,
+                    "- %d development file(s)\n" % (min_a, min_arg or 1)
+                    + error,
                     ctx=ctx,
                 )
             ctx.meta["scores"] = value
@@ -142,12 +148,15 @@ def sep_dev_eval_option(dflt=True, **kwargs):
     """Get option flag to say if dev and eval plots should be in different
     plots"""
     return bool_option(
-        "split", "s", "If set, evaluation and dev curve in different plots", dflt
+        "split",
+        "s",
+        "If set, evaluation and dev curve in different plots",
+        dflt,
     )
 
 
 def linestyles_option(dflt=False, **kwargs):
-    """ Get option flag to turn on/off linestyles"""
+    """Get option flag to turn on/off linestyles"""
     return bool_option(
         "line-styles",
         "S",
@@ -159,12 +168,16 @@ def linestyles_option(dflt=False, **kwargs):
 
 def cmc_option(**kwargs):
     """Get option flag to say if cmc scores"""
-    return bool_option("cmc", "C", "If set, CMC score files are provided", **kwargs)
+    return bool_option(
+        "cmc", "C", "If set, CMC score files are provided", **kwargs
+    )
 
 
 def semilogx_option(dflt=False, **kwargs):
     """Option to use semilog X-axis"""
-    return bool_option("semilogx", "G", "If set, use semilog on X axis", dflt, **kwargs)
+    return bool_option(
+        "semilogx", "G", "If set, use semilog on X axis", dflt, **kwargs
+    )
 
 
 def tpr_option(dflt=False, **kwargs):
@@ -208,7 +221,7 @@ def const_layout_option(dflt=True, **kwargs):
 
 
 def axes_val_option(dflt=None, **kwargs):
-    """ Option for setting min/max values on axes """
+    """Option for setting min/max values on axes"""
     return list_float_option(
         name="axlim",
         short_name="L",
@@ -221,11 +234,12 @@ def axes_val_option(dflt=None, **kwargs):
 
 
 def thresholds_option(**kwargs):
-    """ Option to give a list of thresholds """
+    """Option to give a list of thresholds"""
     return list_float_option(
         name="thres",
         short_name="T",
-        desc="Given threshold for metrics computations, e.g. " "0.005,0.001,0.056",
+        desc="Given threshold for metrics computations, e.g. "
+        "0.005,0.001,0.056",
         nitems=None,
         dflt=None,
         **kwargs
@@ -349,7 +363,8 @@ def points_curve_option(**kwargs):
         def callback(ctx, param, value):
             if value < 2:
                 raise click.BadParameter(
-                    "Number of points to draw curves must be greater than 1", ctx=ctx
+                    "Number of points to draw curves must be greater than 1",
+                    ctx=ctx,
                 )
             ctx.meta["points"] = value
             return value
@@ -370,7 +385,15 @@ def points_curve_option(**kwargs):
 
 def n_bins_option(**kwargs):
     """Get the number of bins in the histograms"""
-    possible_strings = ["auto", "fd", "doane", "scott", "rice", "sturges", "sqrt"]
+    possible_strings = [
+        "auto",
+        "fd",
+        "doane",
+        "scott",
+        "rice",
+        "sturges",
+        "sqrt",
+    ]
 
     def custom_n_bins_option(func):
         def callback(ctx, param, value):
@@ -379,7 +402,9 @@ def n_bins_option(**kwargs):
             else:
                 tmp = value.split(",")
                 try:
-                    value = [int(i) if i not in possible_strings else i for i in tmp]
+                    value = [
+                        int(i) if i not in possible_strings else i for i in tmp
+                    ]
                 except Exception:
                     raise click.BadParameter("Incorrect number of bins inputs")
             ctx.meta["n_bins"] = value
@@ -433,7 +458,7 @@ def output_plot_file_option(default_out="plots.pdf", **kwargs):
 
     def custom_output_plot_file_option(func):
         def callback(ctx, param, value):
-            """ Save ouput file  and associated pdf in context list,
+            """Save ouput file  and associated pdf in context list,
             print the path of the file in the log"""
             ctx.meta["output"] = value
             ctx.meta["PdfPages"] = PdfPages(value)
@@ -498,7 +523,9 @@ def no_line_option(**kwargs):
     return custom_no_line_option
 
 
-def criterion_option(lcriteria=["eer", "min-hter", "far"], check=True, **kwargs):
+def criterion_option(
+    lcriteria=["eer", "min-hter", "far"], check=True, **kwargs
+):
     """Get option flag to tell which criteriom is used (default:eer)
 
     Parameters
@@ -800,7 +827,7 @@ def titles_option(**kwargs):
 
 
 def x_label_option(dflt=None, **kwargs):
-    """Get the label option for X axis """
+    """Get the label option for X axis"""
 
     def custom_x_label_option(func):
         def callback(ctx, param, value):
@@ -822,7 +849,7 @@ def x_label_option(dflt=None, **kwargs):
 
 
 def y_label_option(dflt=None, **kwargs):
-    """Get the label option for Y axis """
+    """Get the label option for Y axis"""
 
     def custom_y_label_option(func):
         def callback(ctx, param, value):
@@ -1140,7 +1167,9 @@ HIST_HELP = """ Plots histograms of positive and negatives along with threshold
     """
 
 
-def evaluate_command(docstring, criteria=("eer", "min-hter", "far"), far_name="FAR"):
+def evaluate_command(
+    docstring, criteria=("eer", "min-hter", "far"), far_name="FAR"
+):
     def custom_evaluate_command(func):
         func.__doc__ = docstring
 
@@ -1207,7 +1236,9 @@ EVALUATE_HELP = """Runs error analysis on score sets.
     """
 
 
-def evaluate_flow(ctx, scores, evaluation, metrics, roc, det, epc, hist, **kwargs):
+def evaluate_flow(
+    ctx, scores, evaluation, metrics, roc, det, epc, hist, **kwargs
+):
     # open_mode is always write in this command.
     ctx.meta["open_mode"] = "w"
     criterion = ctx.meta.get("criterion")

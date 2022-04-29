@@ -5,17 +5,16 @@
 """Generate random scores.
 """
 
+import logging
 import os
 
 import click
-from click.types import FLOAT
-
 import numpy
 import numpy.random
 
-from bob.extension.scripts.click_helper import verbosity_option
+from click.types import FLOAT
 
-import logging
+from bob.extension.scripts.click_helper import verbosity_option
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +52,9 @@ def gen_score_distr(mean_neg, mean_pos, sigma_neg=1, sigma_pos=1):
 
     """
 
-    return numpy.random.normal(mean_neg, sigma_neg, (NUM_NEG,)), \
-            numpy.random.normal(mean_pos, sigma_pos, (NUM_POS,))
+    return numpy.random.normal(
+        mean_neg, sigma_neg, (NUM_NEG,)
+    ), numpy.random.normal(mean_pos, sigma_pos, (NUM_POS,))
 
 
 def write_scores_to_file(neg, pos, filename):
@@ -82,11 +82,15 @@ def write_scores_to_file(neg, pos, filename):
     with open(filename, "wt") as f:
 
         for i in pos:
-            text = "1 %f\n" % i if numpy.random.normal(0, 1) > 0.01 else "1 nan\n"
+            text = (
+                "1 %f\n" % i if numpy.random.normal(0, 1) > 0.01 else "1 nan\n"
+            )
             f.write(text)
 
         for i in neg:
-            text = "-1 %f\n" % i if numpy.random.normal(0, 1) > 0.01 else "1 nan\n"
+            text = (
+                "-1 %f\n" % i if numpy.random.normal(0, 1) > 0.01 else "1 nan\n"
+            )
             f.write(text)
 
 

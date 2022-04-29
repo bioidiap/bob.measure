@@ -6,11 +6,14 @@
 Most of these were imported from older C++ implementations.
 """
 
+import logging
+
+from functools import wraps
+
 import numpy
 import numpy.linalg
+
 from numba import jit, objmode
-import logging
-from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -315,7 +318,7 @@ def pavx_1(y, ghat, index, len):
         index[ci] = j
         len[ci] = 1
         ghat[ci] = y[j]
-        while ci >= 1 and ghat[np.max(ci - 1, 0)] >= ghat[ci]:
+        while ci >= 1 and ghat[numpy.max(ci - 1, 0)] >= ghat[ci]:
             # "pool adjacent violators"
             nw = len[ci - 1] + len[ci]
             ghat[ci - 1] += (len[ci] / nw) * (ghat[ci] - ghat[ci - 1])
@@ -635,7 +638,8 @@ def _minimizing_threshold(negatives, positives, criterion, cost=0.5):
 
     if not len(negatives) or not len(positives):
         raise RuntimeError(
-            "Cannot compute threshold when no positives or " "no negatives are provided"
+            "Cannot compute threshold when no positives or "
+            "no negatives are provided"
         )
 
     # iterates over all possible far and frr points and compute the predicate
@@ -884,7 +888,9 @@ def epc(
     thres = numpy.empty_like(alpha)
     mwer = numpy.empty_like(alpha)
     for i, k in enumerate(alpha):
-        thres[i] = _jit_min_weighted_error_rate_threshold(dev_neg, dev_pos, k, True)
+        thres[i] = _jit_min_weighted_error_rate_threshold(
+            dev_neg, dev_pos, k, True
+        )
         tmp = _jit_farfrr(test_negatives, test_positives, thres[i])
         tmp2 = numpy.empty((2,))
         tmp2[0] = tmp[0]
@@ -1128,10 +1134,14 @@ def farfrr(negatives, positives, threshold):
         return (1.0, 1.0)
 
     if not len(negatives):
-        raise RuntimeError("Cannot compute FPR (FAR) when no negatives are given")
+        raise RuntimeError(
+            "Cannot compute FPR (FAR) when no negatives are given"
+        )
 
     if not len(positives):
-        raise RuntimeError("Cannot compute FNR (FRR) when no positives are given")
+        raise RuntimeError(
+            "Cannot compute FNR (FRR) when no positives are given"
+        )
 
     return (negatives >= threshold).sum() / len(negatives), (
         positives < threshold
@@ -1262,11 +1272,15 @@ def min_hter_threshold(negatives, positives, is_sorted=False):
         The threshold for which the weighted error rate is minimal
 
     """
-    return min_weighted_error_rate_threshold(negatives, positives, 0.5, is_sorted)
+    return min_weighted_error_rate_threshold(
+        negatives, positives, 0.5, is_sorted
+    )
 
 
 @array_jit
-def min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted=False):
+def min_weighted_error_rate_threshold(
+    negatives, positives, cost, is_sorted=False
+):
     """Calculates the threshold that minimizes the error rate
 
     The ``cost`` parameter determines the relative importance between
@@ -1322,7 +1336,9 @@ def min_weighted_error_rate_threshold(negatives, positives, cost, is_sorted=Fals
     return _minimizing_threshold(neg, pos, "weighted-error", cost)
 
 
-_jit_min_weighted_error_rate_threshold = min_weighted_error_rate_threshold.jit_func
+_jit_min_weighted_error_rate_threshold = (
+    min_weighted_error_rate_threshold.jit_func
+)
 
 # @jit([(numba.float64[:, :],)], nopython=True)
 def ppndf(p):
@@ -1409,7 +1425,8 @@ def ppndf(p):
 
     r = numpy.sqrt(-1 * numpy.log(r))
     opt2 = (
-        ((2.3212127685 * r + 4.8501412713) * r + -2.2979647913) * r + -2.7871893113
+        ((2.3212127685 * r + 4.8501412713) * r + -2.2979647913) * r
+        + -2.7871893113
     ) / ((1.6370678189 * r + 3.5438892476) * r + 1.0)
     opt2[q2 < 0] *= -1
     retval[abs_q_bigger] = opt2
@@ -1624,5 +1641,7 @@ def roc_for_far(negatives, positives, far_list, is_sorted=False):
     # values based on the threshold.
     curve = numpy.empty((2, len(far_list)))
     for i, k in enumerate(far_list):
-        curve[:, i] = _jit_farfrr(neg, pos, _jit_far_threshold(neg, pos, k, True))
+        curve[:, i] = _jit_farfrr(
+            neg, pos, _jit_far_threshold(neg, pos, k, True)
+        )
     return curve
