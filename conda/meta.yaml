@@ -30,7 +30,6 @@ requirements:
     - numba {{ numba }}
   run:
     # - bob.extension  #not required, has run_exports
-    # - bob.math  #not required, has run_exports
     - python
     - setuptools
     - {{ pin_compatible('numpy') }}
