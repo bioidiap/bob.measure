@@ -13,8 +13,7 @@ import numpy
 import numpy.random
 
 from click.types import FLOAT
-
-from bob.extension.scripts.click_helper import verbosity_option
+from exposed.click import verbosity_option
 
 logger = logging.getLogger(__name__)
 
