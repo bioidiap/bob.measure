@@ -7,7 +7,7 @@ import pkg_resources
 
 from click.testing import CliRunner
 
-from bob.extension.scripts.click_helper import assert_click_runner_result
+from bob.io.base.testing_utils import assert_click_runner_result
 from bob.measure.script import commands
 
 
