@@ -12,7 +12,7 @@ import numpy
 import pkg_resources
 import pytest
 
-from . import (
+from bob.measure import (
     calibration,
     cmc,
     correctly_classified_negatives,

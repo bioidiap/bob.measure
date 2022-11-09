@@ -1,7 +1,86 @@
 [build-system]
-    requires = ["setuptools", "wheel", "bob.extension"]
+    requires = ["setuptools>=61.0.0", "wheel"]
     build-backend = "setuptools.build_meta"
 
+[project]
+    name = "bob.measure"
+    version = "6.0.3b0"
+    requires-python = ">=3.9"
+    description = "Evaluation metrics for Bob"
+    dynamic = ["readme"]
+    license = {text = "BSD 3-Clause License"}
+    authors = [
+    {name = "Andre Anjos"},
+    {email = "andre.anjos@idiap.ch"},
+    ]
+    keywords = ["bob", "pipelines"]
+
+    classifiers=[
+        "Framework :: Bob",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Natural Language :: English",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ]
+    dependencies = [
+        "setuptools",
+        "numpy",
+        "bob.io.base",
+        "exposed",
+        "scipy",
+        "h5py",
+        "matplotlib",
+        "tabulate",
+        "numba",
+    ]
+
+[project.urls]
+    documentation = "https://www.idiap.ch/software/bob/docs/bob/bob.measure/stable/"
+    homepage = "https://pypi.org/project/bob.measure/"
+    repository = "https://gitlab.idiap.ch/bob/bob.measure"
+    changelog = "https://gitlab.idiap.ch/bob/bob.measure/-/releases"
+
+[project.optional-dependencies]
+    qa = ["pre-commit"]
+    doc = [
+        "sphinx",
+        "sphinx_rtd_theme",
+        "sphinx-autodoc-typehints",
+        "auto-intersphinx",
+        "sphinxcontrib-programoutput",
+        "matplotlib",
+        ]
+    test = [
+        "pytest",
+        "pytest-cov",
+        "coverage",
+        ]
+
+[tool.setuptools]
+    zip-safe = false
+    package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+    readme = {file = "README.rst"}
+
+[project.entry-points."bob.cli"]
+    measure  = "bob.measure.script.measure:measure"
+
+[project.entry-points."bob.measure.cli"]
+    evaluate = "bob.measure.script.commands:evaluate"
+    metrics =  "bob.measure.script.commands:metrics"
+    multi-metrics = "bob.measure.script.commands:multi_metrics"
+    roc = "bob.measure.script.commands:roc"
+    det = "bob.measure.script.commands:det"
+    epc = "bob.measure.script.commands:epc"
+    hist = "bob.measure.script.commands:hist"
+    gen = "bob.measure.script.gen:gen"
+
+[tool.distutils.bdist_wheel]
+    universal = true
 [tool.isort]
     profile = "black"
     line_length = 80
@@ -10,3 +89,12 @@
 
 [tool.black]
     line-length = 80
+
+[tool.pytest.ini_options]
+    addopts = [
+        "--import-mode=append",
+        "--cov-report=term-missing",
+        "--cov=bob.measure",
+    ]
+    junit_logging = "all"
+    junit_log_passing_tests = false
