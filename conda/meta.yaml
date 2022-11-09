@@ -22,7 +22,6 @@ requirements:
     - python {{ python }}
     - setuptools {{ setuptools }}
     - pip {{ pip }}
-    - bob.extension
     - bob.io.base
     - exposed
     - numpy {{ numpy }}
@@ -32,10 +31,8 @@ requirements:
     - tabulate {{ tabulate }}
     - numba {{ numba }}
   run:
-    # - bob.extension  #not required, has run_exports
     - python
     - setuptools
-    - bob.extension
     - bob.io.base
     - exposed
     - {{ pin_compatible('numpy') }}

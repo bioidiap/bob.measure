@@ -28,7 +28,6 @@
     dependencies = [
         "setuptools",
         "numpy",
-        "bob.extension",
         "bob.io.base",
         "exposed",
         "scipy",
