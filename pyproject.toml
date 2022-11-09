@@ -29,6 +29,7 @@
         "setuptools",
         "numpy",
         "bob.extension",
+        "bob.io.base",
         "exposed",
         "scipy",
         "h5py",
