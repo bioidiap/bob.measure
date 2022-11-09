@@ -52,13 +52,11 @@
         "auto-intersphinx",
         "sphinxcontrib-programoutput",
         "matplotlib",
-        "dask-ml",
         ]
     test = [
         "pytest",
         "pytest-cov",
         "coverage",
-        "dask-ml",
         ]
 
 [tool.setuptools]
