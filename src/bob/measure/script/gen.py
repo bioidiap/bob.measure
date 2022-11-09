@@ -97,7 +97,7 @@ def write_scores_to_file(neg, pos, filename):
 @click.argument("outdir")
 @click.option("--mean-neg", default=-1, type=FLOAT, show_default=True)
 @click.option("--mean-pos", default=1, type=FLOAT, show_default=True)
-@verbosity_option()
+@verbosity_option(logger)
 def gen(outdir, mean_neg, mean_pos, **kwargs):
     """Generate random scores.
 

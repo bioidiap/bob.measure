@@ -1033,7 +1033,7 @@ def metrics_command(
         @far_option(far_name=far_name)
         @legends_option()
         @open_file_mode_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @decimal_option()
         @functools.wraps(func)
@@ -1095,7 +1095,7 @@ def roc_command(docstring, far_name="FAR"):
         @style_option()
         @linestyles_option()
         @alpha_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @functools.wraps(func)
         def wrapper(*args, **kwds):
@@ -1152,7 +1152,7 @@ def det_command(docstring, far_name="FAR"):
         @style_option()
         @linestyles_option()
         @alpha_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @functools.wraps(func)
         def wrapper(*args, **kwds):
@@ -1202,7 +1202,7 @@ def epc_command(docstring):
         @style_option()
         @linestyles_option()
         @alpha_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @functools.wraps(func)
         def wrapper(*args, **kwds):
@@ -1255,7 +1255,7 @@ def hist_command(docstring, far_name="FAR"):
         @style_option()
         @x_label_option()
         @y_label_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @functools.wraps(func)
         def wrapper(*args, **kwds):
@@ -1311,7 +1311,7 @@ def evaluate_command(
         @figsize_option(dflt=None)
         @style_option()
         @linestyles_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @functools.wraps(func)
         def wrapper(*args, **kwds):
@@ -1433,7 +1433,7 @@ def multi_metrics_command(
         @far_option(far_name=far_name)
         @legends_option()
         @open_file_mode_option()
-        @verbosity_option()
+        @verbosity_option(LOGGER)
         @click.pass_context
         @decimal_option()
         @functools.wraps(func)
