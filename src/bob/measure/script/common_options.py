@@ -8,16 +8,138 @@ import matplotlib.pyplot as plt
 import tabulate
 
 from click.types import FLOAT, INT
+from exposed.click import verbosity_option
 from matplotlib.backends.backend_pdf import PdfPages
 
-from bob.extension.scripts.click_helper import (
-    bool_option,
-    list_float_option,
-    open_file_mode_option,
-    verbosity_option,
-)
-
 LOGGER = logging.getLogger(__name__)
+
+
+def bool_option(name, short_name, desc, dflt=False, **kwargs):
+    """Generic provider for boolean options
+
+    Parameters
+    ----------
+    name : str
+        name of the option
+    short_name : str
+        short name for the option
+    desc : str
+        short description for the option
+    dflt : bool or None
+        Default value
+    **kwargs
+        All kwargs are passed to click.option.
+
+    Returns
+    -------
+    ``callable``
+        A decorator to be used for adding this option.
+    """
+
+    def custom_bool_option(func):
+        def callback(ctx, param, value):
+            ctx.meta[name.replace("-", "_")] = value
+            return value
+
+        return click.option(
+            "-%s/-n%s" % (short_name, short_name),
+            "--%s/--no-%s" % (name, name),
+            default=dflt,
+            help=desc,
+            show_default=True,
+            callback=callback,
+            is_eager=True,
+            **kwargs,
+        )(func)
+
+    return custom_bool_option
+
+
+def list_float_option(name, short_name, desc, nitems=None, dflt=None, **kwargs):
+    """Get option to get a list of float f
+
+    Parameters
+    ----------
+    name : str
+        name of the option
+    short_name : str
+        short name for the option
+    desc : str
+        short description for the option
+    nitems : obj:`int`, optional
+        If given, the parsed list must contains this number of items.
+    dflt : :any:`list`, optional
+        List of default  values for axes.
+    **kwargs
+        All kwargs are passed to click.option.
+
+    Returns
+    -------
+    ``callable``
+        A decorator to be used for adding this option.
+    """
+
+    def custom_list_float_option(func):
+        def callback(ctx, param, value):
+            if value is None or not value.replace(" ", ""):
+                value = None
+            elif value is not None:
+                tmp = value.split(",")
+                if nitems is not None and len(tmp) != nitems:
+                    raise click.BadParameter(
+                        "%s Must provide %d axis limits" % (name, nitems)
+                    )
+                try:
+                    value = [float(i) for i in tmp]
+                except Exception:
+                    raise click.BadParameter("Inputs of %s be floats" % name)
+            ctx.meta[name.replace("-", "_")] = value
+            return value
+
+        return click.option(
+            "-" + short_name,
+            "--" + name,
+            default=dflt,
+            show_default=True,
+            help=desc + " Provide just a space (' ') to cancel default values.",
+            callback=callback,
+            **kwargs,
+        )(func)
+
+    return custom_list_float_option
+
+
+def open_file_mode_option(**kwargs):
+    """Get open mode file option
+
+    Parameters
+    ----------
+    **kwargs
+        All kwargs are passed to click.option.
+
+    Returns
+    -------
+    ``callable``
+        A decorator to be used for adding this option.
+    """
+
+    def custom_open_file_mode_option(func):
+        def callback(ctx, param, value):
+            if value not in ["w", "a", "w+", "a+"]:
+                raise click.BadParameter("Incorrect open file mode")
+            ctx.meta["open_mode"] = value
+            return value
+
+        return click.option(
+            "-om",
+            "--open-mode",
+            default="w",
+            help="File open mode",
+            callback=callback,
+            **kwargs,
+        )(func)
+
+    return custom_open_file_mode_option
 
 
 def scores_argument(min_arg=1, force_eval=False, **kwargs):
@@ -87,7 +209,7 @@ def alpha_option(dflt=1, **kwargs):
             show_default=True,
             help="Adjusts transparency of plots.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_eval_option
@@ -117,7 +239,7 @@ def eval_option(**kwargs):
             show_default=True,
             help="If set, evaluation scores must be provided",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_eval_option
@@ -138,7 +260,7 @@ def hide_dev_option(dflt=False, **kwargs):
             show_default=True,
             help="If set, hide dev related plots",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_hide_dev_option
@@ -162,7 +284,7 @@ def linestyles_option(dflt=False, **kwargs):
         "S",
         "If given, applies a different line style to each line.",
         dflt,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -187,7 +309,7 @@ def tpr_option(dflt=False, **kwargs):
         "tpr",
         "If set, use TPR (also called 1-FNR, 1-FNMR, or 1-BPCER) on Y axis",
         dflt,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -214,7 +336,7 @@ def const_layout_option(dflt=True, **kwargs):
             show_default=True,
             help="(De)Activate constrained layout",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_layout_option
@@ -229,7 +351,7 @@ def axes_val_option(dflt=None, **kwargs):
         " 0.1,100,0.1,100``)",
         nitems=4,
         dflt=dflt,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -242,7 +364,7 @@ def thresholds_option(**kwargs):
         "0.005,0.001,0.056",
         nitems=None,
         dflt=None,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -256,7 +378,7 @@ def lines_at_option(dflt="1e-3", **kwargs):
         "This option works in ROC and DET curves.",
         nitems=None,
         dflt=dflt,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -277,7 +399,7 @@ def x_rotation_option(dflt=0, **kwargs):
             show_default=True,
             help="X axis labels ration",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_x_rotation_option
@@ -300,7 +422,7 @@ def legend_ncols_option(dflt=3, **kwargs):
             show_default=True,
             help="The number of columns of the legend layout.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_legend_ncols_option
@@ -326,7 +448,7 @@ def subplot_option(dflt=111, **kwargs):
             show_default=True,
             help="The order of subplots.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_subplot_option
@@ -350,7 +472,7 @@ def cost_option(**kwargs):
             show_default=True,
             help="Cost for FPR in minDCF",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_cost_option
@@ -377,7 +499,7 @@ def points_curve_option(**kwargs):
             show_default=True,
             help="The number of points use to draw curves in plots",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_points_curve_option
@@ -424,7 +546,7 @@ def n_bins_option(**kwargs):
             "for some corner cases, the option `auto` and `fd` can lead to "
             "MemoryError.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_n_bins_option
@@ -447,7 +569,7 @@ def table_option(dflt="rst", **kwargs):
             show_default=True,
             help="Format of printed tables.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_table_option
@@ -472,7 +594,7 @@ def output_plot_file_option(default_out="plots.pdf", **kwargs):
             show_default=True,
             help="The file to save the plots in.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_output_plot_file_option
@@ -496,7 +618,7 @@ def output_log_metric_option(**kwargs):
             help="If provided, computed numbers are written to "
             "this file instead of the standard output.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_output_log_file_option
@@ -517,7 +639,7 @@ def no_line_option(**kwargs):
             show_default=True,
             help="If set does not display vertical lines",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_no_line_option
@@ -557,7 +679,7 @@ def criterion_option(
             callback=callback,
             is_eager=True,
             show_default=True,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_criterion_option
@@ -579,7 +701,7 @@ def decimal_option(dflt=1, short="-d", **kwargs):
             help="Number of decimals to be printed.",
             callback=callback,
             show_default=True,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_decimal_option
@@ -607,7 +729,7 @@ def far_option(far_name="FAR", **kwargs):
             "must be used alongside `--criterion far`.".format(far_name),
             callback=callback,
             show_default=True,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_far_option
@@ -635,7 +757,7 @@ def min_far_option(far_name="FAR", dflt=1e-4, **kwargs):
             "should be a power of 10.".format(far_name),
             callback=callback,
             show_default=True,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_min_far_option
@@ -673,7 +795,7 @@ def figsize_option(dflt="4,3", **kwargs):
             "``plt.rcParams['figure.figsize']=figsize)``. "
             "Example: --figsize 4,6",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_figsize_option
@@ -709,7 +831,7 @@ def legend_loc_option(dflt="best", **kwargs):
             ),
             help="The legend location code",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_legend_loc_option
@@ -728,7 +850,7 @@ def line_width_option(**kwargs):
             type=FLOAT,
             help="The line width of plots",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_line_width_option
@@ -747,7 +869,7 @@ def marker_style_option(**kwargs):
             type=FLOAT,
             help="The marker style of the plots",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_marker_style_option
@@ -771,7 +893,7 @@ def legends_option(**kwargs):
             help="The legend for each system comma separated. "
             "Example: --legends ISV,CNN",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_legends_option
@@ -793,7 +915,7 @@ def title_option(**kwargs):
             help="The title of the plots. Provide just a space (-t ' ') to "
             "remove the titles from figures.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_title_option
@@ -820,7 +942,7 @@ def titles_option(**kwargs):
             " Provide just a space (-ts ' ') to "
             "remove the titles from figures.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_title_option
@@ -842,7 +964,7 @@ def x_label_option(dflt=None, **kwargs):
             show_default=True,
             help="Label for x-axis",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_x_label_option
@@ -863,7 +985,7 @@ def y_label_option(dflt=None, **kwargs):
             default=dflt,
             help="Label for y-axis",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_y_label_option
@@ -885,7 +1007,7 @@ def style_option(**kwargs):
             help="The matplotlib style to use for plotting. You can provide "
             "multiple styles by repeating this option",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_style_option
@@ -1288,7 +1410,7 @@ def n_protocols_option(required=True, **kwargs):
             required=required,
             help="The number of protocols of cross validation.",
             callback=callback,
-            **kwargs
+            **kwargs,
         )(func)
 
     return custom_n_protocols_option
