@@ -16,5 +16,6 @@ dist
 .gdb_history
 build
 *.egg
-src/
 record.txt
+.gitlab-ci-local*
+html/

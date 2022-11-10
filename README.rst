@@ -2,11 +2,11 @@
 .. Thu 11 Aug 14:52:51 CEST 2016
 
 .. image:: https://img.shields.io/badge/docs-latest-orange.svg
-   :target: https://www.idiap.ch/software/bob/docs/bob/bob.measure/master/index.html
+   :target: https://www.idiap.ch/software/bob/docs/bob/bob.measure/master/sphinx/index.html
 .. image:: https://gitlab.idiap.ch/bob/bob.measure/badges/master/pipeline.svg
    :target: https://gitlab.idiap.ch/bob/bob.measure/commits/master
 .. image:: https://gitlab.idiap.ch/bob/bob.measure/badges/master/coverage.svg
-   :target: https://gitlab.idiap.ch/bob/bob.measure/commits/master
+   :target: https://www.idiap.ch/software/bob/docs/bob/bob.measure/master/coverage/
 .. image:: https://img.shields.io/badge/gitlab-project-0000c0.svg
    :target: https://gitlab.idiap.ch/bob/bob.measure
 

@@ -1,7 +1,0 @@
-bob.extension
-numpy
-scipy
-h5py
-matplotlib
-tabulate
-numba

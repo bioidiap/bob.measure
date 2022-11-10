@@ -9,7 +9,7 @@ import h5py
 import numpy
 import pkg_resources
 
-from . import load
+from bob.measure import load
 
 
 def _F(f):

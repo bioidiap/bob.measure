@@ -3,7 +3,7 @@
 
 import numpy
 
-from .utils import confidence_for_indicator_variable
+from bob.measure.utils import confidence_for_indicator_variable
 
 
 def test_confidence_interval():
