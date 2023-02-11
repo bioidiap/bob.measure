@@ -79,7 +79,6 @@ def write_scores_to_file(neg, pos, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     with open(filename, "wt") as f:
-
         for i in pos:
             text = (
                 "1 %f\n" % i if numpy.random.normal(0, 1) > 0.01 else "1 nan\n"

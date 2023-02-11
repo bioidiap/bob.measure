@@ -457,7 +457,6 @@ def rocch(negatives, positives):
     miss = 0
 
     for i in range(nbins):
-
         retval[0, i] = fa / Nn  # pfa
         retval[1, i] = miss / Nt  # pmiss
         left += int(width[i])
@@ -508,7 +507,6 @@ def rocch2eer(pmiss_pfa):
     epsilon = numpy.finfo(numpy.float64).eps
 
     for i in range(N - 1):
-
         # Define XY matrix
         XY[0, 0] = pmiss_pfa[0, i]  # pfa
         XY[1, 0] = pmiss_pfa[0, i + 1]  # pfa
@@ -666,7 +664,6 @@ def _minimizing_threshold(negatives, positives, criterion, cost=0.5):
 
     # continues until one of the two iterators reaches the end of the list
     while pos_it < max_pos and neg_it < max_neg:
-
         # compute predicate
         current_predicate = criterium(far, frr, cost)
 
@@ -1032,7 +1029,6 @@ def far_threshold(negatives, positives, far_value=0.001, is_sorted=False):
     current_threshold = 0.0
 
     while current_position < total_count:
-
         current_threshold = scores[current_position]
         # keep iterating if values are repeated
         while (
@@ -1225,7 +1221,6 @@ def frr_threshold(negatives, positives, frr_value=0.001, is_sorted=False):
     current_threshold = 0.0
 
     while current_position < total_count:
-
         current_threshold = scores[current_position]
         # keep iterating if values are repeated
         while (
@@ -1339,6 +1334,7 @@ def min_weighted_error_rate_threshold(
 _jit_min_weighted_error_rate_threshold = (
     min_weighted_error_rate_threshold.jit_func
 )
+
 
 # @jit([(numba.float64[:, :],)], nopython=True)
 def ppndf(p):

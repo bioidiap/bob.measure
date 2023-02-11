@@ -1018,7 +1018,7 @@ def metrics_command(
     criteria=("eer", "min-hter", "far"),
     far_name="FAR",
     check_criteria=True,
-    **kwarg
+    **kwarg,
 ):
     def custom_metrics_command(func):
         func.__doc__ = docstring

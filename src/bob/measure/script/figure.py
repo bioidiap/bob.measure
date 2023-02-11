@@ -630,7 +630,7 @@ class PlotBase(MeasureBase):
         lines and close pdf if needed"""
         # draw vertical lines
         if self._far_at is not None:
-            for (line, line_trans) in zip(self._far_at, self._trans_far_val):
+            for line, line_trans in zip(self._far_at, self._trans_far_val):
                 mpl.figure(1)
                 mpl.plot(
                     [line_trans, line_trans],

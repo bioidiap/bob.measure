@@ -62,7 +62,7 @@ def roc(
     min_far=-8,
     tpr=False,
     semilogx=False,
-    **kwargs
+    **kwargs,
 ):
     """Plots Receiver Operating Characteristic (ROC) curve.
 
@@ -268,7 +268,7 @@ def epc(
     test_negatives,
     test_positives,
     npoints=100,
-    **kwargs
+    **kwargs,
 ):
     """Plots Expected Performance Curve (EPC) as defined in the paper:
 

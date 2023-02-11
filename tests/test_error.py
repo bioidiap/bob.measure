@@ -66,7 +66,6 @@ def _save(f, data):
 
 
 def test_basic_ratios():
-
     # We test the basic functionaly on FAR and FRR calculation. The first
     # example is separable, with a separation threshold of about 3.0
 
@@ -122,7 +121,6 @@ def test_basic_ratios():
 
 
 def test_for_uncomputable_thresholds():
-
     # in some cases, we cannot compute an FAR or FRR threshold, e.g., when we
     # have too little data or too many equal scores in these cases, the methods
     # should return a threshold which a supports a lower value.
@@ -177,7 +175,6 @@ def test_for_uncomputable_thresholds():
 
 
 def test_indexing():
-
     # This test verifies that the output of correctly_classified_positives() and
     # correctly_classified_negatives() makes sense.
     positives = _load("linsep-positives.hdf5")
@@ -203,7 +200,6 @@ def test_indexing():
 
 
 def test_obvious_thresholds():
-
     M = 10
     neg = numpy.arange(M, dtype=float)
     pos = numpy.arange(M, 2 * M, dtype=float)
@@ -226,7 +222,6 @@ def test_obvious_thresholds():
 
 
 def test_thresholding():
-
     # This example will demonstrate and check the use of eer_threshold() to
     # calculate the threshold that minimizes the EER.
 
@@ -289,7 +284,6 @@ def test_thresholding():
 
 
 def test_empty_raises():
-
     for func in (
         farfrr,
         precision_recall,
@@ -306,7 +300,6 @@ def test_empty_raises():
             func([], [], 0)
 
     for func in (eer_threshold, min_hter_threshold):
-
         with pytest.raises(RuntimeError):
             func(negatives=[], positives=[1.0])
 
@@ -318,7 +311,6 @@ def test_empty_raises():
 
 
 def test_plots():
-
     # This test set is not separable.
     positives = _load("nonsep-positives.hdf5")
     negatives = _load("nonsep-negatives.hdf5")
@@ -383,7 +375,6 @@ def test_plots():
 
 
 def no_test_rocch():
-
     # This example will demonstrate and check the use of eer_rocch_threshold() to
     # calculate the threshold that minimizes the EER on the ROC Convex Hull
 
@@ -422,7 +413,6 @@ def no_test_rocch():
 
 
 def test_cmc():
-
     # tests the CMC calculation
     # test data; should give match characteristics [1/2,1/4,1/3] and CMC
     # [1/3,2/3,1]
@@ -472,7 +462,6 @@ def test_cmc():
 
 
 def no_test_calibration():
-
     # Tests the cllr and min_cllr measures
     # This test set is separable.
     positives = _load("linsep-positives.hdf5")
@@ -549,7 +538,6 @@ def test_open_set_rates():
 
 
 def test_mindcf():
-
     # Tests outlier scores in negative set
     cost = 0.99
     negatives = [-3, -2, -1, -0.5, 4]
@@ -561,7 +549,6 @@ def test_mindcf():
 
 
 def test_roc_auc_score():
-
     positives = _load("nonsep-positives.hdf5")
     negatives = _load("nonsep-negatives.hdf5")
     auc = roc_auc_score(negatives, positives)
