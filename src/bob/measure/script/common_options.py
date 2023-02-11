@@ -7,8 +7,8 @@ import click
 import matplotlib.pyplot as plt
 import tabulate
 
+from clapp.click import verbosity_option
 from click.types import FLOAT, INT
-from exposed.click import verbosity_option
 from matplotlib.backends.backend_pdf import PdfPages
 
 LOGGER = logging.getLogger(__name__)
@@ -1018,7 +1018,7 @@ def metrics_command(
     criteria=("eer", "min-hter", "far"),
     far_name="FAR",
     check_criteria=True,
-    **kwarg
+    **kwarg,
 ):
     def custom_metrics_command(func):
         func.__doc__ = docstring
