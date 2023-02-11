@@ -7,8 +7,8 @@ import click
 import matplotlib.pyplot as plt
 import tabulate
 
+from clapp.click import verbosity_option
 from click.types import FLOAT, INT
-from exposed.click import verbosity_option
 from matplotlib.backends.backend_pdf import PdfPages
 
 LOGGER = logging.getLogger(__name__)

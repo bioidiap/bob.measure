@@ -12,8 +12,8 @@ import click
 import numpy
 import numpy.random
 
+from clapp.click import verbosity_option
 from click.types import FLOAT
-from exposed.click import verbosity_option
 
 logger = logging.getLogger(__name__)
 
@@ -96,8 +96,8 @@ def write_scores_to_file(neg, pos, filename):
 @click.argument("outdir")
 @click.option("--mean-neg", default=-1, type=FLOAT, show_default=True)
 @click.option("--mean-pos", default=1, type=FLOAT, show_default=True)
-@verbosity_option(logger)
-def gen(outdir, mean_neg, mean_pos, **kwargs):
+@verbosity_option(logger, expose_value=False)
+def gen(outdir, mean_neg, mean_pos):
     """Generate random scores.
 
     Generates random scores for negative and positive scores, whatever they

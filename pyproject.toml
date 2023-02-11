@@ -28,7 +28,7 @@
         "setuptools",
         "numpy",
         "bob.io.base",
-        "exposed",
+        "clapp",
         "scipy",
         "h5py",
         "matplotlib",
