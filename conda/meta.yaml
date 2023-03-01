@@ -23,7 +23,7 @@ requirements:
     - setuptools {{ setuptools }}
     - pip {{ pip }}
     - bob.io.base
-    - clapp
+    - clapper
     - numpy {{ numpy }}
     - scipy {{ scipy }}
     - h5py {{ h5py }}
@@ -34,7 +34,7 @@ requirements:
     - python
     - setuptools
     - bob.io.base
-    - clapp
+    - clapper
     - {{ pin_compatible('numpy') }}
     - {{ pin_compatible('scipy') }}
     - {{ pin_compatible('h5py') }}
