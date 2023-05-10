@@ -9,7 +9,6 @@ This package is part of the signal-processing and machine learning toolbox
 [Bob](https://www.idiap.ch/software/bob). It contains common routines for
 assessing performance of machine learning experiments.
 
-
 ## Installation
 
 Complete Bob's
@@ -25,4 +24,3 @@ conda install bob.measure
 
 For questions or reporting issues to this software package, contact our
 development [mailing list](https://www.idiap.ch/software/bob/discuss).
-
