@@ -12,8 +12,8 @@ assessing performance of machine learning experiments.
 
 ## Installation
 
-Complete Bob's [installation](https://www.idiap.ch/software/bob/install)
-instructions.
+Complete Bob's
+[installation instructions](https://www.idiap.ch/software/bob/install).
 
 Then, to install this package, run:
 
@@ -26,8 +26,3 @@ conda install bob.measure
 For questions or reporting issues to this software package, contact our
 development [mailing list](https://www.idiap.ch/software/bob/discuss).
 
-
-.. Place your references here:
-.. _bob: https://www.idiap.ch/software/bob
-.. _installation: https://www.idiap.ch/software/bob/install
-.. _mailing list: https://www.idiap.ch/software/bob/discuss
