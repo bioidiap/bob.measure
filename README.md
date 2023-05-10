@@ -21,7 +21,7 @@ Then, to install this package, run:
 conda install bob.measure
 ```
 
-# Contact
+## Contact
 
 For questions or reporting issues to this software package, contact our
 development [mailing list](https://www.idiap.ch/software/bob/discuss).
