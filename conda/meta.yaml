@@ -22,25 +22,27 @@ requirements:
     - python {{ python }}
     - setuptools {{ setuptools }}
     - pip {{ pip }}
+    - bob
     - bob.io.base
-    - clapper
-    - numpy {{ numpy }}
-    - scipy {{ scipy }}
+    - clapper {{ clapper }}
     - h5py {{ h5py }}
     - matplotlib {{ matplotlib }}
-    - tabulate {{ tabulate }}
     - numba {{ numba }}
+    - numpy {{ numpy }}
+    - scipy {{ scipy }}
+    - tabulate {{ tabulate }}
   run:
     - python
     - setuptools
+    - bob
     - bob.io.base
-    - clapper
-    - {{ pin_compatible('numpy') }}
-    - {{ pin_compatible('scipy') }}
+    - {{ pin_compatible('clapper') }}
     - {{ pin_compatible('h5py') }}
     - {{ pin_compatible('matplotlib') }}
-    - {{ pin_compatible('tabulate') }}
     - {{ pin_compatible('numba') }}
+    - {{ pin_compatible('numpy') }}
+    - {{ pin_compatible('scipy') }}
+    - {{ pin_compatible('tabulate') }}
 
 test:
   imports:
