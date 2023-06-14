@@ -25,15 +25,15 @@
         "Topic :: Software Development :: Libraries :: Python Modules",
     ]
     dependencies = [
-        "setuptools",
-        "numpy",
+        "bob",
         "bob.io.base",
         "clapper",
-        "scipy",
         "h5py",
         "matplotlib",
-        "tabulate",
         "numba",
+        "numpy",
+        "scipy",
+        "tabulate",
     ]
 
 [project.urls]
